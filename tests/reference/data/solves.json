@@ -1,0 +1,9044 @@
+{
+ "cases": [
+  {
+   "name": "cellulose_400C",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.0078,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.065
+   },
+   "settings": {
+    "pressure_bar": 275.0,
+    "feed_element_wt_percent": {
+     "C": 44.2,
+     "H": 6.3,
+     "O": 49.5,
+     "N": 0.0,
+     "S": 0.0
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 8.999660288377422,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon",
+      "cellulose",
+      "Lignin1"
+     ]
+    },
+    "gas_carbon_fraction": 0.9,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "minimum_amounts": [
+     [
+      "gas",
+      "water",
+      1e-08
+     ]
+    ],
+    "initial_phase_amounts": null,
+    "aqueous_model": "molecular",
+    "aqueous_water_floor": 0.0,
+    "liquid_initialization": false,
+    "gas_water_initialization": true,
+    "optimizer_ftol": 1e-11,
+    "max_iterations": 1200,
+    "temperature_C": 400.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 400.0,
+    "pressure_bar": 275.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      13.375674404479813
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.06494163518681906
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.463991787611573
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.00017639335804105641
+     ],
+     [
+      "gas",
+      "methane",
+      0.43583181883954525
+     ],
+     [
+      "gas",
+      "methanol",
+      1.9084082787943788e-10
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      0.02912799322739014
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.00022772825083328062
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      3.5081422850768416e-05
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      6.057847923202568e-19
+     ],
+     [
+      "aqueous",
+      "methane",
+      2.5236563019695332e-06
+     ],
+     [
+      "aqueous",
+      "methanol",
+      4.07009091880695e-18
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      6.957860524430088e-19
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      2.4350799173182934e-17
+     ],
+     [
+      "solid",
+      "carbon",
+      2.378671267849034e-17
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.01666039915347456
+     ],
+     [
+      "solid",
+      "Lignin1",
+      3.0160486729271395e-19
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      13.819203830823403
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.5971306942689001
+     ],
+     [
+      "gas",
+      "methane",
+      0.3028693057310994
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.10000000000000053
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.0
+     ],
+     [
+      "solid",
+      "Lignin1",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -5000894.767970174,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -4958184.736059543,
+     "aqueous": -10093.763540449496,
+     "organic liquid": 0.0,
+     "solid": -32616.268370181147
+    },
+    "balance_residual": 7.105427357601002e-15,
+    "charge_residual": 0.0,
+    "iterations": 40,
+    "feed_C_mol_per_g_dry": 0.03679960036633086,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     28.849884884571203,
+     0.0,
+     14.416334525092303,
+     0.0
+    ],
+    "product_atoms": [
+     1.0000000000000004,
+     28.84988488457121,
+     0.0,
+     14.416334525092307,
+     0.0
+    ],
+    "gas_carbon_fraction_actual": 0.9000000000000001,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": null,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "cellulose",
+       "Lignin1"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9757265886699286, 2.912391635681764e-13, 2.912391635681764e-13, 2.912391635681764e-13, 0.024273411328324154, 2.912391635681764e-13, 2.912391635681764e-13, 2.912391635681764e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9744879390317178, 0.022074539900931153, 0.0013798912862166583, 2.9200636540323366e-13, 0.00205762977996635, 2.9200636540323366e-13, 2.9200636540323366e-13, 2.9200636540323366e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9887016208970336, 0.0022473305253744363, 0.005870699354249853, 3.1533443037113773e-13, 0.003180349222080857, 3.1533443037113773e-13, 3.1533443037113773e-13, 3.1533443037113773e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9881198306799568, 0.005140786135002932, 0.006739383183440193, 3.2000807747116156e-13, 3.2000807747116156e-13, 3.2000807747116156e-13, 3.2000807747116156e-13, 3.2000807747116156e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9849226852438747, 0.009784775879042446, 0.005292538875388263, 3.3893208721594883e-13, 3.3893208721594883e-13, 3.3893208721594883e-13, 3.3893208721594883e-13, 3.3893208721594883e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9824886184451327, 0.0035339305193681876, 0.006858137747958659, 3.3281013933935176e-13, 0.0071193132862092294, 3.3281013933935176e-13, 3.3281013933935176e-13, 3.3281013933935176e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9849351683659927, 0.005172366340303727, 0.00580367970974575, 3.341621556697861e-13, 0.0040887855826211746, 3.341621556697861e-13, 3.341621556697861e-13, 3.341621556697861e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9871086823980211, 0.006972782934125066, 0.004761752802295292, 3.3603036233929915e-13, 0.0011567818642144714, 3.3603036233929915e-13, 3.3603036233929915e-13, 3.3603036233929915e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9889140223832662, 0.007452233254180048, 0.0036337443608709832, 3.3656099140902883e-13, 3.3656099140902883e-13, 3.3656099140902883e-13, 3.3656099140902883e-13, 3.3656099140902883e-13]",
+     "Invalid PC-SAFT fugacities: phase=liquid, T=400 C, P=275 bar, species=['water', 'hydrogen', 'carbon dioxide', 'carbon monoxide', 'methane', 'methanol', 'ammonia', 'hydrogen sulfide'], x=[0.9893392800411527, 0.007632573611746741, 0.0030281463454113464, 3.3786126384214776e-13, 3.3786126384214776e-13, 3.3786126384214776e-13, 3.3786126384214776e-13, 3.3786126384214776e-13]"
+    ],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 41.75545370200416
+  },
+  {
+   "name": "cellulose_500C",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.0078,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.065
+   },
+   "settings": {
+    "pressure_bar": 275.0,
+    "feed_element_wt_percent": {
+     "C": 44.2,
+     "H": 6.3,
+     "O": 49.5,
+     "N": 0.0,
+     "S": 0.0
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 8.999660288377422,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon",
+      "cellulose",
+      "Lignin1"
+     ]
+    },
+    "gas_carbon_fraction": 0.9,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "minimum_amounts": [
+     [
+      "gas",
+      "water",
+      1e-08
+     ]
+    ],
+    "initial_phase_amounts": null,
+    "aqueous_model": "molecular",
+    "aqueous_water_floor": 0.0,
+    "liquid_initialization": false,
+    "gas_water_initialization": true,
+    "optimizer_ftol": 1e-11,
+    "max_iterations": 1200,
+    "temperature_C": 500.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 500.0,
+    "pressure_bar": 275.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      13.316296860608674
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.24470380256196733
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5070084412745633
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0026873358346229145
+     ],
+     [
+      "gas",
+      "methane",
+      0.39030411012426663
+     ],
+     [
+      "gas",
+      "methanol",
+      1.1276654713461997e-07
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      1.5207258958089285e-16
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      1.5710850130384753e-18
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      3.855029568984909e-19
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      1.3721633618817005e-17
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      2.95679348601233e-17
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.016666666666666632
+     ],
+     [
+      "solid",
+      "Lignin1",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      13.819203830823403
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.5971306942689001
+     ],
+     [
+      "gas",
+      "methane",
+      0.3028693057310994
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.10000000000000053
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.0
+     ],
+     [
+      "solid",
+      "Lignin1",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -5250305.694984098,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -5214813.21479932,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -35492.48018477772
+    },
+    "balance_residual": 1.1102230246251565e-16,
+    "charge_residual": 0.0,
+    "iterations": 74,
+    "feed_C_mol_per_g_dry": 0.03679960036633086,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     28.849884884571203,
+     0.0,
+     14.416334525092303,
+     0.0
+    ],
+    "product_atoms": [
+     1.0,
+     28.849884884571203,
+     0.0,
+     14.416334525092303,
+     0.0
+    ],
+    "gas_carbon_fraction_actual": 0.9000000000000001,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": null,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "cellulose",
+       "Lignin1"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 2.518945914998767
+  },
+  {
+   "name": "fig78_300C",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 300.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 300.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.2052435204447159
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0001487346004866995
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.14833005652437908
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      5.226016717061166e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.002860827064685481
+     ],
+     [
+      "gas",
+      "methanol",
+      1.1976185164282376e-18
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.8430035097272413e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0018175604444169275
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03755046998019472
+     ],
+     [
+      "aqueous",
+      "water",
+      9.417162554125154
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.12530076681704e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.08911604915808959
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.4750080914275832e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0016676185703282996
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.647762958243019e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.004426018153544031
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      2.9608499892417098e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7580187476577092
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.23277483600727056
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "aqueous",
+      "water",
+      9.631755314945075
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7672251639927294
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3328076.6302398127,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -146326.21711139692,
+     "aqueous": -3175873.632912038,
+     "organic liquid": 0.0,
+     "solid": -5876.780216377717
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 60,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.275997787086066,
+     0.07517584762506914,
+     10.097304986959616,
+     0.006243578597960958
+    ],
+    "gas_carbon_fraction_actual": 0.15119610960578164,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 14.934014561993536
+  },
+  {
+   "name": "fig78_380C",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 380.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 380.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.846054892368933
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.03547573613560912
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6254672038484181
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0003156285749612257
+     ],
+     [
+      "gas",
+      "methane",
+      0.37421714980550963
+     ],
+     [
+      "gas",
+      "methanol",
+      1.366260127018444e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0011935377540020593
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036991154935533545
+     ],
+     [
+      "aqueous",
+      "water",
+      4.465628244486024e-08
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      3.5912065005453335e-21
+     ],
+     [
+      "aqueous",
+      "methane",
+      4.108510978498393e-09
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      2.7246496773853366e-19
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.23277483600727056
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "aqueous",
+      "water",
+      9.631755314945075
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7672251639927294
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3441039.260830162,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3441039.2447586376,
+     "aqueous": -0.016071524563278927,
+     "organic liquid": 0.0,
+     "solid": 0.0
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 263,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.000000000000001,
+     19.275997787086066,
+     0.07517584762506915,
+     10.097304986959614,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.9999999958914902,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients",
+     "Invalid ePC-SAFT fugacity coefficients"
+    ],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 6.58075392000319
+  },
+  {
+   "name": "fig78_450C",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.814974396568216
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0980486355798761
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.64046243848885
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0014056517829683741
+     ],
+     [
+      "gas",
+      "methane",
+      0.35813184809745013
+     ],
+     [
+      "gas",
+      "methanol",
+      6.163073152343234e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016456422270800047
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03676510269899458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.7338764430295528e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      1.5091665056467266e-17
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.608788429621436
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.4885165573381798
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.5114834426618202
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3561138.0346688917,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561138.0346688917,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -1.6570336480730194e-13
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 31,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.275997787086073,
+     0.07517584762506917,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 1.0,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.3966330240073148
+  },
+  {
+   "name": "fig78_340C_continued",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": [
+     [
+      "gas",
+      "water",
+      0.2052435204447159
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0001487346004866995
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.14833005652437908
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      5.226016717061166e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.002860827064685481
+     ],
+     [
+      "gas",
+      "methanol",
+      1.1976185164282376e-18
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.8430035097272413e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0018175604444169275
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03755046998019472
+     ],
+     [
+      "aqueous",
+      "water",
+      9.417162554125154
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.12530076681704e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.08911604915808959
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.4750080914275832e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0016676185703282996
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.647762958243019e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.004426018153544031
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      2.9608499892417098e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7580187476577092
+     ]
+    ],
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 340.0
+   },
+   "continue_from": "fig78_300C",
+   "result": {
+    "temperature_C": 340.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      1.0691332160765528
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.002020643686632164
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.2422074882370244
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      3.897238733431359e-05
+     ],
+     [
+      "gas",
+      "methane",
+      0.054803011106232036
+     ],
+     [
+      "gas",
+      "methanol",
+      3.2585963817387354e-18
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.00022236274340734462
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0034841577310418983
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03741516616216142
+     ],
+     [
+      "aqueous",
+      "water",
+      8.423587116221306
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.00019881891916552063
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.06006269487521283
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      5.316049947372267e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.013345612438916648
+     ],
+     [
+      "aqueous",
+      "methanol",
+      4.510050192562564e-18
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.00012315255733896116
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0027594208669190607
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      7.169286865560398e-18
+     ],
+     [
+      "solid",
+      "carbon",
+      0.6295369049053324
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.2052435204447159
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0001487346004866995
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.14833005652437908
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      5.226016717061166e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.002860827064685481
+     ],
+     [
+      "gas",
+      "methanol",
+      1.1976185164282376e-18
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.8430035097272413e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0018175604444169275
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03755046998019472
+     ],
+     [
+      "aqueous",
+      "water",
+      9.417162554125154
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.12530076681704e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.08911604915808959
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.4750080914275832e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0016676185703282996
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.647762958243019e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.004426018153544031
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      2.9608499892417098e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7580187476577092
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3378304.3153070896,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -498476.6460445759,
+     "aqueous": -2874460.9837079844,
+     "organic liquid": 0.0,
+     "solid": -5366.685554529439
+    },
+    "balance_residual": 0.0,
+    "charge_residual": 0.0,
+    "iterations": 93,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.2970494717305907,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 2.1136200229957467
+  },
+  {
+   "name": "fig78_300C_ipopt",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 300.0,
+    "optimizer": {
+     "method": "ipopt"
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 300.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.20529208016388445
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0001490055593960005
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.14833293303645417
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      5.147134456438196e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.0028615511379459515
+     ],
+     [
+      "gas",
+      "methanol",
+      1.6743768757042428e-09
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.840764884811681e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0018178488221011388
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03755083678783588
+     ],
+     [
+      "aqueous",
+      "water",
+      9.417112830366465
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.1897276297103696e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.08911377667266356
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.5064734413256075e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.001667565355869448
+     ],
+     [
+      "aqueous",
+      "methanol",
+      1.728754188509972e-09
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.5766400549288374e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.004425729775859821
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.2427010645843724e-10
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      8.455781943470681e-11
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7580175154485126
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.23277483600727056
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "aqueous",
+      "water",
+      9.631755314945075
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7672251639927294
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3328076.630207031,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -146343.96488112645,
+     "aqueous": -3175855.8946507135,
+     "organic liquid": -1.1904927363987761e-05,
+     "solid": -5876.770663285988
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 23,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.275997787086066,
+     0.07517584762506917,
+     10.097304986959614,
+     0.00624357859796096
+    ],
+    "gas_carbon_fraction_actual": 0.15119963298323344,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "ipopt",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3328076.630207031,
+       "message": "Solve_Succeeded",
+       "nit": 23
+      }
+     ],
+     "descent_RT": 0.0009704013130964352,
+     "complementarity_J": 0.00012095904277379187,
+     "stationarity_major_RT": 0.00331574305087908
+    }
+   },
+   "seconds": 0.8745664750022115
+  },
+  {
+   "name": "fig78_450C_ipopt",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "optimizer": {
+     "method": "ipopt"
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.814975348655908
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.09804900682821693
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6404611061382073
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.001407354339700487
+     ],
+     [
+      "gas",
+      "methane",
+      0.3581314617356089
+     ],
+     [
+      "gas",
+      "methanol",
+      7.168759201692829e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016452612912560777
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036765293166906535
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.1595414617945548e-10
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      8.24505252107814e-11
+     ],
+     [
+      "solid",
+      "carbon",
+      4.826012627409031e-09
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.608788429621436
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.4885165573381798
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.5114834426618202
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3561138.034579514,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561138.0345046027,
+     "aqueous": 0.0,
+     "organic liquid": -2.1922630692951496e-05,
+     "solid": -5.298862173074222e-05
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 26,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     0.9999999999999998,
+     19.275997787086073,
+     0.07517584762506915,
+     10.097304986959614,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.9999999939011087,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "ipopt",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3561138.0345795136,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      }
+     ],
+     "descent_RT": 1.470959553333518e-06,
+     "complementarity_J": 0.00012773130287674011,
+     "stationarity_major_RT": 2.6535862205485532e-06
+    }
+   },
+   "seconds": 0.07164118700893596
+  },
+  {
+   "name": "fig78_450C_ipopt_multistart",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "optimizer": {
+     "method": "ipopt",
+     "multistart": 2
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.814975348655908
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.09804900682821693
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6404611061382073
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.001407354339700487
+     ],
+     [
+      "gas",
+      "methane",
+      0.3581314617356089
+     ],
+     [
+      "gas",
+      "methanol",
+      7.168759201692829e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016452612912560777
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036765293166906535
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.1595414617945548e-10
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      8.24505252107814e-11
+     ],
+     [
+      "solid",
+      "carbon",
+      4.826012627409031e-09
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.608788429621436
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.4885165573381798
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.5114834426618202
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3561138.034579514,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561138.0345046027,
+     "aqueous": 0.0,
+     "organic liquid": -2.1922630692951496e-05,
+     "solid": -5.298862173074222e-05
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 26,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     0.9999999999999998,
+     19.275997787086073,
+     0.07517584762506915,
+     10.097304986959614,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.9999999939011087,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "ipopt",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3561138.0345795136,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      },
+      {
+       "start": "max gas",
+       "G": -3561138.034579513,
+       "message": "Solve_Succeeded",
+       "nit": 30
+      },
+      {
+       "start": "min gas",
+       "G": -3561138.0345795136,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      },
+      {
+       "start": "max organic liquid",
+       "G": -3561138.034579513,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      },
+      {
+       "start": "min organic liquid",
+       "G": -3561138.0345795136,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      },
+      {
+       "start": "random 0",
+       "G": -3561138.0345795127,
+       "message": "Solve_Succeeded",
+       "nit": 22
+      },
+      {
+       "start": "random 1",
+       "G": -3561138.034579513,
+       "message": "Solve_Succeeded",
+       "nit": 22
+      }
+     ],
+     "descent_RT": 1.470959553333518e-06,
+     "complementarity_J": 0.00012773130287674011,
+     "stationarity_major_RT": 2.6535862205485532e-06,
+     "tangent_plane_RT": {
+      "organic liquid": 46.33998804236627
+     }
+    }
+   },
+   "seconds": 0.2923308149911463
+  },
+  {
+   "name": "fig78_450C_slsqp_exact",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "optimizer": {
+     "method": "slsqp"
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.814976717710568
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.09804582943221014
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6404604492187912
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0014072986911031133
+     ],
+     [
+      "gas",
+      "methane",
+      0.3581321799697426
+     ],
+     [
+      "gas",
+      "methanol",
+      7.212036291714213e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016455090813888673
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03676516927184014
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.0134662434246813e-17
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      6.4728321721785204e-18
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.608788429621436
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.4885165573381798
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.5114834426618202
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3561138.034674675,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561138.034674675,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -7.107036014580161e-14
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 34,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.275997787086066,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.9999999999999999,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3561138.034674675,
+       "message": "Optimization terminated successfully",
+       "nit": 34
+      }
+     ],
+     "descent_RT": 6.149486911957728e-05,
+     "complementarity_J": 3.4723608641297124e-05,
+     "stationarity_major_RT": 8.895930922195956e-05
+    }
+   },
+   "seconds": 0.06266127900744323
+  },
+  {
+   "name": "fig78_450C_allocations",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": 0.1,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "phase_carbon_fractions": {
+     "organic liquid": 0.05
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.954091707152216
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0947076421479844
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5710066722577696
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0011998965678030667
+     ],
+     [
+      "gas",
+      "methane",
+      0.2777933924503683
+     ],
+     [
+      "gas",
+      "methanol",
+      3.8724058857573116e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0015793588360672574
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036798244394500954
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.008333181568860879
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      1.30083833532754e-07
+     ],
+     [
+      "solid",
+      "carbon",
+      0.1
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.800455096288102
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.44684989067151404
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.40315010932848594
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.008333333333333333
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.1
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3558067.02523079,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3556072.5182644073,
+     "aqueous": 0.0,
+     "organic liquid": -896.5276235645287,
+     "solid": -1097.979342818059
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 31,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     0.9999999999999998,
+     19.275997787086066,
+     0.07517584762506917,
+     10.097304986959617,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.8499999999999999,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.5357181459985441
+  },
+  {
+   "name": "fig78_450C_all_solids",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": 0.2,
+    "solid_carbon_target": "all solids",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      9.016627446993645
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.09456450216145908
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5397752391356645
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0011270149960697184
+     ],
+     [
+      "gas",
+      "methane",
+      0.25909769916969366
+     ],
+     [
+      "gas",
+      "methanol",
+      4.6698572050106065e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0015785827022923985
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03679863246138838
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      1.4929131767162944e-17
+     ],
+     [
+      "solid",
+      "carbon",
+      0.2
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      9.408788429621437
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.6885165573381791
+     ],
+     [
+      "gas",
+      "methane",
+      0.11148344266182098
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.2
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3559661.9789258623,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3557466.0202402263,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -2195.958685636118
+    },
+    "balance_residual": 1.7763568394002505e-15,
+    "charge_residual": 0.0,
+    "iterations": 32,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959617,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 0.7999999999999999,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.4319891750055831
+  },
+  {
+   "name": "fig78_450C_gas_min",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "gas_carbon_min_fraction": 0.95
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.814980305590028
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0980424560461451
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.64045832704249
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0014079731822483701
+     ],
+     [
+      "gas",
+      "methane",
+      0.35813364567290146
+     ],
+     [
+      "gas",
+      "methanol",
+      5.4102360128246525e-08
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016434358389173177
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036766205893075915
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      9.286704486407372e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      8.864530150952344
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6163874180036357
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "gas",
+      "methane",
+      0.3836125819963643
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960959
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253458
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3561138.0346606215,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561138.0346606215,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": 0.0
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 22,
+    "feed_C_mol_per_g_dry": 0.025306,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     19.27599778708607,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "product_atoms": [
+     0.9999999999999999,
+     19.275997787086066,
+     0.07517584762506915,
+     10.097304986959616,
+     0.006243578597960959
+    ],
+    "gas_carbon_fraction_actual": 1.0,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.28373503500188235
+  },
+  {
+   "name": "cellulose_species_feed_450C",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {},
+    "feed_species_moles": {
+     "cellulose": 1.0
+    },
+    "water_g_per_g_dry_feed": 4.0,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon",
+      "cellulose"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0,
+    "aqueous_enabled": false
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      5.982339183688772
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.03032844845666302
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0157503813606868
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      1.6508565526961813e-05
+     ],
+     [
+      "gas",
+      "methane",
+      0.0005944114151183447
+     ],
+     [
+      "gas",
+      "methanol",
+      2.257818598721051e-17
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      2.601263956238139e-17
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.163939783109778
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      5.833555370524563
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.5
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.5
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ],
+     [
+      "solid",
+      "cellulose",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -2464760.0439804513,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -2129829.901998222,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -334930.1419822294
+    },
+    "balance_residual": 1.7763568394002505e-15,
+    "charge_residual": 0.0,
+    "iterations": 25,
+    "feed_C_mol_per_g_dry": 0.03700482913020149,
+    "elements": [
+     "C",
+     "H",
+     "N",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     13.667110741049125,
+     0.0,
+     6.833555370524563,
+     0.0
+    ],
+    "product_atoms": [
+     1.0000000000000002,
+     13.667110741049123,
+     0.0,
+     6.833555370524563,
+     0.0
+    ],
+    "gas_carbon_fraction_actual": 0.01636130134133213,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 390.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "cellulose"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.2843377130047884
+  },
+  {
+   "name": "full_text_250C",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.008,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.06,
+    "Na": 22.989769,
+    "K": 39.0983,
+    "Cs": 132.90545196,
+    "Li": 6.94,
+    "Mg": 24.305,
+    "Cl": 35.45
+   },
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 380.0,
+    "aqueous_enabled": true,
+    "ion_product_species": {
+     "gas": [],
+     "solid": [
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "Na+",
+      "HCO3-",
+      "CO3^2-",
+      "K+",
+      "Cs+",
+      "Cl-",
+      "Li+",
+      "Mg2+"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": 0.8,
+    "phase_carbon_fractions": {},
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "max_iterations": 5000,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 250.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 250.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.3316972848252082
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0002895581560129195
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5155200552588866
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      8.320135895100611e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.28447162460521835
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      7.786996720933076e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.00399036451265634
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.037535643355666316
+     ],
+     [
+      "aqueous",
+      "water",
+      8.726523055893738
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      9.355687067803526e-06
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.004018107793499102
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.0224331081130803e-19
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0020679849010011124
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      2.669094652715056e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0022532140853046157
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      2.523807889808217e-18
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      1.0203286470566318e-17
+     ],
+     [
+      "solid",
+      "carbon",
+      0.1939139073054996
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.6885165573381804
+     ],
+     [
+      "gas",
+      "methane",
+      0.11148344266181964
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "aqueous",
+      "water",
+      9.408788429621431
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      -0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.19999999999999996
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3263429.7474842127,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -408047.7064916443,
+     "aqueous": -2854048.297956831,
+     "organic liquid": 0.0,
+     "solid": -1333.7430357376147
+    },
+    "balance_residual": 1.1102230246251565e-16,
+    "charge_residual": -2.523807889808217e-18,
+    "iterations": 61,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     0.0,
+     0.0,
+     19.275997787086062,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0,
+     10.097304986959612,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     0.9999999999999999,
+     0.0,
+     0.0,
+     19.275997787086062,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506911,
+     0.0,
+     10.097304986959612,
+     0.0062435785979609556
+    ],
+    "gas_carbon_fraction_actual": 0.8,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 380.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "Na+",
+       "HCO3-",
+       "CO3^2-",
+       "K+",
+       "Cs+",
+       "Cl-",
+       "Li+",
+       "Mg2+"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 1.899108041994623
+  },
+  {
+   "name": "full_text_400C",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.008,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.06,
+    "Na": 22.989769,
+    "K": 39.0983,
+    "Cs": 132.90545196,
+    "Li": 6.94,
+    "Mg": 24.305,
+    "Cl": 35.45
+   },
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 380.0,
+    "aqueous_enabled": true,
+    "ion_product_species": {
+     "gas": [],
+     "solid": [
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "Na+",
+      "HCO3-",
+      "CO3^2-",
+      "K+",
+      "Cs+",
+      "Cl-",
+      "Li+",
+      "Mg2+"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": 0.8,
+    "phase_carbon_fractions": {},
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "max_iterations": 5000,
+    "liquid_initialization": false,
+    "gas_water_initialization": true,
+    "temperature_C": 400.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 400.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      9.040079354379376
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.04741370687341303
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5284098534554177
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.0004059256694006738
+     ],
+     [
+      "gas",
+      "methane",
+      0.2711842208751817
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0012625412946124341
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036956653165228344
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      3.268700143454345e-18
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.19999999999999998
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      9.408788429621431
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.6885165573381808
+     ],
+     [
+      "gas",
+      "methane",
+      0.11148344266181986
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.1999999999999993
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3473670.10115264,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3471709.4146465156,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -1960.6865061242204
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 23,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     0.0,
+     0.0,
+     19.275997787086062,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0,
+     10.097304986959612,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0,
+     0.0,
+     0.0,
+     19.275997787086066,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0,
+     10.097304986959612,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.8,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 380.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "Na+",
+      "HCO3-",
+      "CO3^2-",
+      "K+",
+      "Cs+",
+      "Cl-",
+      "Li+",
+      "Mg2+"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 0.37163865999900736
+  },
+  {
+   "name": "full_text_250C_ipopt",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.008,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.06,
+    "Na": 22.989769,
+    "K": 39.0983,
+    "Cs": 132.90545196,
+    "Li": 6.94,
+    "Mg": 24.305,
+    "Cl": 35.45
+   },
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 380.0,
+    "aqueous_enabled": true,
+    "ion_product_species": {
+     "gas": [],
+     "solid": [
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "Na+",
+      "HCO3-",
+      "CO3^2-",
+      "K+",
+      "Cs+",
+      "Cl-",
+      "Li+",
+      "Mg2+"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": 0.8,
+    "phase_carbon_fractions": {},
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "max_iterations": 5000,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 250.0,
+    "optimizer": {
+     "method": "ipopt"
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 250.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.33311879484241036
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0008017881506327306
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5157239917457257
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.00023966327441612967
+     ],
+     [
+      "gas",
+      "methane",
+      0.2839760077015328
+     ],
+     [
+      "gas",
+      "methanol",
+      6.033727832539744e-05
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.00043272420124477236
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0038227078142171835
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.037217790627394845
+     ],
+     [
+      "aqueous",
+      "water",
+      8.722873589842074
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0002393491970932021
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.004712236528647626
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      9.41020241776349e-05
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0026836863417571024
+     ],
+     [
+      "aqueous",
+      "methanol",
+      4.604314946108964e-05
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0003075421690346688
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0024208707837437733
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      4.150526511076814e-17
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.3913439968655225e-05
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      9.376023845476513e-06
+     ],
+     [
+      "solid",
+      "carbon",
+      0.19231481914922624
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.6885165573381804
+     ],
+     [
+      "gas",
+      "methane",
+      0.11148344266181964
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "aqueous",
+      "water",
+      9.408788429621431
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      -0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.19999999999999996
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3263404.549710204,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -408676.7643840595,
+     "aqueous": -2853404.0797686577,
+     "organic liquid": -0.9610763221108481,
+     "solid": -1322.7444811646308
+    },
+    "balance_residual": 1.7763568394002505e-15,
+    "charge_residual": -4.150526511076814e-17,
+    "iterations": 26,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0,
+     0.0,
+     0.0,
+     19.275997787086062,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0,
+     10.097304986959612,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0,
+     0.0,
+     0.0,
+     19.275997787086062,
+     0.0,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0,
+     10.09730498695961,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.7999999999999999,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 380.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "Na+",
+       "HCO3-",
+       "CO3^2-",
+       "K+",
+       "Cs+",
+       "Cl-",
+       "Li+",
+       "Mg2+"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "ipopt",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3263404.549710204,
+       "message": "Solve_Succeeded",
+       "nit": 26
+      }
+     ],
+     "descent_RT": 24.85598454146326,
+     "complementarity_J": 0.0,
+     "stationarity_major_RT": 12.206602964212598
+    }
+   },
+   "seconds": 0.2075784799963003
+  },
+  {
+   "name": "full_text_gas_min_300C",
+   "model": "base",
+   "atomic_weights": {
+    "C": 12.011,
+    "H": 1.008,
+    "O": 15.999,
+    "N": 14.007,
+    "S": 32.06,
+    "Na": 22.989769,
+    "K": 39.0983,
+    "Cs": 132.90545196,
+    "Li": 6.94,
+    "Mg": 24.305,
+    "Cl": 35.45
+   },
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 380.0,
+    "aqueous_enabled": true,
+    "ion_product_species": {
+     "gas": [],
+     "solid": [
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "Na+",
+      "HCO3-",
+      "CO3^2-",
+      "K+",
+      "Cs+",
+      "Cl-",
+      "Li+",
+      "Mg2+"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": null,
+    "phase_carbon_fractions": {},
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "max_iterations": 5000,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 300.0,
+    "gas_carbon_min_fraction": 0.9
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 300.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      1.0440754233612608
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0017448002505375793
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.5645868753749655
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      4.2812681990559e-05
+     ],
+     [
+      "gas",
+      "methane",
+      0.3357259588252063
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.00022588941341763035
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0045034134255498735
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03744642031643182
+     ],
+     [
+      "aqueous",
+      "water",
+      7.8993063342292436
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      5.809236215591168e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.01235313039659449
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      4.0514399564569843e-07
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.007347118301575033
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      5.711757878786582e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.001740165172411083
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0003951632024025758
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.00039516320240257823
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0003951632024025782
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0003951632024025964
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      7.66848177173067e-18
+     ],
+     [
+      "solid",
+      "carbon",
+      0.07994369927567235
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      9.88402746151043e-18
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      7.45172811859359e-18
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.7556837640612238
+     ],
+     [
+      "gas",
+      "methane",
+      0.14467188282093857
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "aqueous",
+      "water",
+      9.342609130904394
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      -0.0
+     ],
+     [
+      "aqueous",
+      "Cs+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Li+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.10003951632024022
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      -0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0001975816012012961
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3324459.83523887,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -689421.7192875873,
+     "aqueous": -2634418.3271244504,
+     "organic liquid": 0.0,
+     "solid": -619.7888268318593
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": -2.065405138584886e-17,
+    "iterations": 60,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0003951632024026,
+     0.0003951632024025922,
+     0.0,
+     19.276392950288464,
+     0.0003951632024025922,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0003951632024025922,
+     10.09849047656682,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0003951632024026,
+     0.0003951632024025964,
+     0.0,
+     19.27639295028846,
+     0.0003951632024025931,
+     0.0,
+     0.0,
+     0.07517584762506913,
+     0.0003951632024025956,
+     10.098490476566818,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.9,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 380.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "methanol",
+       "ammonia",
+       "hydrogen sulfide",
+       "Na+",
+       "HCO3-",
+       "CO3^2-",
+       "K+",
+       "Cs+",
+       "Cl-",
+       "Li+",
+       "Mg2+"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 2.02518166200025
+  },
+  {
+   "name": "configurable_300C",
+   "model": "acetone",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "MgCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Mg": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone",
+      "Na+",
+      "K+",
+      "Mg2+",
+      "Cl-",
+      "HCO3-",
+      "CO3^2-"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "solid": [
+      "carbon",
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "aqueous_cutoff_C": 385.0,
+    "aqueous_enabled": true,
+    "gas_carbon_fraction": null,
+    "gas_carbon_min_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "phase_carbon_fractions": {},
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_phase_amounts": null,
+    "initial_gas_water_fraction": 1e-06,
+    "max_iterations": 5000,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 300.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 300.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.18637518730582273
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.00012946519778293241
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.1410328603308411
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      2.815067370152268e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.002462794118876194
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.611917756627953e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0016776061914866847
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.027916987426709217
+     ],
+     [
+      "gas",
+      "benzene",
+      4.07104577172147e-18
+     ],
+     [
+      "gas",
+      "toluene",
+      6.414910869927883e-18
+     ],
+     [
+      "gas",
+      "methanol",
+      1.2059136675627977e-17
+     ],
+     [
+      "gas",
+      "ethanol",
+      2.3465581201487112e-18
+     ],
+     [
+      "gas",
+      "acetone",
+      1.787896183715853e-17
+     ],
+     [
+      "aqueous",
+      "water",
+      9.436952541307306
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.176035442576892e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.09595265656607237
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.3468930804826992e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0016192413632927455
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.161567887388148e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0045659724064742715
+     ],
+     [
+      "aqueous",
+      "nitrogen",
+      0.009637068957605266
+     ],
+     [
+      "aqueous",
+      "benzene",
+      1.4511362121341162e-17
+     ],
+     [
+      "aqueous",
+      "toluene",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      8.421630531549901e-18
+     ],
+     [
+      "aqueous",
+      "ethanol",
+      6.107931146071246e-18
+     ],
+     [
+      "aqueous",
+      "acetone",
+      3.6836954928013235e-18
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0003951632024026206
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0003951632024026025
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      6.875307350650162e-07
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.00039516320240258755
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.00039653826387274927
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      8.172747135831653e-18
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      1.800457372237611e-17
+     ],
+     [
+      "solid",
+      "carbon",
+      0.758927598129732
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      4.69862523345597e-18
+     ],
+     [
+      "solid",
+      "Brucite",
+      5.9192681404986594e-18
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.00039447567166752166
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0
+     ],
+     [
+      "solid",
+      "Halite",
+      1.7425860588457723e-18
+     ],
+     [
+      "solid",
+      "Sylvite",
+      2.9082876243976402e-18
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.4671303248241525
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "gas",
+      "benzene",
+      0.0
+     ],
+     [
+      "gas",
+      "toluene",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ethanol",
+      0.0
+     ],
+     [
+      "gas",
+      "acetone",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      9.631952896546272
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "nitrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "benzene",
+      0.0
+     ],
+     [
+      "aqueous",
+      "toluene",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ethanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "acetone",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.5336600015806527
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0001975816012012961
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3329237.7866295376,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -135406.87755412835,
+     "aqueous": -3187490.6324489373,
+     "organic liquid": 0.0,
+     "solid": -6340.2766264721395
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 85,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0007903264048053,
+     0.0003951632024025922,
+     0.0,
+     19.276392950288464,
+     0.0003951632024025922,
+     0.0,
+     0.0003951632024025922,
+     0.07517584762506913,
+     0.0003951632024025922,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0007903264048055,
+     0.0003951632024025922,
+     0.0,
+     19.276392950288468,
+     0.00039516320240260544,
+     0.0,
+     0.00039516320240261607,
+     0.07517584762506913,
+     0.00039516320240262236,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.14338514844821204,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 385.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen",
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen",
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone",
+       "Na+",
+       "K+",
+       "Mg2+",
+       "Cl-",
+       "HCO3-",
+       "CO3^2-"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 26.2076630720112
+  },
+  {
+   "name": "configurable_450C",
+   "model": "acetone",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "MgCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Mg": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone",
+      "Na+",
+      "K+",
+      "Mg2+",
+      "Cl-",
+      "HCO3-",
+      "CO3^2-"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "solid": [
+      "carbon",
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "aqueous_cutoff_C": 385.0,
+    "aqueous_enabled": true,
+    "gas_carbon_fraction": null,
+    "gas_carbon_min_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "phase_carbon_fractions": {},
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_phase_amounts": null,
+    "initial_gas_water_fraction": 1e-06,
+    "max_iterations": 5000,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "liquid_initialization": false,
+    "gas_water_initialization": true,
+    "temperature_C": 450.0
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 450.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      8.815178575626726
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.09801784849153108
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.6408526571157453
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.00140879285381821
+     ],
+     [
+      "gas",
+      "methane",
+      0.3581335009792554
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0016593639748902298
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.036758241825089445
+     ],
+     [
+      "gas",
+      "benzene",
+      1.9254493944359282e-17
+     ],
+     [
+      "gas",
+      "toluene",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      2.1225358363187306e-07
+     ],
+     [
+      "gas",
+      "ethanol",
+      0.0
+     ],
+     [
+      "gas",
+      "acetone",
+      1.127776540905758e-17
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      3.406513603715752e-18
+     ],
+     [
+      "solid",
+      "carbon",
+      0.0
+     ],
+     [
+      "solid",
+      "Artinite",
+      1.8899681059147903e-18
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      3.1099132510556646e-18
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0003951632024025746
+     ],
+     [
+      "solid",
+      "Periclase",
+      1.3003837069768529e-17
+     ],
+     [
+      "solid",
+      "Halite",
+      1.8741411527199697e-17
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.00039516320240257346
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.00019758160120128673
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      9.369504858790827e-18
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      9.631952896546272
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.46713032482415157
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "gas",
+      "benzene",
+      0.0
+     ],
+     [
+      "gas",
+      "toluene",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ethanol",
+      0.0
+     ],
+     [
+      "gas",
+      "acetone",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.5336600015806536
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      -0.0
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0001975816012012961
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3562183.0942681623,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -3561421.4731165804,
+     "aqueous": 0.0,
+     "organic liquid": 0.0,
+     "solid": -761.621151581724
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": 0.0,
+    "iterations": 33,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0007903264048053,
+     0.0003951632024025922,
+     0.0,
+     19.276392950288464,
+     0.0003951632024025922,
+     0.0,
+     0.0003951632024025922,
+     0.07517584762506913,
+     0.0003951632024025922,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0007903264048053,
+     0.0003951632024025922,
+     0.0,
+     19.27639295028846,
+     0.0003951632024025922,
+     0.0,
+     0.00039516320240260696,
+     0.07517584762506913,
+     0.0003951632024025922,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.9996051488588804,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": true,
+     "aqueous_cutoff_temperature_C": 385.0,
+     "removed_aqueous_species": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone",
+      "Na+",
+      "K+",
+      "Mg2+",
+      "Cl-",
+      "HCO3-",
+      "CO3^2-"
+     ],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen",
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "aqueous": [],
+      "organic liquid": [
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "slsqp-fd"
+    }
+   },
+   "seconds": 1.766806584011647
+  },
+  {
+   "name": "configurable_300C_ipopt",
+   "model": "acetone",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "NaHCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Na": 1,
+       "H": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "KCl": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "K": 1,
+       "Cl": 1
+      }
+     },
+     "MgCO3": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Mg": 1,
+       "C": 1,
+       "O": 3
+      }
+     },
+     "CsCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Cs": 1,
+       "Cl": 1
+      }
+     },
+     "LiCl": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     },
+     "MgCl2": {
+      "mol_per_g_dry_feed": 0.0,
+      "elements": {
+       "Mg": 1,
+       "Cl": 2
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone",
+      "Na+",
+      "K+",
+      "Mg2+",
+      "Cl-",
+      "HCO3-",
+      "CO3^2-"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "solid": [
+      "carbon",
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "aqueous_cutoff_C": 385.0,
+    "aqueous_enabled": true,
+    "gas_carbon_fraction": null,
+    "gas_carbon_min_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "phase_carbon_fractions": {},
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_phase_amounts": null,
+    "initial_gas_water_fraction": 1e-06,
+    "max_iterations": 5000,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 300.0,
+    "optimizer": {
+     "method": "ipopt"
+    }
+   },
+   "continue_from": null,
+   "result": {
+    "temperature_C": 300.0,
+    "pressure_bar": 240.0,
+    "amounts": [
+     [
+      "gas",
+      "water",
+      0.18654267364744356
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.00013131897016719355
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.14109187025409414
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      4.773008913511306e-06
+     ],
+     [
+      "gas",
+      "methane",
+      0.002464153918316323
+     ],
+     [
+      "gas",
+      "ammonia",
+      2.2486699090865825e-05
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.0016730355192551409
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.027902978431818288
+     ],
+     [
+      "gas",
+      "benzene",
+      2.037183383244514e-10
+     ],
+     [
+      "gas",
+      "toluene",
+      1.1481833034738922e-10
+     ],
+     [
+      "gas",
+      "methanol",
+      1.6234567655780047e-09
+     ],
+     [
+      "gas",
+      "ethanol",
+      6.419917642761123e-10
+     ],
+     [
+      "gas",
+      "acetone",
+      4.686048497010019e-10
+     ],
+     [
+      "aqueous",
+      "water",
+      9.436773173007074
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      3.186441915340732e-05
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.09589826579961046
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      1.5850285627970924e-06
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0016261825123525312
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      4.068213496724108e-05
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.004570543078705815
+     ],
+     [
+      "aqueous",
+      "nitrogen",
+      0.00965336096368722
+     ],
+     [
+      "aqueous",
+      "benzene",
+      2.157586390824621e-10
+     ],
+     [
+      "aqueous",
+      "toluene",
+      1.186474762709893e-10
+     ],
+     [
+      "aqueous",
+      "methanol",
+      1.7183072025718391e-09
+     ],
+     [
+      "aqueous",
+      "ethanol",
+      6.560659501493915e-10
+     ],
+     [
+      "aqueous",
+      "acetone",
+      5.06713572912812e-10
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.00039516258976635165
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0003951626377951235
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      8.392385111358448e-07
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0003951623170556708
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0003968330996871633
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      4.1439204564252925e-09
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      1.2633777207101948e-10
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      8.527189597271302e-11
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      2.9162083394448054e-10
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      2.2243050461913027e-10
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      1.9570919466904157e-10
+     ],
+     [
+      "solid",
+      "carbon",
+      0.7589123221345467
+     ],
+     [
+      "solid",
+      "Artinite",
+      4.786054952371177e-10
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      4.463283222667303e-10
+     ],
+     [
+      "solid",
+      "Brucite",
+      1.4403879663143043e-09
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.00039431854738591974
+     ],
+     [
+      "solid",
+      "Periclase",
+      7.872649684788822e-10
+     ],
+     [
+      "solid",
+      "Halite",
+      4.482492285737057e-10
+     ],
+     [
+      "solid",
+      "Sylvite",
+      4.3709769286778257e-10
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      8.219350597078174e-11
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      6.37548879142778e-11
+     ]
+    ],
+    "initial_amounts": [
+     [
+      "gas",
+      "water",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "gas",
+      "carbon monoxide",
+      0.4671303248241525
+     ],
+     [
+      "gas",
+      "methane",
+      0.0
+     ],
+     [
+      "gas",
+      "ammonia",
+      0.0
+     ],
+     [
+      "gas",
+      "hydrogen sulfide",
+      0.006243578597960956
+     ],
+     [
+      "gas",
+      "nitrogen",
+      0.03758792381253456
+     ],
+     [
+      "gas",
+      "benzene",
+      0.0
+     ],
+     [
+      "gas",
+      "toluene",
+      0.0
+     ],
+     [
+      "gas",
+      "methanol",
+      0.0
+     ],
+     [
+      "gas",
+      "ethanol",
+      0.0
+     ],
+     [
+      "gas",
+      "acetone",
+      0.0
+     ],
+     [
+      "aqueous",
+      "water",
+      9.631952896546272
+     ],
+     [
+      "aqueous",
+      "hydrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon dioxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "carbon monoxide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methane",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ammonia",
+      0.0
+     ],
+     [
+      "aqueous",
+      "hydrogen sulfide",
+      0.0
+     ],
+     [
+      "aqueous",
+      "nitrogen",
+      0.0
+     ],
+     [
+      "aqueous",
+      "benzene",
+      0.0
+     ],
+     [
+      "aqueous",
+      "toluene",
+      0.0
+     ],
+     [
+      "aqueous",
+      "methanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "ethanol",
+      0.0
+     ],
+     [
+      "aqueous",
+      "acetone",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Na+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "K+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Mg2+",
+      0.0
+     ],
+     [
+      "aqueous",
+      "Cl-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "HCO3-",
+      0.0
+     ],
+     [
+      "aqueous",
+      "CO3^2-",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "benzene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "toluene",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "methanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "ethanol",
+      0.0
+     ],
+     [
+      "organic liquid",
+      "acetone",
+      0.0
+     ],
+     [
+      "solid",
+      "carbon",
+      0.5336600015806527
+     ],
+     [
+      "solid",
+      "Artinite",
+      0.0
+     ],
+     [
+      "solid",
+      "Hydromagnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Brucite",
+      0.0
+     ],
+     [
+      "solid",
+      "Magnesite",
+      0.0
+     ],
+     [
+      "solid",
+      "Periclase",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Halite",
+      0.0
+     ],
+     [
+      "solid",
+      "Sylvite",
+      0.0003951632024025922
+     ],
+     [
+      "solid",
+      "Sodium-Oxide",
+      0.0001975816012012961
+     ],
+     [
+      "solid",
+      "Potassium-Oxide",
+      0.0
+     ]
+    ],
+    "gibbs_J_per_mol_feed_C": -3329237.7901629847,
+    "phase_gibbs_J_per_mol_feed_C": {
+     "gas": -135490.83338918362,
+     "aqueous": -3187406.9732026015,
+     "organic liquid": -0.0002679898408030215,
+     "solid": -6339.98330320991
+    },
+    "balance_residual": 3.552713678800501e-15,
+    "charge_residual": -5.421010862427522e-20,
+    "iterations": 33,
+    "feed_C_mol_per_g_dry": 0.025306000000000006,
+    "elements": [
+     "C",
+     "Cl",
+     "Cs",
+     "H",
+     "K",
+     "Li",
+     "Mg",
+     "N",
+     "Na",
+     "O",
+     "S"
+    ],
+    "feed_atoms": [
+     1.0007903264048053,
+     0.0003951632024025922,
+     0.0,
+     19.276392950288464,
+     0.0003951632024025922,
+     0.0,
+     0.0003951632024025922,
+     0.07517584762506913,
+     0.0003951632024025922,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "product_atoms": [
+     1.0007903264048053,
+     0.00039516320240259227,
+     0.0,
+     19.27639295028846,
+     0.0003951632024025922,
+     0.0,
+     0.0003951632024025922,
+     0.07517584762506913,
+     0.00039516320240259216,
+     10.099675966174027,
+     0.006243578597960956
+    ],
+    "gas_carbon_fraction_actual": 0.14344743322643677,
+    "gas_carbon_min_violation": 0.0,
+    "phase_allocation": {
+     "aqueous_disabled": false,
+     "aqueous_cutoff_temperature_C": 385.0,
+     "removed_aqueous_species": [],
+     "effective_phase_species": {
+      "gas": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen",
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "aqueous": [
+       "water",
+       "hydrogen",
+       "carbon dioxide",
+       "carbon monoxide",
+       "methane",
+       "ammonia",
+       "hydrogen sulfide",
+       "nitrogen",
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone",
+       "Na+",
+       "K+",
+       "Mg2+",
+       "Cl-",
+       "HCO3-",
+       "CO3^2-"
+      ],
+      "organic liquid": [
+       "benzene",
+       "toluene",
+       "methanol",
+       "ethanol",
+       "acetone"
+      ],
+      "solid": [
+       "carbon",
+       "Artinite",
+       "Hydromagnesite",
+       "Brucite",
+       "Magnesite",
+       "Periclase",
+       "Halite",
+       "Sylvite",
+       "Sodium-Oxide",
+       "Potassium-Oxide"
+      ]
+     },
+     "initial_composition_reset": false
+    },
+    "eos_trial_errors": [],
+    "optimizer": {
+     "method": "ipopt",
+     "starts": [
+      {
+       "start": "initial",
+       "G": -3329237.7901629847,
+       "message": "Solve_Succeeded",
+       "nit": 33
+      }
+     ],
+     "descent_RT": 0.0009365073283587444,
+     "complementarity_J": 0.0007475866828094357,
+     "stationarity_major_RT": 0.0031162628464544563
+    }
+   },
+   "seconds": 0.2540840820001904
+  },
+  {
+   "name": "fail_no_carrier",
+   "model": "acetone",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "feed_element_wt_percent": {
+     "C": 30.3950366,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.506548
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.999935304,
+    "added_salts": {
+     "LiCl": {
+      "mol_per_g_dry_feed": 1e-05,
+      "elements": {
+       "Li": 1,
+       "Cl": 1
+      }
+     }
+    },
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen",
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene",
+      "methanol",
+      "ethanol",
+      "acetone"
+     ],
+     "solid": [
+      "carbon",
+      "Artinite",
+      "Hydromagnesite",
+      "Brucite",
+      "Magnesite",
+      "Periclase",
+      "Halite",
+      "Sylvite",
+      "Sodium-Oxide",
+      "Potassium-Oxide"
+     ]
+    },
+    "aqueous_cutoff_C": 385.0,
+    "aqueous_enabled": true,
+    "gas_carbon_fraction": null,
+    "gas_carbon_min_fraction": null,
+    "solid_carbon_fraction": null,
+    "solid_carbon_target": "CHAR",
+    "phase_carbon_fractions": {},
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-06,
+    "minimum_amounts": {},
+    "initial_phase_amounts": null,
+    "initial_gas_water_fraction": 1e-06,
+    "max_iterations": 5000,
+    "optimizer_ftol": 1e-09,
+    "optimizer_eps": 1e-07,
+    "liquid_initialization": true,
+    "gas_water_initialization": false,
+    "temperature_C": 300.0
+   },
+   "continue_from": null,
+   "error": "RuntimeError: feed and initial composition: ValueError: No allowed product carrier for feed elements: Li. Add database-backed neutral gas species or solids using ion_product_species.",
+   "seconds": 0.001972043013665825
+  },
+  {
+   "name": "fail_infeasible_fractions",
+   "model": "base",
+   "atomic_weights": {},
+   "settings": {
+    "pressure_bar": 240.0,
+    "aqueous_cutoff_C": 390.0,
+    "feed_element_wt_percent": {
+     "C": 30.395036599999997,
+     "H": 4.40810496,
+     "O": 53.57873112,
+     "N": 2.66469168,
+     "S": 0.5065480000000001
+    },
+    "feed_species_moles": null,
+    "water_g_per_g_dry_feed": 3.9999353040000005,
+    "added_salts": {},
+    "phase_species": {
+     "gas": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide",
+      "nitrogen"
+     ],
+     "aqueous": [
+      "water",
+      "hydrogen",
+      "carbon dioxide",
+      "carbon monoxide",
+      "methane",
+      "methanol",
+      "ammonia",
+      "hydrogen sulfide"
+     ],
+     "organic liquid": [
+      "benzene",
+      "toluene"
+     ],
+     "solid": [
+      "carbon"
+     ]
+    },
+    "gas_carbon_fraction": 0.7,
+    "solid_carbon_fraction": 0.5,
+    "solid_carbon_target": "CHAR",
+    "aqueous_model": "electrolyte",
+    "aqueous_water_floor": 1e-08,
+    "liquid_initialization": true,
+    "initial_gas_water_fraction": 1e-06,
+    "initial_phase_amounts": null,
+    "minimum_amounts": {},
+    "optimizer_ftol": 1e-11,
+    "optimizer_eps": 1e-08,
+    "max_iterations": 10000,
+    "temperature_C": 450.0
+   },
+   "continue_from": null,
+   "error": "RuntimeError: feed and initial composition: ValueError: Gas-carbon plus solid-carbon fractions exceed one.",
+   "seconds": 0.001090935998945497
+  }
+ ]
+}
