@@ -24,7 +24,33 @@ The first calculation downloads Julia (if it is not already installed) and
 installs the Julia packages into `.venv/julia_env`. This takes several minutes
 once; later runs start in seconds.
 
-## Running a case
+## The app
+
+```sh
+uv run htg gui
+```
+
+opens the app in your web browser. It runs on your own computer (only you can
+open it) until you close the terminal or press Ctrl+C. Tabs:
+
+- **Case**: open, edit and save case files (comments in the file are kept).
+  Basic settings are shown first; the rest is under *Advanced settings*.
+  *Check* runs the fast checks; *Add to queue* starts the calculation.
+- **Queue**: runs in progress, and the number of parallel workers. Workers
+  start when the app opens; each needs about a minute and 1.5 GB of memory
+  before its first point. All queued runs share the workers.
+- **Results**: interactive plots (species against temperature or pressure,
+  temperature–pressure maps, carbon allocation) and tables of this session's
+  runs and of saved results. Use the camera icon on a plot to save a PNG.
+- **Compare**: one species or phase across several runs, and the settings in
+  which the runs differ.
+- **Species**: every species in the databases, why unavailable ones cannot be
+  used, and buttons that add a species to the case being edited.
+
+Every run is saved to `results/<case name>-<date>-<time>/`. Options:
+`--workers N`, `--results DIR`, `--cases DIR`, `--port PORT`, `--no-browser`.
+
+## Running a case from the terminal
 
 A *case file* describes one calculation or a temperature sweep: conditions,
 feed, allowed products in each phase, constraints and solver. Examples are in
@@ -114,6 +140,7 @@ Package modules, from inputs to results:
 | `sweep.py` | temperature-pressure sweeps, preflight checks |
 | `runner.py` | pool of worker processes with a shared queue of pieces |
 | `results.py`, `plotting.py` | result tables and plots |
+| `gui/` | the app: case editor (`editor.py`, `document.py`), result plots (`plots.py`), pages (`app.py`) |
 | `model.py` | `Model`: databases + registry, the entry point |
 | `cli.py` | the `htg` command |
 
@@ -127,7 +154,7 @@ Package modules, from inputs to results:
 ## Tests
 
 ```sh
-uv run pytest               # about 2 minutes
+uv run pytest               # about 4 minutes
 uv run pytest -m "not slow"
 ```
 

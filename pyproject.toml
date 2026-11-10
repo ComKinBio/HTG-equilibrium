@@ -13,6 +13,9 @@ dependencies = [
     "pyclapeyron>=0.1.1", # PC-SAFT / ePC-SAFT via Clapeyron.jl (installs Julia deps on first import)
     "pychnosz>=1.5.3",    # SUPCRT92 water properties and HKF ions
     "psutil>=7.2.2",
+    "nicegui>=4.0.0",
+    "plotly>=7.1.0",
+    "tomlkit>=0.15.2",
 ]
 
 [project.scripts]

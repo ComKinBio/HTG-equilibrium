@@ -5,6 +5,7 @@
     htg species [--all] [--phase PHASE] [--search TEXT]
     htg new CASE.toml
     htg plot RESULTS_DIR
+    htg gui [--workers N] [--port PORT] [--results DIR] [--cases DIR] [--no-browser]
 """
 import argparse
 import sys
@@ -135,6 +136,13 @@ def cmd_new(args):
     return 0
 
 
+def cmd_gui(args):
+    from .gui.app import run_app
+    run_app(results_dir=args.results, cases_dir=args.cases, workers=args.workers, port=args.port,
+            show=not args.no_browser, host=args.host, model_args={'data_dir': args.data} if args.data else None)
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog='htg', description='Hydrothermal gasification equilibrium.')
     parser.add_argument('--data', help='database folder (default: the repository data/ folder)')
@@ -167,6 +175,16 @@ def main(argv=None):
     p = sub.add_parser('plot', help='re-plot saved results')
     p.add_argument('results')
     p.set_defaults(func=cmd_plot)
+
+    p = sub.add_parser('gui', help='open the app in the web browser')
+    p.add_argument('--workers', type=int, help='worker processes (default: from free cores and memory)')
+    p.add_argument('--port', type=int, default=8080)
+    p.add_argument('--host', default='127.0.0.1',
+                   help='network address (default 127.0.0.1: only this computer; 0.0.0.0: everyone on the network)')
+    p.add_argument('--results', default='results', help='folder for results (default: results)')
+    p.add_argument('--cases', default='cases', help='folder with case files (default: cases)')
+    p.add_argument('--no-browser', action='store_true', help='do not open a browser window')
+    p.set_defaults(func=cmd_gui)
 
     args = parser.parse_args(argv)
     try:
