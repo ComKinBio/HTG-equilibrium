@@ -22,7 +22,7 @@ Gibbs-energy minimization:
 
 The first calculation downloads Julia (if it is not already installed) and
 installs the Julia packages into `.venv/julia_env`. This takes several minutes
-once; later runs start in seconds.
+once, but only needs to be done once.
 
 ## The app
 
