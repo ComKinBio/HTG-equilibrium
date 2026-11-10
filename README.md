@@ -41,15 +41,24 @@ uv run htg run my_case.toml          # solve; writes results/my_case/
 
 | File | Content |
 |---|---|
-| `summary.csv` | one row per temperature: status, Gibbs energy, gas-carbon share, errors |
+| `summary.csv` | one row per point: status, Gibbs energy, gas-carbon share, errors |
 | `species.csv` | amount of every species: mol/mol feed C, mol and g per kg dry feed, molality of ions |
 | `phases.csv` | per phase: amount, mass, share of feed carbon, Gibbs energy |
 | `species.png`, `carbon.png` | species profiles and carbon allocation against temperature |
 | `case.toml` | the case that produced the results |
 
-Options: `--out DIR` chooses the output folder; `--workers N` solves the
-temperatures in parallel when the case has `continuation = false`. `htg plot
-results/my_case` redraws the plots from the saved tables.
+Temperatures and pressures can both be lists (every temperature is solved at
+every pressure), or a case can list explicit `points = [[T, P], ...]`.
+
+Options:
+
+- `htg run a.toml b.toml` runs several cases.
+- `--workers N` solves in N parallel processes. Independent pieces of all cases
+  (single points, or continuation chains: one per pressure) share the workers.
+  Each worker first starts Julia (about a minute, longer when many start at
+  once), so this pays off for large grids.
+- `--out DIR` chooses the output folder.
+- `htg plot results/my_case` redraws the plots from the saved tables.
 
 The example cases reproduce the original notebooks:
 
@@ -102,7 +111,8 @@ Package modules, from inputs to results:
 | `phases.py` | phase models: Gibbs energy and chemical potentials of each phase |
 | `equilibrium.py` | balances, constraints, feasible start, and the solve |
 | `optimizer.py` | optimizer backends, multistart, optimality diagnostics |
-| `sweep.py` | temperature sweeps, preflight checks |
+| `sweep.py` | temperature-pressure sweeps, preflight checks |
+| `runner.py` | pool of worker processes with a shared queue of pieces |
 | `results.py`, `plotting.py` | result tables and plots |
 | `model.py` | `Model`: databases + registry, the entry point |
 | `cli.py` | the `htg` command |

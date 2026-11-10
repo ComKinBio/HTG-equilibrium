@@ -12,6 +12,7 @@ dependencies = [
     "openpyxl>=3.1",      # pandas.read_excel for Cellulose.xlsx
     "pyclapeyron>=0.1.1", # PC-SAFT / ePC-SAFT via Clapeyron.jl (installs Julia deps on first import)
     "pychnosz>=1.5.3",    # SUPCRT92 water properties and HKF ions
+    "psutil>=7.2.2",
 ]
 
 [project.scripts]

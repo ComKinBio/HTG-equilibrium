@@ -29,6 +29,7 @@ class Model:
         self.databases = databases
         self.registry = registry
         self.data_dir = data_dir
+        self.load_args = {'data_dir': str(data_dir) if data_dir else None}
 
     @classmethod
     def load(cls, data_dir=None, species_file=None, nasa_names=None, reference_temperature_C=350.0):
@@ -43,17 +44,39 @@ class Model:
         databases = Databases.load(data_dir)
         registry = Registry.from_file(species_file or data_dir / 'species.toml', nasa_names)
         registry.discover(databases, float(reference_temperature_C) + 273.15)
-        return cls(databases, registry, data_dir)
+        model = cls(databases, registry, data_dir)
+        # How to load the same model again (worker processes do this).
+        model.load_args = {'data_dir': str(data_dir),
+                           'species_file': str(species_file) if species_file else None,
+                           'nasa_names': nasa_names,
+                           'reference_temperature_C': reference_temperature_C}
+        return model
 
     # ---------------------------------------------------------------- calculations
-    def solve(self, case, temperature_C=None):
-        """Equilibrium for ``case`` at one temperature (the case's, or ``temperature_C``)."""
-        if temperature_C is not None:
-            case = case.at(temperature_C)
+    def solve(self, case, temperature_C=None, pressure_bar=None):
+        """Equilibrium for ``case`` at one point.
+
+        Give temperature_C (and pressure_bar, if the case has several pressures)
+        to pick a point of a sweep case; a single-point case needs neither.
+        """
+        if temperature_C is not None or pressure_bar is not None:
+            if temperature_C is None:
+                temperatures = case.temperatures()
+                if len(temperatures) != 1:
+                    raise ValueError('This case has several temperatures; give temperature_C too.')
+                temperature_C = temperatures[0]
+            case = case.at(temperature_C, pressure_bar)
+        elif case.points is not None or isinstance(case.temperature_C, (list, tuple)) \
+                or isinstance(case.pressure_bar, (list, tuple)):
+            grid = case.grid()
+            if len(grid) != 1:
+                raise ValueError('This case has several points; give temperature_C (and pressure_bar), '
+                                 'or use Model.sweep.')
+            case = case.at(*grid[0])
         return equilibrium.solve(self, case)
 
     def sweep(self, case, progress=print, workers=1):
-        """Equilibrium at every temperature of the case; see htg.sweep.run_sweep."""
+        """Equilibrium at every point of the case; see htg.sweep.run_sweep."""
         from .sweep import run_sweep
         return run_sweep(self, case, progress=progress, workers=workers)
 

@@ -161,8 +161,10 @@ def setup(model, case, stage=None, build_phases=True):
     """
     stage = stage or Stage()
     case.validate()
-    if isinstance(case.temperature_C, (list, tuple)):
-        raise ValueError('A single temperature is needed; use Model.sweep for a list.')
+    if (case.points is not None or isinstance(case.temperature_C, (list, tuple))
+            or isinstance(case.pressure_bar, (list, tuple))):
+        raise ValueError('A single temperature and pressure is needed; use Model.sweep for a grid, '
+                         'or case.at(T, P).')
     registry, nasa_db = model.registry, model.databases.nasa
     stage.name = 'feed and initial composition'
     AW = {**ATOMIC_WEIGHTS, **case.atomic_weights}

@@ -105,21 +105,45 @@ def carbon_and_mass(phases, summary=None):
     return fig
 
 
+def read_csv(path):
+    """A results CSV, or an empty table when the file is empty (no point solved)."""
+    try:
+        return pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
+
+
 def save_plots(directory, quantity=None, comparison=None, comparison_label='Reference'):
-    """Write species.png and carbon.png from the CSV files in ``directory``."""
+    """Write species and carbon plots from the CSV files in ``directory``.
+
+    With several pressures there is one pair of plots per pressure
+    (species_240bar.png, carbon_240bar.png, ...).
+    """
     directory = Path(directory)
-    species = pd.read_csv(directory / 'species.csv')
-    phases = pd.read_csv(directory / 'phases.csv')
-    summary = pd.read_csv(directory / 'summary.csv')
+    species = read_csv(directory / 'species.csv')
+    phases = read_csv(directory / 'phases.csv')
+    summary = read_csv(directory / 'summary.csv')
     if species.empty:
         return []
+    pressures = sorted(summary.P_bar.unique()) if 'P_bar' in summary else [None]
     written = []
-    fig = species_profiles(species, quantity or 'mol_per_kg_dry_feed', summary, comparison,
-                           comparison_label)
-    fig.savefig(directory / 'species.png', dpi=150)
-    written.append(directory / 'species.png')
-    fig = carbon_and_mass(phases, summary)
-    fig.savefig(directory / 'carbon.png', dpi=150)
-    written.append(directory / 'carbon.png')
-    _pyplot().close('all')
+    for P in pressures:
+        suffix = f'_{P:g}bar' if len(pressures) > 1 else ''
+        if P is None:
+            sp, ph, su = species, phases, summary
+        else:
+            sp, ph, su = species[species.P_bar == P], phases[phases.P_bar == P], summary[summary.P_bar == P]
+        if sp.empty:
+            continue
+        fig = species_profiles(sp, quantity or 'mol_per_kg_dry_feed', su, comparison, comparison_label)
+        if suffix:
+            fig.suptitle(f'{P:g} bar' + (f' — {fig.get_suptitle()}' if fig.get_suptitle() else ''))
+        fig.savefig(directory / f'species{suffix}.png', dpi=150)
+        written.append(directory / f'species{suffix}.png')
+        fig = carbon_and_mass(ph, su)
+        if suffix:
+            fig.suptitle(f'{P:g} bar')
+        fig.savefig(directory / f'carbon{suffix}.png', dpi=150)
+        written.append(directory / f'carbon{suffix}.png')
+        _pyplot().close('all')
     return written

@@ -75,7 +75,7 @@ class Result:
             part = table[table.phase == phase]
             carbon = float((part.mol_per_mol_C * [self.species_data[(phase, s)]['elements'].get('C', 0)
                                                   for s in part.species]).sum()) if len(part) else 0.0
-            rows.append({'T_C': self.temperature_C, 'phase': phase,
+            rows.append({'T_C': self.temperature_C, 'P_bar': self.pressure_bar, 'phase': phase,
                          'mol_per_mol_C': float(part.mol_per_mol_C.sum()),
                          'g_per_kg_dry_feed': float(part.g_per_kg_dry_feed.sum()),
                          'carbon_percent': 100 * carbon / feed_C,
@@ -103,21 +103,24 @@ class Result:
 
 @dataclass
 class SweepResult:
-    """Results over a temperature grid. ``points`` holds a Result or an error message per T."""
+    """Results over a temperature-pressure grid.
+
+    points  [(T_C, P_bar, Result | error message)] in grid order
+    """
     case: object
-    points: list  # [(T_C, Result | str)]
+    points: list
 
     @property
     def results(self):
-        return [r for _, r in self.points if isinstance(r, Result)]
+        return [r for *_, r in self.points if isinstance(r, Result)]
 
     def summary(self):
         rows = []
-        for T, r in self.points:
+        for T, P, r in self.points:
             if isinstance(r, Result):
                 rows.append(r.summary())
             else:
-                rows.append({'T_C': T, 'P_bar': self.case.pressure_bar, 'status': 'failed', 'error': r})
+                rows.append({'T_C': T, 'P_bar': P, 'status': 'failed', 'error': r})
         return pd.DataFrame(rows)
 
     def species_table(self):
@@ -129,11 +132,18 @@ class SweepResult:
         return pd.concat(tables, ignore_index=True) if tables else pd.DataFrame()
 
     def save(self, directory):
-        """Write summary.csv, species.csv and phases.csv to ``directory``."""
+        """Write summary.csv, species.csv, phases.csv and case.toml (plus the
+        comparison data, if the case has any) to ``directory``."""
+        import shutil
         from pathlib import Path
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
         self.summary().to_csv(directory / 'summary.csv', index=False)
         self.species_table().to_csv(directory / 'species.csv', index=False)
         self.phase_summary().to_csv(directory / 'phases.csv', index=False)
+        saved = self.case.replace()
+        if self.case.comparison and Path(self.case.comparison['file']).exists():
+            shutil.copyfile(self.case.comparison['file'], directory / 'comparison.csv')
+            saved.comparison = {**self.case.comparison, 'file': 'comparison.csv'}
+        saved.save(directory / 'case.toml')
         return directory

@@ -1,13 +1,12 @@
 """Command line interface.
 
-    htg run CASE.toml [--out DIR] [--workers N] [--no-plots]
+    htg run CASE.toml [CASE2.toml ...] [--out DIR] [--workers N] [--no-plots]
     htg check CASE.toml
     htg species [--all] [--phase PHASE] [--search TEXT]
     htg new CASE.toml
     htg plot RESULTS_DIR
 """
 import argparse
-import shutil
 import sys
 import time
 from pathlib import Path
@@ -30,33 +29,59 @@ def _print_table(frame, columns=None):
 
 def cmd_run(args):
     from .case import load_case
-    case = load_case(args.case)
-    out = Path(args.out) if args.out else Path('results') / case.name
-    print(f'Case {case.name}: {len(case.temperatures())} temperature(s), solver {case.solver}')
+    cases = [load_case(path) for path in args.case]
+    names = [c.name for c in cases]
+    if len(set(names)) != len(names):
+        raise ValueError(f'Case names must differ (they name the output folders): {names}')
+    if args.out and len(cases) == 1:
+        outputs = [Path(args.out)]
+    else:
+        outputs = [Path(args.out or 'results') / case.name for case in cases]
     model = _model(args)
-    check = model.check(case)
-    invalid = check[check.status != 'ready']
-    if len(invalid):
-        print('Preflight found problems at some temperatures (they will probably fail):')
-        _print_table(invalid, ['T_C', 'error'])
+    for case in cases:
+        points = len(case.grid())
+        print(f'Case {case.name}: {points} point(s), {len(case.chains())} independent piece(s), '
+              f'solver {case.solver}')
+        check = model.check(case)
+        invalid = check[check.status != 'ready']
+        if len(invalid):
+            print('Preflight found problems at some points (they will probably fail):')
+            _print_table(invalid, ['T_C', 'P_bar', 'error'])
     start = time.perf_counter()
-    sweep = model.sweep(case, workers=args.workers)
+    if args.workers > 1:
+        from .runner import WorkerPool
+
+        def on_point(run, T, P, outcome, start_label):
+            text = 'FAILED: ' + outcome if isinstance(outcome, str) else 'solved'
+            print(f'{run.name}: {T:g} °C, {P:g} bar: {text} (start: {start_label})', flush=True)
+        print(f'Starting {args.workers} worker processes (each starts Julia; the first results '
+              'take about a minute)')
+        with WorkerPool(args.workers, model.load_args, warm_up=False, on_point=on_point) as pool:
+            runs = [pool.submit(case, out) for case, out in zip(cases, outputs)]
+            for run in runs:
+                run.wait()
+        sweeps = [run.sweep_result() for run in runs]
+    else:
+        sweeps = []
+        for case, out in zip(cases, outputs):
+            sweep = model.sweep(case)
+            sweep.save(out)
+            sweeps.append(sweep)
     print(f'Finished in {time.perf_counter() - start:.0f} s')
-    sweep.save(out)
-    saved = case.replace()
-    if case.comparison:
-        shutil.copyfile(case.comparison['file'], out / 'comparison.csv')
-        saved.comparison = {**case.comparison, 'file': 'comparison.csv'}
-    saved.save(out / 'case.toml')
-    summary = sweep.summary()
-    if 'error' in summary:
-        summary['error'] = summary.error.fillna('').str.slice(0, 90)
-    _print_table(summary, [c for c in ['T_C', 'status', 'gibbs_J_per_mol_C', 'gas_carbon_percent',
-                                       'aqueous_removed', 'error'] if c in summary])
-    if not args.no_plots:
-        _plots(out, case)
-    print(f'Results written to {out}/')
-    return 0 if (summary.status == 'solved').all() else 1
+    ok = True
+    for case, sweep, out in zip(cases, sweeps, outputs):
+        summary = sweep.summary()
+        if 'error' in summary:
+            summary['error'] = summary.error.fillna('').str.slice(0, 90)
+        print(f'\n{case.name}:')
+        _print_table(summary, [c for c in ['T_C', 'P_bar', 'status', 'gibbs_J_per_mol_C',
+                                           'gas_carbon_percent', 'aqueous_removed', 'error']
+                               if c in summary])
+        if not args.no_plots:
+            _plots(out, case)
+        print(f'Results written to {out}/')
+        ok = ok and bool((summary.status == 'solved').all())
+    return 0 if ok else 1
 
 
 def _plots(directory, case=None):
@@ -115,11 +140,13 @@ def main(argv=None):
     parser.add_argument('--data', help='database folder (default: the repository data/ folder)')
     sub = parser.add_subparsers(dest='command', required=True)
 
-    p = sub.add_parser('run', help='solve a case file and write tables and plots')
-    p.add_argument('case')
-    p.add_argument('--out', help='output folder (default: results/<case name>)')
+    p = sub.add_parser('run', help='solve case files and write tables and plots')
+    p.add_argument('case', nargs='+')
+    p.add_argument('--out', help='output folder (one case), or parent folder (several cases); '
+                                 'default: results/<case name>')
     p.add_argument('--workers', type=int, default=1,
-                   help='parallel processes for sweeps with continuation = false')
+                   help='worker processes; independent points and continuation chains of all '
+                        'cases are shared between them')
     p.add_argument('--no-plots', action='store_true')
     p.set_defaults(func=cmd_run)
 

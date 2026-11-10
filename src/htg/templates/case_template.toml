@@ -18,7 +18,9 @@ description = "What this case is about."
 
 [conditions]
 temperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep
-pressure_bar = 240.0
+pressure_bar = 240.0                   # one value, or a list: every temperature at every pressure
+# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:
+# points = [[300, 240], [350, 250], [400, 260]]
 
 [feed]
 # Dry feed as an elemental analysis (mass %, dry basis) ...
@@ -71,7 +73,10 @@ method = "ipopt"          # "ipopt" (default), "slsqp", "trust-constr", or "slsq
 initialization = "auto"   # "auto", "liquid" (water-rich aqueous), "vapor" (water-rich gas), "lp"
 
 [sweep]
-continuation = true       # start each temperature from the previous solution
+# Start each point from the previous solution: along rising temperature at each
+# pressure, or in the order of the points list. false: every point starts fresh
+# (then all points can run in parallel).
+continuation = true
 # refine = { start_C = 350, stop_C = 400, step_C = 5 }   # extra temperatures
 
 # Data to show next to the results in plots (CSV: T_C column, then "phase:species" columns).

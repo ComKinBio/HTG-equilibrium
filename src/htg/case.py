@@ -105,9 +105,15 @@ class Feed:
 
 @dataclass
 class Case:
-    """One equilibrium calculation, or a temperature sweep when temperature_C is a list."""
-    temperature_C: float | list
-    pressure_bar: float
+    """One equilibrium calculation, or a sweep.
+
+    temperature_C and pressure_bar may each be a number or a list; lists give a
+    full grid (every temperature at every pressure). Alternatively ``points``
+    lists explicit [temperature_C, pressure_bar] pairs (then set the other two
+    to None).
+    """
+    temperature_C: float | list | None
+    pressure_bar: float | list | None
     feed: Feed
     phases: dict
     name: str = 'case'
@@ -151,8 +157,12 @@ class Case:
     solver_options: dict = field(default_factory=dict)  # backend-specific, e.g. ipopt_options
 
     # Sweeps
-    continuation: bool = True  # start each temperature from the previous solution
-    refine: dict | None = None  # {start_C, stop_C, step_C}: extra grid points
+    # continuation: start each point from the previous solution. In a grid the
+    # chain runs along temperature at each pressure; with explicit points it
+    # follows the order of the list.
+    continuation: bool = True
+    refine: dict | None = None  # {start_C, stop_C, step_C}: extra temperatures in a grid
+    points: list | None = None  # explicit [[T_C, P_bar], ...], replaces the grid
 
     # Data to plot next to the results: {file, quantity, label}. The CSV has a
     # T_C column and one column per 'phase:species'; quantity is a column of
@@ -166,14 +176,20 @@ class Case:
         if self.initial_amounts is not None:
             self.initial_amounts = _pairs(self.initial_amounts)
         self.phases = {phase: list(names) for phase, names in self.phases.items()}
+        if self.points is not None:
+            self.points = [list(p) for p in self.points]
 
-    # ---------------------------------------------------------------- helpers
+    # ---------------------------------------------------------------- grid
     def temperatures(self):
-        """Sorted temperature grid [°C].
+        """Sorted temperatures [°C] of the case.
 
-        Includes the refinement points and, for sweeps, the aqueous cut-off
-        temperature when it lies inside the grid.
+        In a grid this includes the refinement points and the aqueous cut-off
+        temperature when it lies inside the temperature range.
         """
+        if self.points is not None:
+            return sorted(set(t for t, _ in self._explicit_points()))
+        if self.temperature_C is None:
+            raise ValueError('Give temperature_C (or points).')
         values = self.temperature_C if isinstance(self.temperature_C, (list, tuple)) else [self.temperature_C]
         grid = [_number(t, 'temperature_C', -273.149999) for t in values]
         if not grid:
@@ -188,10 +204,71 @@ class Case:
             grid.append(float(self.aqueous_cutoff_C))
         return sorted(set(round(float(t), 8) for t in grid))
 
-    def at(self, temperature_C):
-        """Copy of this case at a single temperature."""
+    def pressures(self):
+        """Sorted pressures [bar] of the case."""
+        if self.points is not None:
+            return sorted(set(p for _, p in self._explicit_points()))
+        if self.pressure_bar is None:
+            raise ValueError('Give pressure_bar (or points).')
+        values = self.pressure_bar if isinstance(self.pressure_bar, (list, tuple)) else [self.pressure_bar]
+        if not values:
+            raise ValueError('Give at least one pressure.')
+        return sorted(set(round(_number(p, 'pressure_bar', 1e-300), 8) for p in values))
+
+    def _explicit_points(self):
+        out = []
+        for item in self.points:
+            if not isinstance(item, (list, tuple)) or len(item) != 2:
+                raise ValueError(f'Each entry of points must be [temperature_C, pressure_bar], not {item!r}.')
+            point = (round(_number(item[0], 'points temperature_C', -273.149999), 8),
+                     round(_number(item[1], 'points pressure_bar', 1e-300), 8))
+            if point not in out:
+                out.append(point)
+        if not out:
+            raise ValueError('points is empty.')
+        return out
+
+    def grid(self):
+        """All (temperature_C, pressure_bar) points: explicit points in their order,
+        else every temperature at every pressure (by pressure, then temperature)."""
+        if self.points is not None:
+            return self._explicit_points()
+        temperatures = self.temperatures()
+        return [(T, P) for P in self.pressures() for T in temperatures]
+
+    def chains(self):
+        """Groups of points that must be solved in order (continuation).
+
+        Without continuation every point is its own group. With continuation a
+        grid gives one chain per pressure (rising temperature) and explicit
+        points one chain in list order.
+        """
+        grid = self.grid()
+        if not self.continuation:
+            return [[point] for point in grid]
+        if self.points is not None:
+            return [grid]
+        chains = {}
+        for T, P in grid:
+            chains.setdefault(P, []).append((T, P))
+        return list(chains.values())
+
+    def is_single_point(self):
+        return len(self.grid()) == 1
+
+    def at(self, temperature_C, pressure_bar=None):
+        """Copy of this case at one temperature (and pressure; optional when the
+        case has a single pressure)."""
+        if pressure_bar is None:
+            pressures = self.pressures()
+            if len(pressures) != 1:
+                raise ValueError('This case has several pressures; give pressure_bar too.')
+            pressure_bar = pressures[0]
         point = copy.deepcopy(self)
         point.temperature_C = float(temperature_C)
+        point.pressure_bar = float(pressure_bar)
+        point.points = None
+        point.refine = None
         return point
 
     def replace(self, **changes):
@@ -216,8 +293,9 @@ class Case:
             raise ValueError("aqueous_model must be 'electrolyte' or 'molecular'.")
         if self.solid_carbon_target not in ('char', 'all_solids'):
             raise ValueError("solid_carbon_target must be 'char' or 'all_solids'.")
-        _number(self.pressure_bar, 'pressure_bar', 1e-300)
-        self.temperatures()
+        if self.points is not None and self.refine:
+            raise ValueError('refine applies to a temperature grid; it cannot be used with points.')
+        self.grid()
         return self
 
     # ---------------------------------------------------------------- files
@@ -260,7 +338,7 @@ def _nested(pairs):
 # ---------------------------------------------------------------- TOML case files
 # section -> {key in file: Case field}
 SECTIONS = {
-    'conditions': {'temperature_C': 'temperature_C', 'pressure_bar': 'pressure_bar'},
+    'conditions': {'temperature_C': 'temperature_C', 'pressure_bar': 'pressure_bar', 'points': 'points'},
     'aqueous': {'model': 'aqueous_model', 'enabled': 'aqueous_enabled', 'cutoff_C': 'aqueous_cutoff_C',
                 'water_floor': 'aqueous_water_floor'},
     'constraints': {k: k for k in ('gas_carbon_fraction', 'gas_carbon_min_fraction',
@@ -310,9 +388,14 @@ def case_from_dict(data, name=None):
             kwargs[keys[key]] = value
     if data:
         raise ValueError(f'Unknown section(s) or key(s): {sorted(data)}.')
-    for required in ('temperature_C', 'pressure_bar'):
-        if required not in kwargs:
-            raise ValueError(f'[conditions] needs {required}.')
+    if 'points' in kwargs:
+        if 'temperature_C' in kwargs or 'pressure_bar' in kwargs:
+            raise ValueError('[conditions] has points; leave out temperature_C and pressure_bar.')
+        kwargs['temperature_C'] = kwargs['pressure_bar'] = None
+    else:
+        for required in ('temperature_C', 'pressure_bar'):
+            if required not in kwargs:
+                raise ValueError(f'[conditions] needs {required} (or points).')
     if name and 'name' not in kwargs:
         kwargs['name'] = name
     return Case(**kwargs).validate()
@@ -344,7 +427,8 @@ def dump_case(case):
             lines.append(f'\n[{title}]')
             lines.extend(f'{k} = {_toml(v)}' for k, v in items)
 
-    section('conditions', [('temperature_C', case.temperature_C), ('pressure_bar', case.pressure_bar)])
+    section('conditions', [('temperature_C', case.temperature_C), ('pressure_bar', case.pressure_bar),
+                           ('points', case.points)])
     feed = {k: v for k, v in data['feed'].items() if k != 'salts'}
     feed_defaults = {f.name: f.default for f in fields(Feed) if f.name != 'salts'}
     section('feed', [(k, v) for k, v in feed.items() if v != feed_defaults[k]])
