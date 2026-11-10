@@ -118,7 +118,8 @@ class GibbsProblem:
         g = mu[self.free]
         RT = R * self.T
         rows = [self.A_eq]
-        if self.ineq_row is not None and abs(self.ineq_row @ x - self.ineq_target) < 1e-9:
+        # Interior-point solutions end slightly inside an active bound, hence 1e-6.
+        if self.ineq_row is not None and abs(self.ineq_row @ x - self.ineq_target) < 1e-6:
             rows.append(self.ineq_row[None, :])
         A = np.vstack(rows)
         slack = x - self.lower
@@ -272,8 +273,11 @@ def _ipopt(problem, x0, options):
             'print_level': int(options.get('print_level', 0)),
             # The objective is O(1) and starts feasible. A large or adaptively raised
             # barrier parameter pushes trace species into EOS-invalid compositions
-            # (observed at 100-200 C with mu_strategy='adaptive').
-            'mu_strategy': 'monotone', 'mu_init': 1e-6,
+            # (observed at 100-200 C with mu_strategy='adaptive'). mu_init = 1e-6
+            # sometimes stopped at non-stationary points (manure with ions and
+            # minerals, 100-360 C); 1e-9 reached the lowest G found by any setting
+            # at every point of the reference cases and example sweeps.
+            'mu_strategy': 'monotone', 'mu_init': 1e-9,
             'bound_relax_factor': 0.0, 'honor_original_bounds': 'yes',
             # Default bound_push (1e-2) would move trace species far from an LP vertex.
             'bound_push': 1e-6, 'bound_frac': 1e-6,
@@ -392,9 +396,10 @@ def _polish(problem, result, G, options):
     """Check IPOPT's answer; polish it with SLSQP when it is not stationary.
 
     IPOPT can report success at a point where species with clearly positive
-    amounts still have reduced costs of several RT (observed for the
-    ions-and-minerals manure case at 250 C), i.e. not a local minimum. SLSQP
-    with exact gradients, started from that point, then reaches a lower G.
+    amounts still have reduced costs of several RT, i.e. not a local minimum
+    (observed for the ions-and-minerals manure case at 250 C with
+    mu_init = 1e-6). SLSQP with exact gradients, started from that point, then
+    reaches a lower G.
     The lower of the two results is kept.
     """
     x = np.maximum(result.x, problem.lower)

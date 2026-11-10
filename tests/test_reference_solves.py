@@ -18,9 +18,10 @@ SOLVED = [c for c in CASES if 'result' in c]
 FAILED = [c for c in CASES if 'error' in c]
 SLOW_SECONDS = 10.0
 REFERENCE = {c['name']: c for c in CASES}
-# The original IPOPT settings stop early in these cases (the KKT residual of
-# major species stays at several RT). The package then polishes the point with
-# SLSQP and must reach the solution of the given (lower-G) reference case.
+# Cases where the package finds a lower G than the stored reference, and the
+# reference case whose solution it must reach instead. The original IPOPT
+# settings (mu_init = 1e-6) stopped early at full_text 250 C; the current
+# default reaches the SLSQP solution.
 IMPROVED = {'full_text_250C_ipopt': 'full_text_250C'}
 
 
@@ -56,7 +57,6 @@ def test_solve(models, entry):
     r = models[entry['model']].solve(case_from_legacy(entry))
     if entry['name'] in IMPROVED:
         better = REFERENCE[IMPROVED[entry['name']]]['result']
-        assert r.optimizer['polish']['used']
         assert r.gibbs_J_per_mol_C < entry['result']['gibbs_J_per_mol_feed_C']
         assert r.gibbs_J_per_mol_C == pytest.approx(better['gibbs_J_per_mol_feed_C'], rel=1e-8)
         # G is flat in the gas/aqueous water split here, so amounts agree less tightly than G.
@@ -81,9 +81,11 @@ def test_solve(models, entry):
     assert r.phase_rules['initial_composition_reset'] == rules['initial_composition_reset']
     if 'optimizer' in ref and ref['optimizer'].get('method') != 'slsqp-fd':
         assert r.optimizer['method'] == ref['optimizer']['method']
+        # Same starts reaching the same G; iteration counts differ because the
+        # IPOPT barrier setting was changed (see IMPROVED).
         for new, old in zip(r.optimizer['starts'], ref['optimizer']['starts'], strict=True):
             assert new['start'].replace('_', ' ') == old['start']  # phase labels renamed
-            assert (new['message'], new['nit']) == (old['message'], old['nit'])
+            assert new['message'] == old['message']
             assert new['G'] == pytest.approx(old['G'], rel=1e-9)
 
 
@@ -95,3 +97,15 @@ def test_expected_failure(models, entry):
     expected = entry['error'].split(': ', 1)[1]
     first_sentence = expected.split('. ')[0]
     assert str(info.value).startswith(first_sentence), (str(info.value), expected)
+
+
+def test_ipopt_polish_safeguard(models):
+    """With the original IPOPT setting (mu_init = 1e-6), IPOPT stops early at
+    full_text 250 C; the SLSQP polish must then reach the lower solution."""
+    entry, better = REFERENCE['full_text_250C_ipopt'], REFERENCE['full_text_250C']['result']
+    case = case_from_legacy(entry).replace(solver_options={'ipopt_options': {'mu_init': 1e-6}})
+    r = models[entry['model']].solve(case)
+    polish = r.optimizer['polish']
+    assert polish['used'] and polish['stationarity_major_RT'] > 1
+    assert polish['G_ipopt'] == pytest.approx(entry['result']['gibbs_J_per_mol_feed_C'], rel=1e-9)
+    assert r.gibbs_J_per_mol_C == pytest.approx(better['gibbs_J_per_mol_feed_C'], rel=1e-8)
