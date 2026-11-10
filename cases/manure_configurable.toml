@@ -1,0 +1,66 @@
+# Default case of HTG_Configurable_Case: manure with three salts, organics in
+# every fluid phase, ions and minerals, aqueous cut-off at 385 °C, free carbon
+# allocation, extra temperatures every 5 °C between 300 and 400 °C.
+
+name = "manure_configurable"
+description = "Manure with salts, organics, ions and minerals (HTG_Configurable_Case)."
+
+[conditions]
+temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]
+pressure_bar = 240.0
+
+[feed]
+elements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }
+water_g_per_g_dry = 3.999935304
+ash_wt_percent = 8.44688764
+
+[feed.salts.NaHCO3]
+mol_per_g_dry_feed = 1e-5
+elements = { Na = 1, H = 1, C = 1, O = 3 }
+
+[feed.salts.KCl]
+mol_per_g_dry_feed = 1e-5
+elements = { K = 1, Cl = 1 }
+
+[feed.salts.MgCO3]
+mol_per_g_dry_feed = 1e-5
+elements = { Mg = 1, C = 1, O = 3 }
+
+# Listed with zero amounts, as in the notebook; raise them to add these salts.
+[feed.salts.CsCl]
+mol_per_g_dry_feed = 0.0
+elements = { Cs = 1, Cl = 1 }
+
+[feed.salts.LiCl]
+mol_per_g_dry_feed = 0.0
+elements = { Li = 1, Cl = 1 }
+
+[feed.salts.MgCl2]
+mol_per_g_dry_feed = 0.0
+elements = { Mg = 1, Cl = 2 }
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "ammonia",
+       "hydrogen sulfide", "nitrogen", "benzene", "toluene", "methanol", "ethanol", "acetone"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "ammonia",
+           "hydrogen sulfide", "nitrogen", "benzene", "toluene", "methanol", "ethanol", "acetone",
+           "Na+", "K+", "Mg2+", "Cl-", "HCO3-", "CO3^2-"]
+organic_liquid = ["benzene", "toluene", "methanol", "ethanol", "acetone"]
+solid = ["carbon", "Artinite", "Hydromagnesite", "Brucite", "Magnesite", "Periclase",
+         "Halite", "Sylvite", "Sodium-Oxide", "Potassium-Oxide"]
+
+[aqueous]
+model = "electrolyte"
+cutoff_C = 385.0
+water_floor = 1e-6
+
+[solver]
+method = "ipopt"
+
+[sweep]
+refine = { start_C = 300, stop_C = 400, step_C = 5 }
+
+[comparison]
+file = "comparison/yakaboylu2013_fig7_8.csv"
+quantity = "mol_per_kg_dry_feed"
+label = "Yakaboylu et al. (2013)"

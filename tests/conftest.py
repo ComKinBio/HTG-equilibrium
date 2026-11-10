@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / 'reference'))
+REFERENCE = Path(__file__).resolve().parent / 'reference'
+# The databases and species.toml the reference results were generated with. The
+# reference tests use this frozen copy, so editing data/ (adding species) never
+# breaks them; they test that the code reproduces the original model.
+FROZEN_DATA = REFERENCE / 'databases'
+sys.path.insert(0, str(REFERENCE))
 
 import htg  # noqa: E402
 from convert import load  # noqa: E402
@@ -14,7 +19,8 @@ from convert import load  # noqa: E402
 @pytest.fixture(scope='session')
 def models():
     """'base': registry without extra NASA names; 'acetone': the shipped species.toml."""
-    return {'base': htg.Model.load(nasa_names={}), 'acetone': htg.Model.load()}
+    return {'base': htg.Model.load(FROZEN_DATA, nasa_names={}),
+            'acetone': htg.Model.load(FROZEN_DATA)}
 
 
 @pytest.fixture(scope='session')

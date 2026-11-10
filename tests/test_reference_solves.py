@@ -17,6 +17,11 @@ CASES = load('solves')['cases']
 SOLVED = [c for c in CASES if 'result' in c]
 FAILED = [c for c in CASES if 'error' in c]
 SLOW_SECONDS = 10.0
+REFERENCE = {c['name']: c for c in CASES}
+# The original IPOPT settings stop early in these cases (the KKT residual of
+# major species stays at several RT). The package then polishes the point with
+# SLSQP and must reach the solution of the given (lower-G) reference case.
+IMPROVED = {'full_text_250C_ipopt': 'full_text_250C'}
 
 
 def params(cases):
@@ -48,8 +53,19 @@ def test_setup_and_gibbs_function(models, entry):
 
 @pytest.mark.parametrize('entry', params(SOLVED))
 def test_solve(models, entry):
-    ref = entry['result']
     r = models[entry['model']].solve(case_from_legacy(entry))
+    if entry['name'] in IMPROVED:
+        better = REFERENCE[IMPROVED[entry['name']]]['result']
+        assert r.optimizer['polish']['used']
+        assert r.gibbs_J_per_mol_C < entry['result']['gibbs_J_per_mol_feed_C']
+        assert r.gibbs_J_per_mol_C == pytest.approx(better['gibbs_J_per_mol_feed_C'], rel=1e-8)
+        # G is flat in the gas/aqueous water split here, so amounts agree less tightly than G.
+        np.testing.assert_allclose(list(r.amounts.values()), list(pairs(better['amounts']).values()),
+                                   rtol=1e-2, atol=1e-4)
+        return
+    if r.optimizer.get('method') == 'ipopt':
+        assert not r.optimizer['polish']['used']
+    ref = entry['result']
     assert r.gibbs_J_per_mol_C == pytest.approx(ref['gibbs_J_per_mol_feed_C'], rel=1e-9)
     expected = pairs(ref['amounts'])
     assert list(r.amounts) == list(expected)

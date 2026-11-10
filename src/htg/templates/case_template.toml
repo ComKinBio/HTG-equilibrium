@@ -1,0 +1,81 @@
+# HTG equilibrium case file.
+#
+# Run it with:      uv run htg run my_case.toml
+# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)
+# Species names:    uv run htg species --search methane
+#
+# Units: temperature in °C, pressure in bar (absolute). Species amounts
+# (constraints, results) are mol per mol of carbon in the dry feed.
+# Lines starting with # are comments. Delete or comment out what you don't need;
+# anything left out takes its default value.
+
+name = "my_case"
+description = "What this case is about."
+
+# Optional atomic-weight overrides [g/mol]. They change the feed and balance
+# arithmetic only (not the equation-of-state molar masses).
+# atomic_weights = { C = 12.011, H = 1.008 }
+
+[conditions]
+temperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep
+pressure_bar = 240.0
+
+[feed]
+# Dry feed as an elemental analysis (mass %, dry basis) ...
+elements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }
+# basis = "dry"                 # or "dry_ash_free" (must sum to 100)
+# ash_wt_percent = 8.45         # bookkeeping only; elements + ash must then sum to 100
+# ... or as relative moles of registered species (replaces the analysis):
+# species_moles = { cellulose = 1.0 }
+water_g_per_g_dry = 4.0         # added process water, g per g dry feed
+# moisture_wt_percent = 0.0     # feed moisture, % of the wet feed
+
+# Added salts supply atoms only; the products decide where those atoms go.
+# Every salt element needs a product that can carry it (an ion or a mineral).
+# [feed.salts.NaHCO3]
+# mol_per_g_dry_feed = 1e-5
+# elements = { Na = 1, H = 1, C = 1, O = 3 }
+
+[phases]
+# The products allowed in each phase. A species in a list may form; it is not forced.
+# Ions (e.g. "Na+") are allowed in the aqueous phase only.
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+       "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+           "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon"]
+
+[aqueous]
+model = "electrolyte"     # "electrolyte" (ePC-SAFT, ions allowed) or "molecular" (PC-SAFT)
+cutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)
+# enabled = false         # no aqueous phase at any temperature
+# water_floor = 1e-8      # minimum aqueous water, mol/mol C
+
+[constraints]
+# Carbon fractions count carbon atoms, relative to all feed carbon.
+# gas_carbon_fraction = 0.8          # exactly this fraction of the carbon in gas
+# gas_carbon_min_fraction = 0.9      # at least this fraction in gas
+# solid_carbon_fraction = 0.1        # exactly this fraction in solids
+# solid_carbon_target = "char"       # "char" (solid carbon only) or "all_solids"
+# phase_carbon_fractions = { organic_liquid = 0.05 }
+# [constraints.minimum_amounts]      # lower bounds, mol/mol C
+# gas = { water = 1e-8 }
+
+[solver]
+method = "ipopt"          # "ipopt" (default), "slsqp", "trust-constr", or "slsqp-fd" (original)
+# multistart = 4          # extra starting points; keeps the lowest Gibbs energy
+# max_iterations = 5000
+
+[initial_guess]
+initialization = "auto"   # "auto", "liquid" (water-rich aqueous), "vapor" (water-rich gas), "lp"
+
+[sweep]
+continuation = true       # start each temperature from the previous solution
+# refine = { start_C = 350, stop_C = 400, step_C = 5 }   # extra temperatures
+
+# Data to show next to the results in plots (CSV: T_C column, then "phase:species" columns).
+# [comparison]
+# file = "comparison/my_data.csv"
+# quantity = "mol_per_kg_dry_feed"   # or "mol_per_mol_C", "g_per_kg_dry_feed"
+# label = "Paper"

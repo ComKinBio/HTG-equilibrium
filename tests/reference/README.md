@@ -8,6 +8,9 @@ implementation. This folder pins that implementation:
 - `legacy_cases.py` defines reference cases (from the original case notebooks)
   in the legacy settings format, plus the states and compositions used for
   composition-level checks.
+- `databases/` is a frozen copy of the databases and `species.toml` the
+  references were generated with. The tests load the model from here, so
+  editing `data/` (for example adding species) does not affect them.
 - `generate.py` runs the frozen code and writes `data/*.json`:
   - `catalogue.json`: species discovered from the databases, and registries
   - `thermo.json`: standard chemical potentials, SAFT parameters, phase Gibbs

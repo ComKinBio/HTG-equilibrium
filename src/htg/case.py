@@ -154,6 +154,11 @@ class Case:
     continuation: bool = True  # start each temperature from the previous solution
     refine: dict | None = None  # {start_C, stop_C, step_C}: extra grid points
 
+    # Data to plot next to the results: {file, quantity, label}. The CSV has a
+    # T_C column and one column per 'phase:species'; quantity is a column of
+    # the species table (e.g. 'mol_per_kg_dry_feed').
+    comparison: dict | None = None
+
     def __post_init__(self):
         if isinstance(self.feed, dict):
             self.feed = Feed(**self.feed)
@@ -164,7 +169,11 @@ class Case:
 
     # ---------------------------------------------------------------- helpers
     def temperatures(self):
-        """Sorted temperature grid [°C], including refinement points."""
+        """Sorted temperature grid [°C].
+
+        Includes the refinement points and, for sweeps, the aqueous cut-off
+        temperature when it lies inside the grid.
+        """
         values = self.temperature_C if isinstance(self.temperature_C, (list, tuple)) else [self.temperature_C]
         grid = [_number(t, 'temperature_C', -273.149999) for t in values]
         if not grid:
@@ -175,6 +184,8 @@ class Case:
             b = min(max(grid), float(self.refine['stop_C']))
             if b >= a:
                 grid += [float(t) for t in np.arange(a, b + step * 1e-8, step)]
+        if self.aqueous_cutoff_C is not None and min(grid) < float(self.aqueous_cutoff_C) < max(grid):
+            grid.append(float(self.aqueous_cutoff_C))
         return sorted(set(round(float(t), 8) for t in grid))
 
     def at(self, temperature_C):
@@ -263,6 +274,7 @@ SECTIONS = {
                'energy_scale': 'energy_scale', 'fd_ftol': 'fd_ftol', 'fd_eps': 'fd_eps',
                'options': 'solver_options'},
     'sweep': {'continuation': 'continuation', 'refine': 'refine'},
+    'comparison': {'file': 'file', 'quantity': 'quantity', 'label': 'label'},
 }
 TOP_LEVEL = ('name', 'description', 'atomic_weights')
 
@@ -284,6 +296,13 @@ def case_from_dict(data, name=None):
     kwargs['phases'] = data.pop('phases', {})
     for section, keys in SECTIONS.items():
         values = data.pop(section, {})
+        if section == 'comparison':
+            if values:
+                unknown = set(values) - set(keys)
+                if unknown or 'file' not in values:
+                    raise ValueError('[comparison] needs file (and optionally quantity, label).')
+                kwargs['comparison'] = values
+            continue
         unknown = set(values) - set(keys)
         if unknown:
             raise ValueError(f'Unknown [{section}] key(s) {sorted(unknown)}; allowed: {sorted(keys)}.')
@@ -303,7 +322,10 @@ def load_case(path):
     """Read a TOML case file."""
     path = Path(path)
     with open(path, 'rb') as f:
-        return case_from_dict(tomllib.load(f), name=path.stem)
+        case = case_from_dict(tomllib.load(f), name=path.stem)
+    if case.comparison:
+        case.comparison['file'] = str((path.parent / case.comparison['file']).resolve())
+    return case
 
 
 def dump_case(case):
@@ -333,6 +355,10 @@ def dump_case(case):
     section('phases', [(p, case.phases[p]) for p in PHASES if p in case.phases])
     for title, keys in SECTIONS.items():
         if title == 'conditions':
+            continue
+        if title == 'comparison':
+            if case.comparison:
+                section(title, list(case.comparison.items()))
             continue
         items = []
         for key, attr in keys.items():

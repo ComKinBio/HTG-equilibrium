@@ -385,6 +385,39 @@ def tangent_plane_test(problem, x, tangent_plane):
     return report
 
 
+POLISH_THRESHOLD_RT = 0.1
+
+
+def _polish(problem, result, G, options):
+    """Check IPOPT's answer; polish it with SLSQP when it is not stationary.
+
+    IPOPT can report success at a point where species with clearly positive
+    amounts still have reduced costs of several RT (observed for the
+    ions-and-minerals manure case at 250 C), i.e. not a local minimum. SLSQP
+    with exact gradients, started from that point, then reaches a lower G.
+    The lower of the two results is kept.
+    """
+    x = np.maximum(result.x, problem.lower)
+    threshold = float(options.get('polish_threshold_RT', POLISH_THRESHOLD_RT))
+    stationarity = problem.kkt(x)['stationarity_major_RT']
+    info = {'stationarity_major_RT': stationarity, 'threshold_RT': threshold, 'used': False}
+    if stationarity <= threshold:
+        return result, info
+    try:
+        polished = _slsqp(problem, x, options)
+        G_new = (problem.gibbs_and_mu(problem.expand(np.maximum(polished.x, problem.lower)))[0]
+                 if polished.success and np.all(np.isfinite(polished.x)) else np.nan)
+    except Exception as exc:
+        info['message'] = f'{type(exc).__name__}: {exc}'[:200]
+        return result, info
+    info.update(G_ipopt=float(G), G_polished=float(G_new), message=str(polished.message))
+    if np.isfinite(G_new) and G_new < G:
+        info['used'] = True
+        polished.nit = result.nit + polished.nit
+        return polished, info
+    return result, info
+
+
 def optimize(problem, options):
     """Run the selected backend (optionally multistart); return (scipy result, diagnostics)."""
     method = options.get('method', 'ipopt')
@@ -400,9 +433,23 @@ def optimize(problem, options):
         try:
             result = BACKENDS[method](problem, x0, options)
         except Exception as exc:  # a start may lie outside the EOS domain
+            result = None
+            failure = exc
+        if method == 'ipopt' and options.get('fallback', True) and (result is None or not result.success):
+            # IPOPT can stop with a step-computation error when many trial points
+            # fail in the equation of state; SLSQP from the same start often succeeds.
+            message = str(result.message) if result is not None else f'{type(failure).__name__}: {failure}'
+            try:
+                retry = _slsqp(problem, x0, options)
+                if retry.success:
+                    result, label = retry, f'{label} (ipopt failed: {message[:80]}; slsqp)'
+            except Exception:
+                pass
+        if result is None:
             if len(starts) == 1:
-                raise
-            runs.append({'start': label, 'G': np.nan, 'message': f'{type(exc).__name__}: {exc}'[:200]})
+                raise failure
+            runs.append({'start': label, 'G': np.nan,
+                         'message': f'{type(failure).__name__}: {failure}'[:200]})
             continue
         G = np.nan
         if result.success and np.all(np.isfinite(result.x)):
@@ -420,6 +467,8 @@ def optimize(problem, options):
     # otherwise return the last (unsuccessful) result so the caller reports its message
     diagnostics = {'method': method, 'nfev': problem.nfev, 'seconds': time.perf_counter() - t0,
                    'starts': runs}
+    if method == 'ipopt' and best is not None and options.get('polish', True):
+        result, diagnostics['polish'] = _polish(problem, result, best[0], options)
     if np.all(np.isfinite(result.x)):
         x = np.maximum(result.x, problem.lower)
         problem.check_against_model(x)

@@ -2,6 +2,8 @@
 
     uv run python tests/reference/generate.py [--data DIR] [--only thermo|catalogue|solves]
 
+The default databases are the frozen copies in tests/reference/databases/.
+
 Writes tests/reference/data/*.json. Run this only to extend the reference set
 with new cases; the frozen model in legacy/ must never be edited, so the stored
 results always describe the original notebook implementation.
@@ -225,7 +227,7 @@ def solves(models, data_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--data', type=Path, default=HERE.parents[1] / 'data')
+    parser.add_argument('--data', type=Path, default=HERE / 'databases')
     parser.add_argument('--only', choices=['catalogue', 'thermo', 'solves'])
     args = parser.parse_args()
     data_dir = args.data.resolve()

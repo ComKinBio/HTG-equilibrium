@@ -55,6 +55,10 @@ def _ion_identity(name, charge):
     return text.rstrip('+-').casefold(), int(charge)
 
 
+NO_SAFT_REASON = ('NASA available; no resolved SAFT mapping. Add SAFT parameters, or a '
+                  '[nasa_names] entry in species.toml (see docs/adding_species.md).')
+
+
 class Registry:
     """All species known to the model.
 
@@ -241,8 +245,7 @@ class Registry:
             if name not in covered:
                 self.molecular.setdefault(key, entry)
                 catalogue.append(dict(Species=key, Formula=name, Phase='molecular', Ready=False,
-                                      Reason='NASA available; no resolved SAFT mapping. '
-                                             'Supply species_overrides or EOS data.', NASA=name))
+                                      Reason=NO_SAFT_REASON, NASA=name))
             if data.get('phase') == 'S':
                 self.solid.setdefault(key, entry)
                 catalogue.append(dict(Species=key, Formula=name, Phase='solid', Ready=True,

@@ -1,0 +1,49 @@
+# Swine manure, reproducing Yakaboylu et al. (2013), Figures 7 and 8.
+# Reduced C/H/O/N/S feed (atom inventory per 25 000 g dry manure), char as the
+# only solid, nitrogen in the gas only, aqueous phase removed at and above 390 °C.
+# Carbon allocation is free.
+
+name = "yakaboylu2013_fig7_8"
+description = "Swine manure at 240 bar; Yakaboylu et al. (2013) Figures 7-8."
+
+[conditions]
+temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]
+pressure_bar = 240.0
+
+[feed]
+# C 632.65, H 1093.28, O 837.22, N 47.56, S 3.95 mol per 25 000 g dry feed
+elements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }
+water_g_per_g_dry = 3.999935304   # 5550.84 mol water per 25 000 g dry feed
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+       "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+# Note from the original notebook: with nitrogen also in the aqueous phase,
+# the solver converges to a different solution at 380 °C.
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+           "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon"]
+
+[aqueous]
+model = "electrolyte"
+cutoff_C = 390.0
+
+[initial_guess]
+# Water-rich aqueous start below the cut-off; a plain feasible start above it.
+initialization = "liquid"
+
+[solver]
+method = "ipopt"
+max_iterations = 10000
+# The original notebook used method = "slsqp-fd" with these settings:
+fd_ftol = 1e-11
+fd_eps = 1e-8
+
+[sweep]
+continuation = false   # every temperature starts from its own feasible point, as in the notebook
+
+[comparison]
+file = "comparison/yakaboylu2013_fig7_8.csv"
+quantity = "mol_per_kg_dry_feed"
+label = "Yakaboylu et al. (2013)"

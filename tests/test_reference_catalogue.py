@@ -3,6 +3,11 @@ import pandas as pd
 import pytest
 
 from helpers import same
+from htg.species import NO_SAFT_REASON
+
+# Hint texts that were reworded for the case-file workflow.
+REWORDED = {'NASA available; no resolved SAFT mapping. Supply species_overrides or EOS data.':
+            NO_SAFT_REASON}
 
 KINDS = ['base', 'acetone']
 
@@ -14,7 +19,8 @@ def records(frame):
 @pytest.mark.parametrize('kind', KINDS)
 def test_catalogue(models, catalogue_ref, kind):
     new = records(models[kind].species(include_unavailable=True))
-    ref = catalogue_ref[kind]['catalogue']
+    ref = [{**r, 'Reason': REWORDED.get(r['Reason'], r['Reason'])}
+           for r in catalogue_ref[kind]['catalogue']]
     assert len(new) == len(ref)
     for a, b in zip(new, ref):
         assert same(a, b), (a, b)
