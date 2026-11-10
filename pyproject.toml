@@ -1,0 +1,26 @@
+[project]
+name = "htg-equilibrium"
+version = "0.1.0"
+description = "Constrained Gibbs-energy equilibrium model for hydrothermal gasification (HTG)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5",
+    "scipy>=1.18",
+    "pandas>=3.1",
+    "matplotlib>=3.11",
+    "openpyxl>=3.1",      # pandas.read_excel for Cellulose.xlsx
+    "pyclapeyron>=0.1.1", # PC-SAFT / ePC-SAFT via Clapeyron.jl (installs Julia deps on first import)
+    "pychnosz>=1.5.3",    # SUPCRT92 water properties and HKF ions
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4",
+    "jupyterlab>=4",
+    "nbstripout>=0.9",
+]
+
+[tool.uv]
+# Not an installable package yet; the model lives in notebooks.
+package = false
