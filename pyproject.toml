@@ -1,6 +1,6 @@
 [project]
 name = "htg-equilibrium"
-version = "0.1.0"
+version = "0.2.0"
 description = "Constrained Gibbs-energy equilibrium model for hydrothermal gasification (HTG)"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -14,13 +14,24 @@ dependencies = [
     "pychnosz>=1.5.3",    # SUPCRT92 water properties and HKF ions
 ]
 
+[project.scripts]
+htg = "htg.cli:main"
+
 [dependency-groups]
 dev = [
+    "pytest>=8",
     "ipykernel>=7.4",
     "jupyterlab>=4",
     "nbstripout>=0.9",
 ]
 
-[tool.uv]
-# Not an installable package yet; the model lives in notebooks.
-package = false
+[build-system]
+requires = ["uv_build>=0.9,<0.13"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: full equilibrium solves with the original finite-difference SLSQP (minutes)"]
+
+[tool.uv.build-backend]
+module-name = "htg"

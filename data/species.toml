@@ -1,0 +1,173 @@
+# Species registry for the HTG model
+# ==================================
+#
+# Most species do NOT need an entry here. When the model loads, it scans the
+# databases in this folder and makes a species available when it finds
+# complete data for it:
+#
+#   fluid molecule  a row in PROJECT_EPCSAFT.csv or PROJECT_PCSAFT.csv (Species,
+#                   Formula, m, sigma, epsilon) AND exactly one NASA-7 record in
+#                   Thermdat_WasteMech.txt with the same elemental formula
+#   aqueous ion     a charged row in PROJECT_EPCSAFT.csv AND a matching aqueous
+#                   HKF record in supcrt92.xml
+#   pure solid      a solid ('S') NASA-7 record, or a single-range mineral in
+#                   supcrt92.xml
+#
+# Run `htg species --all` to see every candidate and why it is (not) available.
+#
+# Add an entry here only when automatic matching cannot work, typically because
+# two molecules share an elemental formula (isomers). See docs/adding_species.md.
+
+# --------------------------------------------------------------------------
+# Explicit NASA record names for fluid molecules (resolves isomer ambiguity).
+# Key: species name as written in the SAFT CSV (case-insensitive).
+# --------------------------------------------------------------------------
+[nasa_names]
+acetone = "CH3COCH3"  # propanal has the same formula C3H6O
+
+# --------------------------------------------------------------------------
+# Built-in species used by the reference cases. These entries are the
+# starting registry; database discovery adds to it and may update entries
+# that have complete database records.
+#
+#   formula       component name passed to the equation of state; also used to
+#                 match the Formula column of PROJECT_PCSAFT.csv
+#   nasa          record name in the NASA-7 database
+#   elements      elemental composition (atoms per formula unit)
+#   saft_aliases  names matching the Species column of the SAFT CSVs
+#
+# [molecular] and [organic] are both fluid species. The split only matters for
+# NASA records that no SAFT entry claims (see Registry.discover).
+# --------------------------------------------------------------------------
+[molecular.water]
+formula = "H2O"
+nasa = "H2O"
+elements = { H = 2, O = 1 }
+saft_aliases = ["water", "h2o"]
+
+[molecular.hydrogen]
+formula = "H2"
+nasa = "H2"
+elements = { H = 2 }
+saft_aliases = ["hydrogen", "h2", "h₂"]
+
+[molecular."carbon dioxide"]
+formula = "CO2"
+nasa = "CO2"
+elements = { C = 1, O = 2 }
+saft_aliases = ["carbon dioxide", "co2", "co₂"]
+
+[molecular."carbon monoxide"]
+formula = "CO"
+nasa = "CO"
+elements = { C = 1, O = 1 }
+saft_aliases = ["carbon monoxide", "co"]
+
+[molecular.methane]
+formula = "CH4"
+nasa = "CH4"
+elements = { C = 1, H = 4 }
+saft_aliases = ["methane", "ch4", "ch₄"]
+
+[molecular.methanol]
+formula = "CH3OH"
+nasa = "CH3OH"
+elements = { C = 1, H = 4, O = 1 }
+saft_aliases = ["methanol", "ch3oh", "ch₃oh"]
+
+[molecular.ammonia]
+formula = "NH3"
+nasa = "NH3"
+elements = { N = 1, H = 3 }
+saft_aliases = ["ammonia", "nh3", "nh₃"]
+
+[molecular."hydrogen sulfide"]
+formula = "H2S"
+nasa = "H2S"
+elements = { H = 2, S = 1 }
+saft_aliases = ["hydrogen sulfide", "hydrogen sulphide", "h2s", "h₂s"]
+
+[molecular.nitrogen]
+formula = "N2"
+nasa = "N2"
+elements = { N = 2 }
+saft_aliases = ["nitrogen", "N2"]
+
+[organic.benzene]
+formula = "C6H6"
+nasa = "C6H6"
+elements = { C = 6, H = 6 }
+saft_aliases = ["benzene", "c6h6", "c₆h₆"]
+
+[organic.toluene]
+formula = "C7H8"
+nasa = "C7H8"
+elements = { C = 7, H = 8 }
+saft_aliases = ["toluene", "c7h8", "c₇h₈"]
+
+# Pure solids from the NASA-7 database.
+[solid.carbon]
+formula = "C"
+nasa = "CHAR"
+elements = { C = 1 }
+
+[solid.cellulose]
+formula = "C6H10O5"
+nasa = "CELL"
+elements = { C = 6, H = 10, O = 5 }
+
+[solid.Lignin1]
+formula = "C22H28O9"
+nasa = "LIGH"
+elements = { C = 22, H = 28, O = 9 }
+
+# Aqueous ions.
+#   saft_formula    Formula used to match the ion in PROJECT_EPCSAFT.csv
+#   supcrt_aliases  record names of the ion in supcrt92.xml
+[ion."Na+"]
+formula = "Na+"
+charge = 1
+supcrt = "Na+"
+elements = { Na = 1 }
+saft_formula = "Na+"
+supcrt_aliases = ["Na+"]
+
+[ion."HCO3-"]
+formula = "HCO3-"
+charge = -1
+supcrt = "HCO3-"
+elements = { H = 1, C = 1, O = 3 }
+saft_formula = "HCO3-"
+supcrt_aliases = ["HCO3-"]
+
+[ion."CO3^2-"]
+formula = "CO3^2-"
+charge = -2
+supcrt = "CO3--"
+elements = { C = 1, O = 3 }
+saft_formula = "CO3"
+supcrt_aliases = ["CO3--", "CO3-2", "CO32-", "CO3^2-"]
+
+# --------------------------------------------------------------------------
+# Aqueous electrolyte reference components.
+# The electrolyte equation of state always contains these species (at trace
+# amounts when a case does not select them), in this order, followed by the
+# case's own aqueous species. This reproduces the original reference
+# calculation; changing it changes aqueous results.
+# --------------------------------------------------------------------------
+[aqueous_reference]
+neutrals = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+            "methanol", "ammonia", "hydrogen sulfide"]
+ions = ["Na+", "HCO3-", "CO3^2-"]
+# Relative trace amounts of the reference ions in equation-of-state probes
+# (any other ion: 1). Must be electroneutral together with the charges.
+probe_weights = { "Na+" = 3.0, "HCO3-" = 1.0, "CO3^2-" = 1.0 }
+
+# --------------------------------------------------------------------------
+# PC-SAFT binary interaction parameters k_ij for the gas and organic-liquid
+# phases (not used in the aqueous electrolyte model). Components are named by
+# their equation-of-state formula.
+# --------------------------------------------------------------------------
+[[binary_interaction]]
+components = ["CO2", "CH4"]
+kij = 0.065
