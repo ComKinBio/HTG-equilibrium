@@ -24,12 +24,14 @@ This takes several minutes once; later runs reuse it.
 | File | Purpose |
 |---|---|
 | `HTG_Model.ipynb` | Thermodynamic model and constrained Gibbs solver (loaded by the case notebooks) |
+| `htg_optimizer.py` | Optional optimizer backends for `solve_equilibrium` (IPOPT, exact-gradient SLSQP/trust-constr, multistart, stability test), selected with `settings['optimizer']` |
 | `HTG_Cases.ipynb` | Cellulose and Yakaboylu et al. (2013) Figures 7–8 cases |
 | `HTG_Configurable_Case.ipynb` | Standalone configurable temperature-sweep case |
 | `Thermdat_WasteMech.txt` | NASA-7 thermochemistry |
 | `PROJECT_PCSAFT.csv`, `PROJECT_EPCSAFT.csv` | PC-SAFT and ePC-SAFT parameters |
 | `supcrt92.xml` | SUPCRT92 aqueous species (HKF) and minerals |
 | `Cellulose.xlsx` | Cellulose feed and earlier MATLAB results |
+| `juliapkg.json` | Extra Julia packages (Ipopt.jl); read by juliacall when Python runs from the repository root |
 
 Notebooks are committed without outputs; the `nbstripout` git filter removes
 them automatically.
