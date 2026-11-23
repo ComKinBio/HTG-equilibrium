@@ -42,7 +42,7 @@ def test_setting_labels_follow_the_case_tab():
     assert list(table.columns) == ['Setting', 'a', 'b']
     rows = table.set_index('Setting')
     assert set(rows.index) == {'Pressures [bar]', 'Method', 'Initial guesses', 'Carbon split: gas, at least [%]'}
-    assert rows.loc['Initial guesses', 'a'] == '(default)' and rows.loc['Initial guesses', 'b'] == '3'
+    assert rows.loc['Initial guesses', 'a'] == '(default)' and rows.loc['Initial guesses', 'b'] == '10'  # multistart 3 -> 1 + 2*3 + 3 starts
     assert rows.loc['Carbon split: gas, at least [%]', 'b'] == '90'
     in_mpa = setting_differences({'a': TEMPLATE, 'b': other}, 'K', 'MPa').set_index('Setting')
     assert list(in_mpa.loc['Pressures [MPa]']) == ['24', '30']
@@ -133,7 +133,7 @@ def test_compare_tab(tmp_path, config_dir):
         assert tab.amount.enabled
         marks = [s for s in tab.spec.panels[0].series if s.measured]
         assert marks and marks[0].name == 'Paper' and marks[0].y == [9.0, 21.0]
-        assert tab.basis.props['options'][0]['disable'] is True  # the template cases have no total mass
+        assert not tab.basis.props['options'][0].get('disable')  # the v2 template cases have a total mass
         # Save plot…: one panel only
         user.find('Save plot…').click()
         dialog = tab.save_dialog

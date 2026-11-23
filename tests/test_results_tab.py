@@ -85,7 +85,8 @@ def test_feed_fractions_of_a_run(tmp_path):
     except ImportError:
         assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) is None
     else:
-        assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) == pytest.approx((0.2, 0.0))
+        # WP2 keeps the dry analysis: the 50 % not covered by elements becomes ash.
+        assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) == pytest.approx((0.2, 0.5))
 
 
 def _figure(tab):
