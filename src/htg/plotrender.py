@@ -49,16 +49,15 @@ def render_plotly(spec, theme=DEFAULT_THEME, line_width=DEFAULT_LINE_WIDTH):
     shown = set()
     for i, panel in enumerate(spec.panels):
         where = {'row': i // cols + 1, 'col': i % cols + 1} if multi else {}
-        if multi:
-            sub = fig.get_subplot(**where)
-            xref, yref = sub.xaxis.plotly_name.replace('axis', ''), sub.yaxis.plotly_name.replace('axis', '')
-        else:
-            xref, yref = 'x', 'y'
+        sub = fig.get_subplot(**where) if multi else None
         if panel.empty:
             fig.update_xaxes(visible=False, **where)
             fig.update_yaxes(visible=False, **where)
-            fig.add_annotation(text=panel.empty_message, x=0.5, y=0.5, xref=f'{xref} domain',
-                               yref=f'{yref} domain', showarrow=False, font={'size': 13, 'color': '#757575'})
+            # paper coordinates: plotly.js misplaces "x4 domain" references on axes without traces
+            x0, x1 = sub.xaxis.domain if multi else (0, 1)
+            y0, y1 = sub.yaxis.domain if multi else (0, 1)
+            fig.add_annotation(text=panel.empty_message, x=(x0 + x1) / 2, y=(y0 + y1) / 2, xref='paper',
+                               yref='paper', showarrow=False, font={'size': 13, 'color': '#757575'})
             continue
         if panel.heatmap is not None:
             h = panel.heatmap
@@ -90,6 +89,11 @@ def render_plotly(spec, theme=DEFAULT_THEME, line_width=DEFAULT_LINE_WIDTH):
                           annotation_font={'size': 11, 'color': NEUTRAL}, **where)
         fig.update_xaxes(title_text=panel.x_label, **where)
         fig.update_yaxes(title_text=panel.y_label, **where)
+        if panel.heatmap is None:  # the whole grid, also where values are gaps; labels do not widen it
+            xs = [float(v) for s in panel.series for v in s.x if _finite(v)] + [v.x for v in panel.vlines]
+            if xs and max(xs) > min(xs):
+                pad = 0.03 * (max(xs) - min(xs))
+                fig.update_xaxes(range=[min(xs) - pad, max(xs) + pad], **where)
         if panel.log:
             fig.update_yaxes(type='log', exponentformat='power', **where)
         if not multi and panel.title:

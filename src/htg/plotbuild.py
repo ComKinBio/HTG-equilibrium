@@ -63,6 +63,9 @@ class PlotOptions:
     colours       {species: palette index}; None = run_colours(species table)
     t_unit, p_unit, t_convert, p_convert, number_format
                   display units: labels, converters from °C / bar, and the number format
+    t_format, p_format
+                  optional number formats for temperatures and pressures (e.g. scientific
+                  notation for Pa); None = number_format
     """
     x_axis: str = 'T'
     fixed: float | None = None
@@ -84,6 +87,8 @@ class PlotOptions:
     t_convert: Callable = field(default=_identity)
     p_convert: Callable = field(default=_identity)
     number_format: Callable = field(default=number)
+    t_format: Callable | None = None
+    p_format: Callable | None = None
 
     @property
     def axis(self):
@@ -99,9 +104,14 @@ class PlotOptions:
     def unit(self, column):
         return self.t_unit if column == 'T_C' else self.p_unit
 
+    def format(self, column, value):
+        """A value already in the display unit as text."""
+        custom = self.t_format if column == 'T_C' else self.p_format
+        return (custom or self.number_format)(value)
+
     def text(self, column, value):
         """'240 bar' in the display unit."""
-        return f'{self.number_format(self.convert(column, value))} {self.unit(column)}'
+        return f'{self.format(column, self.convert(column, value))} {self.unit(column)}'
 
     def axis_label(self, column):
         return f"{'Temperature' if column == 'T_C' else 'Pressure'} [{self.unit(column)}]"
@@ -423,8 +433,8 @@ def tp_map(tables, options):
                 grid.loc[P, T] = np.nan
             elif fill is not None and np.isnan(grid.loc[P, T]):
                 grid.loc[P, T] = fill
-    heatmap = Heatmap([options.number_format(options.convert('T_C', T)) for T in temperatures],
-                      [options.number_format(options.convert('P_bar', P)) for P in pressures],
+    heatmap = Heatmap([options.format('T_C', options.convert('T_C', T)) for T in temperatures],
+                      [options.format('P_bar', options.convert('P_bar', P)) for P in pressures],
                       grid.to_numpy().tolist(), unit)
     panel = Panel('', options.axis_label('T_C'), options.axis_label('P_bar'), heatmap=heatmap, key='map')
     return PlotSpec(_title('map', name), [panel], 'map')
