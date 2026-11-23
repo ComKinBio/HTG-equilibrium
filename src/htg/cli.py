@@ -6,6 +6,9 @@
     htg new CASE.toml
     htg plot RESULTS_DIR
     htg gui [--browser] [--no-browser] [--workers N] [--port PORT] [--results DIR] [--cases DIR]
+
+run, check, species and gui read your own species database too (see
+htg.user_species); --user-data DIR chooses its folder, --no-user-species turns it off.
 """
 import argparse
 import sys
@@ -17,9 +20,16 @@ import pandas as pd
 TEMPLATE = Path(__file__).parent / 'templates' / 'case_template.toml'
 
 
+def _user_data(args):
+    """User species folder for this command (None with --no-user-species)."""
+    from .user_species import resolve_user_dir
+    return resolve_user_dir(getattr(args, 'user_data', None),
+                            enabled=not getattr(args, 'no_user_species', False))
+
+
 def _model(args):
     from .model import Model
-    return Model.load(args.data)
+    return Model.load(args.data, user_data=_user_data(args))
 
 
 def _print_table(frame, columns=None):
@@ -140,7 +150,7 @@ def cmd_gui(args):
     from .gui.app import run_app
     run_app(results_dir=args.results, cases_dir=args.cases, workers=args.workers, port=args.port,
             show=not args.no_browser, host=args.host, browser=args.browser,
-            model_args={'data_dir': args.data} if args.data else None)
+            model_args={'data_dir': args.data, 'user_data': _user_data(args)})
     return 0
 
 
@@ -187,6 +197,14 @@ def main(argv=None):
     p.add_argument('--cases', default='cases', help='folder with case files (default: cases)')
     p.add_argument('--no-browser', action='store_true', help='only start the server; open the address in a browser yourself')
     p.set_defaults(func=cmd_gui)
+
+    for name in ('run', 'check', 'species', 'gui'):
+        p = sub.choices[name]
+        p.add_argument('--user-data', metavar='DIR',
+                       help='folder of your own species database (default: $HTG_USER_DATA, '
+                            'else the htg-equilibrium user data folder)')
+        p.add_argument('--no-user-species', action='store_true',
+                       help='use the shipped databases only, without your own species')
 
     args = parser.parse_args(argv)
     try:

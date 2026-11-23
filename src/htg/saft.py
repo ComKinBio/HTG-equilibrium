@@ -32,6 +32,12 @@ PCSAFT_MODEL_PRIORITY = ['pc-saft', 'gc-ppc-saft']
 HKF_REQUIRED_FIELDS = ['Gf', 'Hf', 'Sr', 'a1', 'a2', 'a3', 'a4', 'c1', 'c2', 'wref']
 
 
+def _source(row, default):
+    """File a database row came from: user rows carry a 'source_file' column."""
+    value = row.get('source_file') if hasattr(row, 'get') else None
+    return str(value) if value is not None and pd.notna(value) else default
+
+
 def water_sigma(T):
     """Temperature-dependent ePC-SAFT segment diameter of water [Angstrom]."""
     return float(2.7927 + 10.11 * np.exp(-0.01775 * T) - 1.417 * np.exp(-0.01146 * T))
@@ -115,7 +121,8 @@ def first_complete_epcsaft_set(epcsaft, species_name, formula, aliases, T):
             raise KeyError(species_name)
         first_row = group.iloc[0]
         return {
-            'Species': species_name, 'Formula': formula, 'Source': 'PROJECT_EPCSAFT.csv',
+            'Species': species_name, 'Formula': formula,
+            'Source': _source(first_row, 'PROJECT_EPCSAFT.csv'),
             'Database row': int(group.index.min()),
             'Model': str(first_row['Model']) if 'Model' in group.columns else 'ePC-SAFT',
             'RefID': (str(first_row['RefID'])
@@ -166,7 +173,8 @@ def first_complete_pcsaft_set(databases, species_name, formula):
             if cols['association'] is not None and pd.notna(row[cols['association']]):
                 association_i = str(row[cols['association']]).strip()
             return {
-                'Species': species_name, 'Formula': formula, 'Source': 'PROJECT_PCSAFT.csv',
+                'Species': species_name, 'Formula': formula,
+                'Source': _source(row, 'PROJECT_PCSAFT.csv'),
                 'Database row': int(idx), 'Model': str(row['Model']),
                 'RefID': str(row['RefID']) if 'RefID' in row.index and pd.notna(row['RefID']) else '',
                 'm': m_i, 'sigma': sigma_i, 'epsilon': epsilon_i,
@@ -241,7 +249,7 @@ def first_complete_ion_epcsaft_set(epcsaft, ion_name, saft_formula, charge):
             if not values.empty:
                 charge_database = float(values.iloc[0])
         return {
-            'Species': ion_name, 'Source': 'PROJECT_EPCSAFT.csv',
+            'Species': ion_name, 'Source': _source(first_row, 'PROJECT_EPCSAFT.csv'),
             'Database row': int(parameter_set.index.min()),
             'Model': (str(first_row['Model'])
                       if 'Model' in first_row.index and pd.notna(first_row['Model']) else ''),

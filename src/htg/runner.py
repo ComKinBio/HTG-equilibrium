@@ -385,7 +385,11 @@ class WorkerPool:
         run.status, run.finished = status, time.time()
         if run.output_dir is not None and run.outcomes:
             try:
-                run.sweep_result().save(run.output_dir)
+                sweep = run.sweep_result()
+                if self.model_args.get('user_data'):
+                    from .user_species import run_record
+                    sweep.user_species = run_record(self.model_args, sweep)
+                sweep.save(run.output_dir)
                 run.log.append(f'results saved to {run.output_dir}')
             except Exception as exc:
                 run.log.append(f'saving results failed: {exc}')

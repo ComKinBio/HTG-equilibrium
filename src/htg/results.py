@@ -109,6 +109,7 @@ class SweepResult:
     """
     case: object
     points: list
+    user_species: dict | None = field(default=None, repr=False)  # see htg.user_species.run_record
 
     @property
     def results(self):
@@ -146,4 +147,7 @@ class SweepResult:
             shutil.copyfile(self.case.comparison['file'], directory / 'comparison.csv')
             saved.comparison = {**self.case.comparison, 'file': 'comparison.csv'}
         saved.save(directory / 'case.toml')
+        if self.user_species is not None:
+            from .user_species import write_run_record
+            write_run_record(directory, self.user_species)
         return directory
