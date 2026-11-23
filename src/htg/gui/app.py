@@ -30,12 +30,16 @@ class State:
     """
 
     def __init__(self, model, pool, results_dir='results', cases_dir='cases', settings=None):
-        self.model = model
         self.pool = pool
         self.settings = settings if settings is not None else Settings.load()
         self.results_dir = Path(results_dir).resolve()
         self.cases_dir = Path(cases_dir).resolve()
         self.document = CaseDocument.new()
+        self.use_model(model)
+
+    def use_model(self, model):
+        """Use ``model`` (for example after the user species changed): the species lists follow it."""
+        self.model = model
         catalogue = model.species()
         molecular = catalogue[catalogue.Phase == 'molecular'].Species.tolist()
         ions = catalogue[catalogue.Phase == 'aqueous ion'].Species.tolist()

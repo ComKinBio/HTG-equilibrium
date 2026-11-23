@@ -232,7 +232,7 @@ def test_page_queues_a_case_and_shows_it(base_model, tmp_path):
                 user.find(kind=ui.button, content='Results').click()
                 await user.should_see('0 of 4 points solved')
                 assert (run.output_dir / 'summary.csv').exists()
-                user.find('Search name or formula').type('methane')
+                user.find('Name or formula').type('methane')
                 await user.should_see('Species')
 
     asyncio.run(scenario())
