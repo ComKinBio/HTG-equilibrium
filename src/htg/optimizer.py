@@ -5,9 +5,13 @@ with mu_i from the same Helmholtz model, so dG/dn_i = mu_i (no finite
 differences). IPOPT also receives a phase-block Hessian.
 
     method        'ipopt' (default; Ipopt.jl via juliacall), 'slsqp', 'trust-constr'
-    multistart    k > 0 adds phase-rich LP starts and k random feasible starts;
-                  the lowest G wins
-    stability_test tangent-plane test of absent fluid phases (default: on with multistart)
+    starts        total starting points N (default 1): the given start, then the
+                  phase-rich and phase-lean LP starts, then random feasible mixes
+                  (the old ``multistart = k`` is N = 1 + 2 F + k, still accepted)
+    distinct_composition_tol, distinct_gibbs_tol
+                  converged starts within both limits are the same result; the
+                  distinct results are labelled A, B, ... by increasing G (A is the answer)
+    stability_test tangent-plane test of absent fluid phases (default: on when N > 1)
 """
 import time
 
@@ -20,13 +24,14 @@ from .phases import EOSFailure
 
 
 class GibbsProblem:
-    """min_x (G(expand(x)) - G0)/scale  s.t.  A x = b,  c x >= d,  x >= lower.
+    """min_x (G(expand(x)) - G0)/scale  s.t.  A x = b,  C x >= d,  x >= lower.
 
-    ``x`` holds the free (phase, species) amounts.
+    ``x`` holds the free (phase, species) amounts; ``ineq_rows`` (C, one row per
+    inequality) and ``ineq_targets`` (d) are None when there are no inequalities.
     """
 
-    def __init__(self, phases, pairs, free, phase_indices, ions, T, A_eq, b_eq, ineq_row,
-                 ineq_target, lower, x_start, G0, scale, model_total_G):
+    def __init__(self, phases, pairs, free, phase_indices, ions, T, A_eq, b_eq, ineq_rows,
+                 ineq_targets, lower, x_start, G0, scale, model_total_G):
         self.phases = phases
         self.pairs = list(pairs)
         self.free = np.asarray(free, dtype=int)
@@ -35,8 +40,11 @@ class GibbsProblem:
         self.T = float(T)
         self.A_eq = np.asarray(A_eq, dtype=float)
         self.b_eq = np.asarray(b_eq, dtype=float)
-        self.ineq_row = None if ineq_row is None else np.asarray(ineq_row, dtype=float)
-        self.ineq_target = ineq_target
+        if ineq_rows is None or not len(ineq_rows):
+            self.ineq_rows = self.ineq_targets = None
+        else:
+            self.ineq_rows = np.atleast_2d(np.asarray(ineq_rows, dtype=float))
+            self.ineq_targets = np.atleast_1d(np.asarray(ineq_targets, dtype=float))
         self.lower = np.asarray(lower, dtype=float)
         self.x_start = np.asarray(x_start, dtype=float)
         self.G0 = float(G0)
@@ -119,8 +127,10 @@ class GibbsProblem:
         RT = R * self.T
         rows = [self.A_eq]
         # Interior-point solutions end slightly inside an active bound, hence 1e-6.
-        if self.ineq_row is not None and abs(self.ineq_row @ x - self.ineq_target) < 1e-6:
-            rows.append(self.ineq_row[None, :])
+        if self.ineq_rows is not None:
+            active = np.abs(self.ineq_rows @ x - self.ineq_targets) < 1e-6
+            if active.any():
+                rows.append(self.ineq_rows[active])
         A = np.vstack(rows)
         slack = x - self.lower
         major = slack > major_tol
@@ -138,9 +148,9 @@ class GibbsProblem:
 def _slsqp(problem, x0, options):
     cons = [{'type': 'eq', 'fun': lambda x: problem.A_eq @ x - problem.b_eq,
              'jac': lambda x: problem.A_eq}]
-    if problem.ineq_row is not None:
-        cons.append({'type': 'ineq', 'fun': lambda x: problem.ineq_row @ x - problem.ineq_target,
-                     'jac': lambda x: problem.ineq_row})
+    if problem.ineq_rows is not None:
+        cons.append({'type': 'ineq', 'fun': lambda x: problem.ineq_rows @ x - problem.ineq_targets,
+                     'jac': lambda x: problem.ineq_rows})
     bounds = [(float(lo), None) for lo in problem.lower]
     return minimize(problem.fun_and_grad, x0, jac=True, method='SLSQP', bounds=bounds,
                     constraints=cons,
@@ -150,8 +160,8 @@ def _slsqp(problem, x0, options):
 
 def _trust_constr(problem, x0, options):
     cons = [LinearConstraint(problem.A_eq, problem.b_eq, problem.b_eq)]
-    if problem.ineq_row is not None:
-        cons.append(LinearConstraint(problem.ineq_row[None, :], problem.ineq_target, np.inf))
+    if problem.ineq_rows is not None:
+        cons.append(LinearConstraint(problem.ineq_rows, problem.ineq_targets, np.inf))
     return minimize(problem.fun_and_grad, x0, jac=True, method='trust-constr',
                     bounds=Bounds(problem.lower, np.inf), constraints=cons,
                     options={'maxiter': options.get('max_iterations', 5000),
@@ -233,10 +243,10 @@ def _ipopt(problem, x0, options):
     n = len(x0)
     A = problem.A_eq
     gL, gU = list(problem.b_eq), list(problem.b_eq)
-    if problem.ineq_row is not None:
-        A = np.vstack([A, problem.ineq_row])
-        gL.append(problem.ineq_target)
-        gU.append(2e19)
+    if problem.ineq_rows is not None:
+        A = np.vstack([A, problem.ineq_rows])
+        gL.extend(problem.ineq_targets)
+        gU.extend([2e19] * len(problem.ineq_targets))
     Ar, Ac = np.nonzero(A)
     # Lower-triangle sparsity of the phase-block Hessian (structure fixed for the solve).
     blocks = problem.hessian_blocks(x0)
@@ -301,19 +311,15 @@ BACKENDS = {'slsqp': _slsqp, 'trust-constr': _trust_constr, 'ipopt': _ipopt}
 # ---------------------------------------------------------------- multistart
 def _lp_point(problem, cost):
     extra = {}
-    if problem.ineq_row is not None:
-        extra = {'A_ub': -problem.ineq_row[None, :], 'b_ub': np.array([-problem.ineq_target])}
+    if problem.ineq_rows is not None:
+        extra = {'A_ub': -problem.ineq_rows, 'b_ub': -problem.ineq_targets}
     res = linprog(cost, A_eq=problem.A_eq, b_eq=problem.b_eq,
                   bounds=[(float(lo), None) for lo in problem.lower], method='highs', **extra)
     return res.x if res.success else None
 
 
-def starting_points(problem, n_random=8, seed=0):
-    """Feasible starts: the given start, phase-rich/phase-lean LP vertices, random vertex mixes.
-
-    Every point is a convex combination of LP solutions, so it satisfies the
-    constraints exactly (to LP precision).
-    """
+def _phase_starts(problem):
+    """The given start, then a phase-rich and a phase-lean LP start for each fluid phase."""
     starts = [('initial', problem.x_start.copy())]
     position = {j: k for k, j in enumerate(problem.free)}
     for phase in problem.fluid_phases():
@@ -327,13 +333,80 @@ def starting_points(problem, n_random=8, seed=0):
             if x is not None:
                 # Blend toward the given start so no phase is exactly empty.
                 starts.append((f'{label} {phase}', 0.9 * x + 0.1 * problem.x_start))
+    return starts
+
+
+def _random_starts(problem, n_random, seed):
+    """n_random random mixes of random LP vertices."""
     rng = np.random.default_rng(seed)
     vertices = [x for x in (_lp_point(problem, rng.normal(size=len(problem.free)))
                             for _ in range(max(3, n_random))) if x is not None]
-    for k in range(n_random if vertices else 0):
-        weights = rng.dirichlet(np.ones(len(vertices)))
-        starts.append((f'random {k}', np.sum([w * v for w, v in zip(weights, vertices)], axis=0)))
-    return starts
+    return [(f'random {k}', np.sum([w * v for w, v in
+                                    zip(rng.dirichlet(np.ones(len(vertices))), vertices)], axis=0))
+            for k in range(n_random if vertices else 0)]
+
+
+def starting_points(problem, n_random=8, seed=0):
+    """Feasible starts: the given start, phase-rich/phase-lean LP vertices, random vertex mixes.
+
+    Every point is a convex combination of LP solutions, so it satisfies the
+    constraints exactly (to LP precision).
+    """
+    return _phase_starts(problem) + _random_starts(problem, n_random, seed)
+
+
+def candidate_starts(problem, n_total, seed=0):
+    """The first ``n_total`` starts of the list ``starting_points`` builds, padded with
+    random mixes when there are fewer deterministic starts than ``n_total``.
+
+    n_total = 1 gives only the given start.
+    """
+    n_total = int(n_total)
+    if n_total < 1:
+        raise ValueError('starts must be at least 1.')
+    if n_total == 1:
+        return [('initial', problem.x_start.copy())]
+    starts = _phase_starts(problem)
+    if n_total <= len(starts):
+        return starts[:n_total]
+    return starts + _random_starts(problem, n_total - len(starts), seed)
+
+
+def result_label(k):
+    """0 -> 'A', 25 -> 'Z', 26 -> 'AA', 27 -> 'AB', ..."""
+    label = ''
+    k = int(k) + 1
+    while k > 0:
+        k, rest = divmod(k - 1, 26)
+        label = chr(ord('A') + rest) + label
+    return label
+
+
+def group_solutions(solutions, composition_tol=1e-4, gibbs_tol=1.0):
+    """Group converged starts into distinct results.
+
+    solutions  [(start label, x, G)] with finite G
+    Two solutions are the same result when max |dx| <= composition_tol and
+    |dG| <= gibbs_tol. Solutions are taken by increasing G; each joins the first
+    group whose lowest-G member (its representative) is within both limits, or
+    starts a new group. Groups are labelled A, B, ... by increasing G.
+    Returns [{'label', 'members' (indices into solutions, by increasing G), 'G', 'x'}].
+    """
+    order = sorted(range(len(solutions)), key=lambda i: solutions[i][2])
+    groups = []
+    for i in order:
+        _, x, G = solutions[i]
+        x = np.asarray(x, dtype=float)
+        for group in groups:
+            if (abs(G - group['G']) <= gibbs_tol
+                    and float(np.max(np.abs(x - group['x']), initial=0.0)) <= composition_tol):
+                group['members'].append(i)
+                break
+        else:
+            groups.append({'members': [i], 'G': float(G), 'x': x})
+    for k, group in enumerate(groups):
+        group['label'] = result_label(k)
+    return [{'label': g['label'], 'members': g['members'], 'G': g['G'], 'x': g['x']} for g in groups]
 
 
 # ---------------------------------------------------------------- stability
@@ -423,18 +496,38 @@ def _polish(problem, result, G, options):
     return result, info
 
 
+def _total_starts(options):
+    """Total starting points from the options (``starts``, or the old ``multistart``)."""
+    if 'starts' in options:
+        return max(1, int(options['starts']))
+    return None
+
+
 def optimize(problem, options):
-    """Run the selected backend (optionally multistart); return (scipy result, diagnostics)."""
+    """Run the selected backend from every start; return (scipy result, diagnostics).
+
+    Every converged start is kept and grouped into distinct results (see
+    ``group_solutions``). With IPOPT the best solution of each group is checked
+    and polished; the groups are then sorted by G again and labelled A, B, ...
+    The returned result is group A. diagnostics['groups'] lists every group with
+    'label', 'G', 'x', 'n_starts' and 'start_labels'.
+    """
     method = options.get('method', 'ipopt')
     if method not in BACKENDS:
         raise ValueError(f"Unknown optimizer {method!r}; choose from {sorted(BACKENDS)}")
     problem.check_against_model(problem.x_start)
     t0 = time.perf_counter()
-    n_random = int(options.get('multistart', 0))
-    starts = (starting_points(problem, n_random, options.get('seed', 0)) if n_random > 0
-              else [('initial', problem.x_start.copy())])
-    runs, best, result = [], None, None
+    seed = options.get('seed', 0)
+    n_total = _total_starts(options)
+    if n_total is None:  # the old option: multistart = k random starts on top of the LP starts
+        n_random = int(options.get('multistart', 0))
+        starts = (starting_points(problem, n_random, seed) if n_random > 0
+                  else [('initial', problem.x_start.copy())])
+    else:
+        starts = candidate_starts(problem, n_total, seed)
+    runs, converged, result = [], [], None
     for label, x0 in starts:
+        start_label = label
         try:
             result = BACKENDS[method](problem, x0, options)
         except Exception as exc:  # a start may lie outside the EOS domain
@@ -463,21 +556,45 @@ def optimize(problem, options):
             except EOSFailure:
                 pass
         runs.append({'start': label, 'G': G, 'message': str(result.message), 'nit': result.nit})
-        if np.isfinite(G) and (best is None or G < best[0]):
-            best = (G, result)
-    if best is not None:
-        result = best[1]
-    elif result is None:
-        raise RuntimeError(f'All optimizer starts failed: {runs}')
-    # otherwise return the last (unsuccessful) result so the caller reports its message
+        if np.isfinite(G):
+            converged.append((start_label, result, float(G)))
     diagnostics = {'method': method, 'nfev': problem.nfev, 'seconds': time.perf_counter() - t0,
                    'starts': runs}
-    if method == 'ipopt' and best is not None and options.get('polish', True):
-        result, diagnostics['polish'] = _polish(problem, result, best[0], options)
+    if not converged:
+        if result is None:
+            raise RuntimeError(f'All optimizer starts failed: {runs}')
+        # return the last (unsuccessful) result so the caller reports its message
+        diagnostics['groups'] = []
+        return result, diagnostics
+    groups = group_solutions([(label, np.maximum(res.x, problem.lower), G) for label, res, G in converged],
+                             float(options.get('distinct_composition_tol', 1e-4)),
+                             float(options.get('distinct_gibbs_tol', 1.0)))
+    for group in groups:
+        best = converged[group['members'][0]]
+        group['result'] = best[1]
+        group['n_starts'] = len(group['members'])
+        group['start_labels'] = [converged[i][0] for i in group['members']]
+        if method == 'ipopt' and options.get('polish', True):
+            group['result'], group['polish'] = _polish(problem, best[1], best[2], options)
+            if group['polish'].get('used'):
+                group['G'] = float(group['polish']['G_polished'])
+        group['x'] = np.asarray(group['result'].x, dtype=float)
+    # Polishing can lower G: sort again (stable, so ties keep their order) and relabel.
+    groups.sort(key=lambda g: g['G'])
+    for k, group in enumerate(groups):
+        group['label'] = result_label(k)
+    result = groups[0]['result']
+    diagnostics['nfev'] = problem.nfev
+    diagnostics['seconds'] = time.perf_counter() - t0
+    if 'polish' in groups[0]:
+        diagnostics['polish'] = groups[0]['polish']
+    diagnostics['groups'] = [{key: group[key] for key in ('label', 'G', 'x', 'n_starts', 'start_labels')}
+                             for group in groups]
     if np.all(np.isfinite(result.x)):
         x = np.maximum(result.x, problem.lower)
         problem.check_against_model(x)
         diagnostics.update(problem.kkt(x))
-        if options.get('stability_test', n_random > 0):
+        several = n_total > 1 if n_total is not None else len(starts) > 1
+        if options.get('stability_test', several):
             diagnostics['tangent_plane_RT'] = tangent_plane_test(problem, x, diagnostics['tangent_plane_J'])
     return result, diagnostics

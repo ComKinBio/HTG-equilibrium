@@ -18,9 +18,10 @@ from scipy.optimize import linprog, minimize
 from . import optimizer as opt
 from . import standard_states as ss
 from .constants import ATOMIC_WEIGHTS, PHASES
+from .case import BOUND_KINDS, PHASE_LABELS, effective_carbon_bounds
 from .feed_v2 import molar_mass_function, registry_elements
 from .phases import EOSFailure, ElectrolytePhase, FluidPhase, SolidPhase, build_pcsaft_model
-from .results import Result
+from .results import Alternative, Result
 
 EOS_FAILURE_TEXT = ('Invalid PC-SAFT fugacities', 'Invalid ePC-SAFT fugacity coefficients',
                     'Nonfinite phase Gibbs energy')
@@ -51,7 +52,9 @@ def apply_phase_rules(case, registry):
 
     The aqueous cut-off is a modelling rule (not a computed phase boundary): at
     T >= aqueous_cutoff_C, or with aqueous_enabled=False, the aqueous phase and
-    its bounds are removed. Feed atoms are kept and redistributed.
+    its bounds are removed. Feed atoms are kept and redistributed. The cut-off
+    takes priority over an aqueous carbon bound: the bound is dropped and
+    report['dropped_constraints'] says so (['aqueous carbon']).
     """
     phases = {phase: list(case.phases.get(phase, [])) for phase in PHASES}
     disabled = case.aqueous_enabled is False
@@ -69,16 +72,15 @@ def apply_phase_rules(case, registry):
         phases['aqueous'] = []
         minimum = {pair: v for pair, v in minimum.items() if pair[0] != 'aqueous'}
         liquid = False
-        if float(case.carbon_bounds.get('aqueous', {}).get('exact', 0.0)) != 0.0:
-            raise ValueError('Aqueous cut-off conflicts with nonzero aqueous phase_carbon_fractions; '
-                             'revise carbon targets explicitly')
+    _, dropped = effective_carbon_bounds(case.carbon_bounds, disabled)
     for phase, names in phases.items():
         if phase != 'aqueous':
             forbidden = [s for s in names if s in registry.ion]
             if forbidden:
                 raise ValueError(f'Ions are only allowed in aqueous: {phase}: {forbidden}')
     report = {'aqueous_disabled': disabled, 'aqueous_cutoff_C': cutoff,
-              'removed_aqueous_species': removed, 'initial_composition_reset': False}
+              'removed_aqueous_species': removed, 'initial_composition_reset': False,
+              'dropped_constraints': dropped}
     initial = case.initial_amounts
     if initial is not None:
         if any(not np.isfinite(v) or v < 0 for v in initial.values()):
@@ -124,9 +126,9 @@ class Setup:
     charge: np.ndarray
     gas_carbon: np.ndarray
     feed_carbon: float
-    gas_min_row: np.ndarray
-    gas_min_target: float
-    gas_min_fraction: float | None
+    ineq_rows: np.ndarray  # rows . x >= targets on the free amounts (min and -max bounds)
+    ineq_targets: np.ndarray
+    carbon_checks: list  # [(phase, kind, full row, fraction)] of every carbon bound
     energy_scale: float
     elements: list
     entries: list
@@ -178,21 +180,7 @@ def setup(model, case, stage=None, build_phases=True):
         lambda moles: species_to_wt_percent(registry, moles, AW))
     WATER = feed.total_water_g_per_g_dry()
     SALTS = feed.salts
-    bounds = case.carbon_bounds
-    unsupported = [f'{phase} {kind}' for phase, bound in bounds.items() for kind in bound
-                   if kind == 'max' or (kind == 'min' and phase != 'gas')]
-    if unsupported:
-        raise ValueError(f'Carbon bounds {unsupported} are not supported yet.')
-    GAS_C = bounds.get('gas', {}).get('exact')
-    GAS_C_MIN = bounds.get('gas', {}).get('min')
-    if GAS_C_MIN is not None:
-        GAS_C_MIN = float(GAS_C_MIN)
-        if not np.isfinite(GAS_C_MIN) or not 0 <= GAS_C_MIN <= 1:
-            raise ValueError('Minimum gas-carbon fraction must be in [0, 1]')
-        if GAS_C is not None:
-            raise ValueError('Use either gas_carbon_fraction (equality) or '
-                             'gas_carbon_min_fraction (lower bound), not both')
-    SOLID_C = bounds.get('solid', {}).get('exact')
+    BOUNDS, _ = effective_carbon_bounds(case.carbon_bounds, allocation['aqueous_disabled'])
     WATER_FLOOR = float(case.aqueous_water_floor)
     AQUEOUS_MODEL = case.aqueous_model
     if AQUEOUS_MODEL == 'molecular' and any(s in registry.ion for s in phase_species['aqueous']):
@@ -251,55 +239,33 @@ def setup(model, case, stage=None, build_phases=True):
     carbon = A[elements.index('C')]
     feed_carbon = b[elements.index('C')]
     gas_carbon = carbon * np.array([phase == 'gas' for phase, _ in pairs], dtype=float)
-    solid_carbon = np.zeros(len(pairs))
-    if SOLID_C is not None:
-        if case.solid_carbon_target == 'char':
-            if ('solid', 'carbon') not in pairs:
-                raise ValueError("Select solid 'carbon' to constrain char carbon.")
-            j = pairs.index(('solid', 'carbon'))
-            solid_carbon[j] = carbon[j]
-        else:
-            solid_carbon = carbon * np.array([phase == 'solid' for phase, _ in pairs], dtype=float)
     charge = np.array([registry.ion[s]['charge'] if phase == 'aqueous' and s in registry.ion
                        else 0.0 for phase, s in pairs], dtype=float)
     missing = [e for e, bi, row in zip(elements, b, A) if bi > 0 and not np.any(row > 0)]
     if missing:
         raise ValueError('No allowed product carrier for feed elements: ' + ', '.join(missing)
                          + '. Add neutral gas species or solids that contain them.')
+    # Carbon bounds: exact -> equality rows; min / max -> inequality rows.
+    exact_rows, bound_rows = carbon_bound_rows(BOUNDS, pairs, carbon, case.solid_carbon_target)
+    exact = {phase: fraction for phase, _, fraction in exact_rows}
+    if 'gas' in exact and 'solid' in exact and exact['gas'] + exact['solid'] > 1.0 + 1e-10:
+        raise ValueError('Gas-carbon plus solid-carbon fractions exceed one.')
+    if sum(exact.values()) + sum(f for _, kind, _, f in bound_rows if kind == 'min') > 1.0 + 1e-10:
+        raise ValueError('The carbon shares add up to more than 100 %.')
     rows, targets, carbon_constraints = list(A) + [charge], list(b) + [0.0], []
-    if GAS_C is not None:
-        fraction = float(GAS_C)
-        if not np.isfinite(fraction) or not 0 <= fraction <= 1:
-            raise ValueError('Gas-carbon fraction must be in [0, 1].')
-        rows.append(gas_carbon)
-        targets.append(fraction * feed_carbon)
-        carbon_constraints.append((gas_carbon, fraction))
-    if SOLID_C is not None:
-        fraction = float(SOLID_C)
-        if not np.isfinite(fraction) or not 0 <= fraction <= 1:
-            raise ValueError('Solid-carbon fraction must be in [0, 1].')
-        if GAS_C is not None and float(GAS_C) + fraction > 1.0 + 1e-10:
-            raise ValueError('Gas-carbon plus solid-carbon fractions exceed one.')
-        rows.append(solid_carbon)
-        targets.append(fraction * feed_carbon)
-        carbon_constraints.append((solid_carbon, fraction))
-    phase_fractions = {phase: b['exact'] for phase, b in bounds.items()
-                       if phase not in ('gas', 'solid') and 'exact' in b}
-    if set(phase_fractions) - set(PHASES):
-        raise ValueError('Unknown phase in phase_carbon_fractions')
-    fractions = {phase: float(v) for phase, v in phase_fractions.items()}
-    if any(not np.isfinite(v) or not 0 <= v <= 1 for v in fractions.values()):
-        raise ValueError('Phase-carbon fractions must be finite and in [0, 1]')
-    if sum(fractions.values()) > 1 + 1e-10:
-        raise ValueError('Phase-carbon fractions exceed one')
-    if 'gas' in fractions and GAS_C is not None and not np.isclose(
-            fractions['gas'], GAS_C, atol=1e-10, rtol=0):
-        raise ValueError('Conflicting gas-carbon constraints')
-    for phase, fraction in fractions.items():
-        row = carbon * np.array([p == phase for p, _ in pairs], dtype=float)
+    carbon_checks = []
+    for phase, row, fraction in exact_rows:
         rows.append(row)
         targets.append(fraction * feed_carbon)
         carbon_constraints.append((row, fraction))
+        carbon_checks.append((phase, 'exact', row, fraction))
+    inequalities = []
+    for phase, kind, row, fraction in bound_rows:
+        carbon_checks.append((phase, kind, row, fraction))
+        if kind == 'max' and fraction == 0.0:
+            carbon_constraints.append((row, 0.0))  # no carbon there: those species are fixed at zero
+            continue
+        inequalities.append((phase, kind, row, fraction))
     A_full = np.asarray(rows, dtype=float)
     b_full = np.asarray(targets, dtype=float)
     lower = np.zeros(len(pairs))
@@ -357,13 +323,17 @@ def setup(model, case, stage=None, build_phases=True):
                 lower_bound, _ = start_bounds[k]
                 start_bounds[k] = (lower_bound, max(lower_bound, INITIAL_GAS_WATER_FRACTION
                                                     * water_mol_per_C))
-    # The gas-carbon minimum is an inequality in the LP, optimizer and final check.
-    gas_min_row = gas_carbon[free]
-    gas_min_target = (GAS_C_MIN or 0.0) * feed_carbon
-    gas_min_lp = ({'A_ub': -gas_min_row[None, :], 'b_ub': np.array([-gas_min_target])}
-                  if GAS_C_MIN is not None else {})
+    # min and max bounds are inequalities in the LP, the optimizer and the final check,
+    # written as rows . x >= targets (a max bound as -row . x >= -max).
+    signs = [1.0 if kind == 'min' else -1.0 for _, kind, _, _ in inequalities]
+    ineq_full = np.array([sign * row for sign, (_, _, row, _) in zip(signs, inequalities)],
+                         dtype=float).reshape(len(inequalities), len(pairs))
+    ineq_rows = ineq_full[:, free]
+    ineq_targets = np.array([sign * fraction * feed_carbon
+                             for sign, (_, _, _, fraction) in zip(signs, inequalities)], dtype=float)
+    bound_lp = {'A_ub': -ineq_rows, 'b_ub': -ineq_targets} if len(inequalities) else {}
     feasible = linprog(start_objective, A_eq=A_opt, b_eq=b_opt, bounds=start_bounds,
-                       method='highs', **gas_min_lp)
+                       method='highs', **bound_lp)
     if not feasible.success:
         raise ValueError('Selected feed, species and constraints are infeasible: '
                          + feasible.message)
@@ -379,8 +349,10 @@ def setup(model, case, stage=None, build_phases=True):
     if np.max(np.abs(A_full @ initial_amounts - b_full)) > 1e-08:
         raise ValueError('The selected species cannot satisfy all original balances and '
                          'carbon constraints.')
-    if GAS_C_MIN is not None and gas_carbon @ initial_amounts < gas_min_target - 1e-8:
-        raise ValueError('Initial composition violates minimum gas-carbon fraction')
+    for (phase, kind, _, _), row, target in zip(inequalities, ineq_full, ineq_targets):
+        if row @ initial_amounts < target - 1e-8:
+            label = PHASE_LABELS[phase].lower()
+            raise ValueError(f'Initial composition violates {kind}imum {label}-carbon fraction')
 
     if not build_phases:
         return None
@@ -437,26 +409,70 @@ def setup(model, case, stage=None, build_phases=True):
         phase_models=phase_models, phase_G=phase_G, total_G=total_G,
         initial_amounts=initial_amounts, initial_G=initial_G, x_start=feasible.x, free=free,
         bounds=bounds, A_opt=A_opt, b_opt=b_opt, A_full=A_full, b_full=b_full, A=A, b=b,
-        charge=charge, gas_carbon=gas_carbon, feed_carbon=feed_carbon, gas_min_row=gas_min_row,
-        gas_min_target=gas_min_target, gas_min_fraction=GAS_C_MIN, energy_scale=energy_scale,
+        charge=charge, gas_carbon=gas_carbon, feed_carbon=feed_carbon, ineq_rows=ineq_rows,
+        ineq_targets=ineq_targets, carbon_checks=carbon_checks, energy_scale=energy_scale,
         elements=elements, entries=entries, C_mol_per_g=C_mol_per_g, T=T, atomic_weights=AW,
         phase_rules=allocation)
+
+
+def carbon_bound_rows(bounds, pairs, carbon, solid_carbon_target):
+    """Linear rows on phase carbon for the carbon bounds.
+
+    bounds   {phase: {'exact': f} or {'min': f, 'max': f}} (fractions of feed carbon)
+    pairs    [(phase, species)]; carbon: carbon atoms of each pair
+    Returns (exact_rows, bound_rows): [(phase, row, fraction)] for equalities
+    (row . n = fraction * feed carbon) and [(phase, kind, row, fraction)] for
+    'min' (row . n >= ...) and 'max' (row . n <= ...), in the order of ``bounds``.
+    'solid' counts solid carbon (char) only, or all solids (solid_carbon_target).
+    """
+    carbon = np.asarray(carbon, dtype=float)
+    exact_rows, bound_rows = [], []
+    for phase, bound in bounds.items():
+        if phase == 'solid' and solid_carbon_target == 'char':
+            if ('solid', 'carbon') not in pairs:
+                raise ValueError("Select solid 'carbon' to constrain char carbon.")
+            row = np.zeros(len(pairs))
+            j = pairs.index(('solid', 'carbon'))
+            row[j] = carbon[j]
+        else:
+            row = carbon * np.array([p == phase for p, _ in pairs], dtype=float)
+        for kind in BOUND_KINDS:
+            if kind not in bound:
+                continue
+            fraction = float(bound[kind])
+            if not np.isfinite(fraction) or not 0 <= fraction <= 1:
+                raise ValueError(f'{PHASE_LABELS.get(phase, phase)} carbon {kind} must be in [0, 1].')
+            if kind == 'exact':
+                exact_rows.append((phase, row, fraction))
+            else:
+                bound_rows.append((phase, kind, row, fraction))
+    return exact_rows, bound_rows
+
+
+def carbon_bound_violation(checks, amounts, feed_carbon):
+    """Largest violation of the carbon bounds, in fractions of the feed carbon."""
+    worst = 0.0
+    for _, kind, row, fraction in checks:
+        share = float(row @ amounts) / feed_carbon
+        excess = {'min': fraction - share, 'max': share - fraction}.get(kind, abs(share - fraction))
+        worst = max(worst, excess)
+    return worst
 
 
 def _optimize(model, s):
     case, registry = s.case, model.registry
     pairs, expand, total_G, phase_G = s.pairs, s.expand, s.total_G, s.phase_G
     A_opt, b_opt, bounds, initial_G = s.A_opt, s.b_opt, s.bounds, s.initial_G
-    gas_min_row, gas_min_target, GAS_C_MIN = s.gas_min_row, s.gas_min_target, s.gas_min_fraction
+    ineq_rows, ineq_targets = s.ineq_rows, s.ineq_targets
     gas_carbon, charge, energy_scale = s.gas_carbon, s.charge, s.energy_scale
     x_start = s.x_start
 
     eos_errors = []
 
     constraints = [{'type': 'eq', 'fun': lambda x: A_opt @ x - b_opt, 'jac': lambda x: A_opt}]
-    if GAS_C_MIN is not None:
-        constraints.append({'type': 'ineq', 'fun': lambda x: gas_min_row @ x - gas_min_target,
-                            'jac': lambda x: gas_min_row})
+    for row, target in zip(ineq_rows, ineq_targets):
+        constraints.append({'type': 'ineq', 'fun': lambda x, row=row, target=target: row @ x - target,
+                            'jac': lambda x, row=row: row})
     if case.solver == 'slsqp-fd':
         # The original method: SLSQP with finite-difference gradients.
         def objective(x):
@@ -475,31 +491,39 @@ def _optimize(model, s):
                                       'ftol': float(case.fd_ftol), 'eps': float(case.fd_eps),
                                       'disp': False})
         diagnostics = {'method': 'slsqp-fd'}
+        groups = [{'label': 'A', 'x': optimized.x, 'n_starts': 1, 'start_labels': ['initial']}]
     else:
-        use_min = GAS_C_MIN is not None
         problem = opt.GibbsProblem(
             phases=s.phase_models, pairs=pairs, free=s.free, phase_indices=s.indices,
             ions=set(registry.ion), T=s.T, A_eq=A_opt, b_eq=b_opt,
-            ineq_row=gas_min_row if use_min else None,
-            ineq_target=gas_min_target if use_min else None,
+            ineq_rows=ineq_rows if len(ineq_rows) else None,
+            ineq_targets=ineq_targets if len(ineq_rows) else None,
             lower=[low for low, _ in bounds], x_start=x_start, G0=initial_G,
             scale=energy_scale, model_total_G=total_G)
-        fluid = [p for p in s.phase_models if p != 'solid']
         options = {'method': case.solver, 'max_iterations': int(case.max_iterations),
-                   'multistart': max(0, int(case.starts) - 1 - 2 * len(fluid)) if case.starts > 1 else 0,
-                   'seed': int(case.seed),
+                   'starts': int(case.starts), 'seed': int(case.seed),
+                   'distinct_composition_tol': float(case.distinct_composition_tol),
+                   'distinct_gibbs_tol': float(case.distinct_gibbs_tol),
                    **case.solver_options}
         if case.stability_test is not None:
             options['stability_test'] = bool(case.stability_test)
         optimized, diagnostics = opt.optimize(problem, options)
+        groups = diagnostics.pop('groups', [])
+        diagnostics['results'] = [{key: g[key] for key in ('label', 'G', 'n_starts', 'start_labels')}
+                                  for g in groups]
         eos_errors.extend(problem.eos_errors[:max(0, 10 - len(eos_errors))])
     amounts = expand(optimized.x)
     residual = float(np.max(np.abs(s.A_full @ amounts - s.b_full)))
-    gas_min_violation = (max(0.0, float(gas_min_target - gas_carbon @ amounts))
-                         if GAS_C_MIN is not None else 0.0)
-    if gas_min_violation > 1e-7:
-        raise RuntimeError(f'Minimum gas-carbon allocation violated by {gas_min_violation:.3e} '
-                           'mol C/mol dry-feed C')
+    violation = carbon_bound_violation(s.carbon_checks, amounts, s.feed_carbon)
+    for check in s.carbon_checks:
+        phase, kind = check[0], check[1]
+        if kind == 'exact':
+            continue  # equalities are checked with the balances
+        excess = carbon_bound_violation([check], amounts, s.feed_carbon) * s.feed_carbon
+        if excess > 1e-7:
+            label = PHASE_LABELS[phase].lower()
+            raise RuntimeError(f'{"Minimum" if kind == "min" else "Maximum"} {label}-carbon allocation '
+                               f'violated by {excess:.3e} mol C/mol dry-feed C')
     if (not optimized.success or np.any(~np.isfinite(amounts)) or np.min(amounts) < -1e-09
             or residual > 1e-07):
         raise RuntimeError(f'{optimized.message}; constraint residual={residual:.3e}; '
@@ -509,6 +533,21 @@ def _optimize(model, s):
     final_G = float(sum(G_terms.values()))
     if final_G > initial_G + 0.0001:
         raise RuntimeError('Final Gibbs energy exceeds the feasible start.')
+    alternatives = []
+    for group in groups:
+        if group['label'] == 'A':
+            alt_amounts, terms, gibbs = amounts, G_terms, final_G
+        else:
+            alt_amounts = np.maximum(expand(group['x']), 0.0)
+            try:
+                terms = phase_G(alt_amounts)
+            except ValueError:
+                continue
+            gibbs = float(sum(terms.values()))
+        alternatives.append(Alternative(
+            label=group['label'], gibbs=gibbs, amounts=dict(zip(pairs, map(float, alt_amounts))),
+            n_starts=int(group['n_starts']), start_labels=list(group['start_labels']),
+            phase_gibbs=dict(terms)))
     return Result(
         temperature_C=float(case.temperature_C), pressure_bar=float(case.pressure_bar),
         amounts=dict(zip(pairs, map(float, amounts))),
@@ -519,9 +558,10 @@ def _optimize(model, s):
         feed_C_mol_per_g_dry=s.C_mol_per_g, elements=s.elements, feed_atoms=s.b.copy(),
         product_atoms=s.A @ amounts,
         gas_carbon_fraction=float(gas_carbon @ amounts / s.feed_carbon),
-        gas_carbon_min_violation=gas_min_violation, phase_rules=s.phase_rules,
+        carbon_bound_violation=violation, phase_rules=s.phase_rules,
         optimizer=diagnostics, atomic_weights=s.atomic_weights,
         species_data={pair: {'formula': entry.get('formula', pair[1]),
                              'elements': dict(entry['elements']),
                              'charge': entry.get('charge', 0) if pair[1] in registry.ion else 0}
-                      for pair, entry in zip(pairs, s.entries)})
+                      for pair, entry in zip(pairs, s.entries)},
+        alternatives=alternatives)
