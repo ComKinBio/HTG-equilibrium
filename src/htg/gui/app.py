@@ -1,7 +1,7 @@
-"""The browser app: ``htg gui``.
+"""The app: ``htg gui`` (own window) or ``htg gui --browser``.
 
-One shared state (model catalogue, worker pool, the case being edited) and a
-page with five tabs: case editor, queue, results, compare, species.
+One shared state (model catalogue, worker pool, preferences, the case being
+edited) and a page with five tabs: case editor, queue, results, compare, species.
 """
 import os
 from pathlib import Path
@@ -10,6 +10,7 @@ from nicegui import app, ui
 
 from ..model import Model
 from ..runner import WorkerPool
+from ..settings import Settings
 from .common import table_rows, worker_summary  # noqa: F401  (table_rows is used by tests)
 from .compare_tab import CompareTab
 from .document import CaseDocument
@@ -18,14 +19,20 @@ from .queue_tab import QueueTab
 from .results_tab import ResultsTab
 from .runs import live_tables, load_saved, output_folder, saved_runs
 from .species_tab import SpeciesTab, add_species  # noqa: F401  (add_species is used by tests)
+from .window import native_or_browser, use_qt
 
 
 class State:
-    """Everything shared by the tabs (one local user)."""
+    """Everything shared by the tabs (one local user).
 
-    def __init__(self, model, pool, results_dir='results', cases_dir='cases'):
+    settings  app preferences (htg.settings.Settings): read once here, written by
+              the tabs with settings.set(...). Default: Settings.load().
+    """
+
+    def __init__(self, model, pool, results_dir='results', cases_dir='cases', settings=None):
         self.model = model
         self.pool = pool
+        self.settings = settings if settings is not None else Settings.load()
         self.results_dir = Path(results_dir).resolve()
         self.cases_dir = Path(cases_dir).resolve()
         self.document = CaseDocument.new()
@@ -106,24 +113,44 @@ def build_page(state):
             SpeciesTab(state, editor)
 
 
-def run_app(results_dir='results', cases_dir='cases', workers=None, port=8080, show=True, model_args=None,
-            worker_target=None, warm_up=True, host='127.0.0.1'):
+def run_app(results_dir='results', cases_dir='cases', workers=None, port=None, show=True, model_args=None,
+            worker_target=None, warm_up=True, host='127.0.0.1', browser=False, settings=None):
     """Start the worker pool and serve the app until the window/terminal is closed.
 
-    host  '127.0.0.1' (default): only this computer can open the app. The app reads
-          and writes files, so share it on a network only on purpose.
+    browser  False (default): open the app in its own window (pywebview); if that
+             cannot start, print why and use the browser. True: browser tab.
+    show     browser mode only: open a browser tab (False: only serve).
+    port     default: 8080 in the browser, a free port for the window.
+    host     '127.0.0.1' (default): only this computer can open the app. The app reads
+             and writes files, so share it on a network only on purpose.
     """
+    native = native_or_browser(browser or not show)
     model = Model.load(**(model_args or {}))
     pool = WorkerPool(workers, model.load_args, warm_up=warm_up, worker_target=worker_target)
-    state = State(model, pool, results_dir, cases_dir)
+    state = State(model, pool, results_dir, cases_dir, settings=settings)
+    stopped = []
+
+    def stop():
+        if not stopped:
+            stopped.append(True)
+            pool.shutdown(wait=False)
+            print('Stopped. Finished runs are saved in', state.results_dir)
+
     app.on_startup(pool.start)
-    app.on_shutdown(lambda: pool.shutdown(wait=False))
+    # Closing the window stops the server and runs on_shutdown, then NiceGUI exits the
+    # process: code after ui.run() does not run in that case.
+    app.on_shutdown(stop)
     print(f'Starting {pool.target} worker(s); each needs about a minute before the first point.')
+    if native:
+        if use_qt():
+            app.native.start_args['gui'] = 'qt'
+        window = {'native': True, 'window_size': (1400, 900), 'port': port}
+    else:
+        window = {'show': show, 'port': port or 8080}
     try:
-        ui.run(lambda: build_page(state), host=host, port=port, show=show, reload=False, title='HTG equilibrium',
-               show_welcome_message=True)
+        ui.run(lambda: build_page(state), host=host, reload=False, title='HTG equilibrium',
+               show_welcome_message=not native, **window)
     except KeyboardInterrupt:
         pass
     finally:
-        pool.shutdown(wait=False)
-        print('Stopped. Finished runs are saved in', state.results_dir)
+        stop()

@@ -36,6 +36,34 @@ def test_number_lists():
         parse_numbers('hot')
 
 
+def test_number_list_syntax():
+    assert parse_numbers('300:400 n=5') == [300, 325, 350, 375, 400]
+    assert parse_numbers('300, 350, 400') == [300, 350, 400]
+    assert parse_numbers('300:400:50') == [300, 350, 400]
+    assert parse_numbers('250, 300:400:50') == [250, 300, 350, 400]
+    assert parse_numbers('400; 250\t300:400 n=3') == [250, 300, 350, 400]  # sorted, duplicates removed
+    assert parse_numbers('300 : 400  n = 3') == [300, 350, 400]
+    assert parse_numbers('0:1:0.1') == [i / 10 for i in range(11)]
+    assert parse_numbers('350 300 300', sort=False) == [350, 300, 300]
+    for text, message in [('n=5', 'must follow a range'), ('300:400 n=1', '2 or more'),
+                          ('300:400 n=2.5', 'whole number'), ('300:400', 'needs a step or a count'),
+                          ('300:400:50 n=3', 'both a step and a count'), ('400:300:50', 'start is above'),
+                          ('300:400:-5', 'above zero'), ('1:2:3:4', 'not a range'), ('nan', 'not a number'),
+                          ('0:1e9:1', 'more than')]:
+        with pytest.raises(ValueError, match=message):
+            parse_numbers(text)
+
+
+def test_number_lists_in_display_units():
+    assert parse_numbers('573.15:673.15 n=3', unit='K') == [300, 350, 400]
+    assert parse_numbers('24, 30', unit='MPa') == [240, 300]
+    assert parse_numbers('2.4e7', unit='Pa') == [240]
+    assert parse_numbers('1', unit='atm') == [1.01325]
+    assert parse_numbers('300', unit='C') == [300]
+    with pytest.raises(ValueError, match='Unknown unit'):
+        parse_numbers('300', unit='F')
+
+
 def test_points_and_salt_elements():
     assert parse_points('300, 240\n\n350 300\n') == [[300, 240], [350, 300]]
     with pytest.raises(ValueError):

@@ -30,8 +30,12 @@ once, but only needs to be done once.
 uv run htg gui
 ```
 
-opens the app in your web browser. It runs on your own computer (only you can
-open it) until you close the terminal or press Ctrl+C. Tabs:
+opens the app in its own window (`uv run htg gui --browser`: in a browser tab).
+It runs on your own computer (only you can open it) until you close the window,
+or the terminal, or press Ctrl+C. If the window cannot open (on Linux it needs
+a desktop session and the Qt system libraries, for example `libegl1`,
+`libxcb-cursor0` and `libnss3` on Ubuntu), the app says why and opens in the
+browser. Tabs:
 
 - **Case**: open, edit and save case files (comments in the file are kept).
   Basic settings are shown first; the rest is under *Advanced settings*.
@@ -48,7 +52,8 @@ open it) until you close the terminal or press Ctrl+C. Tabs:
   used, and buttons that add a species to the case being edited.
 
 Every run is saved to `results/<case name>-<date>-<time>/`. Options:
-`--workers N`, `--results DIR`, `--cases DIR`, `--port PORT`, `--no-browser`.
+`--browser`, `--workers N`, `--results DIR`, `--cases DIR`, `--port PORT`,
+`--no-browser` (only start the server).
 
 ## Running a case from the terminal
 
