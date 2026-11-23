@@ -438,3 +438,103 @@ def tp_map(tables, options):
                       grid.to_numpy().tolist(), unit)
     panel = Panel('', options.axis_label('T_C'), options.axis_label('P_bar'), heatmap=heatmap, key='map')
     return PlotSpec(_title('map', name), [panel], 'map')
+
+
+# --- Compare tab --------------------------------------------------------------------------------
+
+CGE = 'cge'
+COMPARE_DASHES = ('solid', 'dash', 'dot', 'dashdot')  # one per pressure of a run
+
+
+@dataclass
+class CompareRun:
+    """One run on the Compare tab: legend label, tables and feed fractions (s, a)."""
+    label: str
+    tables: object
+    s: float | None = None
+    a: float = 0.0
+
+
+def compare_items(runs):
+    """Choices of the Compare tab "Quantity": {key: label}.
+
+    'cge' (carbon gasification efficiency), then 'phase:species' as 'Gas · methane' for
+    every species with an amount in any run.
+    """
+    items = {CGE: PLOTS['cge']}
+    keys = set()
+    for run in runs:
+        species = run.tables.species
+        if species is None or species.empty:
+            continue
+        part = species[species.mol_per_mol_C.astype(float) > q.TINY]
+        keys.update(zip(part.phase, part.species))
+    order = {phase: i for i, phase in enumerate(PANEL_ORDER)}
+    for phase, name in sorted(keys, key=lambda k: (order.get(k[0], 9), k[1])):
+        items[f'{phase}:{name}'] = f'{PHASE_TITLES.get(phase, phase)} · {name}'
+    return items
+
+
+def compare_runs(runs, key, options=None, measured_run=None):
+    """One quantity from several runs against temperature (Compare tab).
+
+    runs          list of CompareRun
+    key           'cge' or 'phase:species'
+    options       PlotOptions (amount, basis, log, units); measured data in options.measured
+    measured_run  the CompareRun whose feed converts the measured data (default: the first)
+    Colour = run; line style = pressure when a run has several. A run that cannot give the
+    chosen basis (no total mass) is left out.
+    """
+    options = options or PlotOptions()
+    options.x_axis = 'T'
+    label = compare_items(runs).get(key, key.replace(':', ' · '))
+    if key == CGE:
+        unit, y_label = '%', f"{PLOTS['cge']} [%]"
+    else:
+        unit = q.amount_unit(options.amount, options.basis)
+        y_label = f'Amount [{unit}]'
+    panel = Panel('', options.axis_label('T_C'), y_label, log=options.log, key='compare')
+    left_out = []
+    for i, run in enumerate(runs):
+        tables = run.tables
+        if not _ready(tables):
+            continue
+        if key == CGE:
+            long = q.carbon_gasification_efficiency(tables.summary).assign(species=CGE)
+            column = CGE
+        else:
+            if options.basis == 'total' and run.s is None:
+                left_out.append(run.label)
+                continue
+            phase, column = key.split(':', 1)
+            long = q.amounts(tables.species, options.amount, options.basis, run.s, run.a)
+            long = long[long.phase == phase]
+        pressures = q.grid_values(tables.summary, 'P_bar')
+        for k, P in enumerate(pressures):
+            table = q.profile(long, tables.summary, 'T_C', P, [column])
+            y = table[column].to_numpy(dtype=float)
+            if options.log:
+                y = np.where(y > LOG_FLOOR, y, np.nan)
+            name = run.label if len(pressures) == 1 else f"{run.label}, {options.text('P_bar', P)}"
+            dash = COMPARE_DASHES[k % len(COMPARE_DASHES)] if len(pressures) > 1 else None
+            panel.series.append(Series([options.convert('T_C', v) for v in table.index], y.tolist(), name, i,
+                                       name, dash))
+    measured = options.measured
+    source = measured_run or (runs[0] if runs else None)
+    if measured is not None and key != CGE and source is not None and _ready(source.tables) \
+            and not (options.basis == 'total' and source.s is None):
+        long = q.measured_amounts(measured.table, measured.quantity, source.tables.species, options.amount,
+                                  options.basis, source.s, source.a)
+        phase, name = key.split(':', 1)
+        part = long[(long.phase == phase) & (long.species == name)] if len(long) else long
+        if len(part):
+            part = part.sort_values('T_C')
+            y = part.value.to_numpy(dtype=float)
+            if options.log:
+                y = np.where(y > LOG_FLOOR, y, np.nan)
+            panel.series.append(Series([options.convert('T_C', v) for v in part.T_C], y.tolist(), measured.label,
+                                       NEUTRAL, 'measured', None, 'square-open', False, True))
+    message = '' if panel.series else NO_POINTS
+    if left_out and not panel.series:
+        message = q.NO_TOTAL_MASS
+    return PlotSpec(f'{label} · {unit}', [panel], 'compare', message=message)

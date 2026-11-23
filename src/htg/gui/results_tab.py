@@ -23,7 +23,14 @@ from .. import quantities as q
 from .. import units
 from ..plotrender import render_plotly
 from ..plotspec import LINE_WIDTHS, THEME_LABELS, Series, palette, resolve_style
-from .common import OptionRadio, data_table, palette_strip, save_bytes, show_table, swatch
+from .common import (
+    OptionRadio,
+    data_table,
+    palette_strip,
+    save_bytes,
+    show_table,
+    swatch,
+)
 from .save_plot import SavePlotDialog
 
 TEMPERATURE_UNITS = {key: units.LABELS[key] for key in units.TEMPERATURE_UNITS}
