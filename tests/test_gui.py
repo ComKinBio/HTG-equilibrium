@@ -4,7 +4,6 @@ The page test uses NiceGUI's simulated user and stand-in workers (no Julia); the
 plot tests use a small real T-P grid.
 """
 import asyncio
-import tomllib
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +15,7 @@ from htg import plotbuild as pb
 from htg.gui.app import State, add_species, build_page, table_rows
 from htg.gui.document import CaseDocument, case_from_data
 from htg.gui.editor import format_numbers, parse_numbers, parse_points
-from htg.gui.runs import case_differences, load_saved, output_folder, saved_runs
+from htg.gui.runs import load_saved, output_folder, saved_runs
 from htg.plotrender import render_plotly
 from htg.runner import WorkerPool
 
@@ -133,14 +132,6 @@ def test_add_species_to_case_data():
 
 
 # ---------------------------------------------------------------- runs and tables
-def test_case_differences():
-    template = htg.load_case(ROOT / 'src/htg/templates/case_template.toml')
-    other = template.replace(name='other', pressure_bar=300, solver='slsqp')
-    table = case_differences({'a': template, 'b': other, 'missing': None})
-    assert list(table.columns) == ['setting', 'a', 'b']
-    assert set(table.setting) == {'conditions.pressure_bar', 'solver.method'}
-
-
 def test_output_folders_do_not_collide(tmp_path):
     import datetime
     now = datetime.datetime(2026, 1, 2, 3, 4, 5)

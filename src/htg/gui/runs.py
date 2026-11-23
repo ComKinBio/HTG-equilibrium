@@ -1,5 +1,4 @@
 """Result tables of runs, live (from the worker pool) or saved (results folders)."""
-import tomllib
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
@@ -114,46 +113,3 @@ def live_tables(run):
     return RunTables.build(f'{run.name} (this session, #{run.id})', run.case, sweep.summary(),
                            sweep.species_table(), sweep.phase_summary(), comparison, folder,
                            sweep.alternatives_table(), choices)
-
-
-def flatten(data, prefix=''):
-    """{'feed': {'water_g_per_g_dry': 4}} -> {'feed.water_g_per_g_dry': 4}."""
-    out = {}
-    for key, value in data.items():
-        name = f'{prefix}{key}'
-        if isinstance(value, dict) and value:
-            out.update(flatten(value, name + '.'))
-        else:
-            out[name] = value
-    return out
-
-
-def case_differences(cases):
-    """Settings that differ between cases: DataFrame with one column per label.
-
-    cases  {label: Case}
-    """
-    flat = {}
-    for label, case in cases.items():
-        if case is None:
-            continue
-        data = tomllib.loads(case.to_toml())
-        data.pop('name', None)
-        data.pop('description', None)
-        data.get('comparison', {}).pop('file', None)
-        flat[label] = flatten(data)
-    keys = sorted(set().union(*[set(f) for f in flat.values()])) if flat else []
-    rows = []
-    for key in keys:
-        values = [flat[label].get(key) for label in flat]
-        if any(v != values[0] for v in values[1:]):
-            rows.append({'setting': key, **{label: _show(v) for label, v in zip(flat, values)}})
-    return pd.DataFrame(rows, columns=['setting', *flat])
-
-
-def _show(value):
-    if value is None:
-        return '(default)'
-    if isinstance(value, list):
-        return ', '.join(map(str, value)) if len(value) <= 12 else f'{len(value)} values'
-    return str(value)

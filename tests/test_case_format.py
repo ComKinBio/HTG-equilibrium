@@ -4,19 +4,16 @@ The old (format 1) versions of the example cases are kept in
 tests/data/legacy_cases; old and converted forms must give the same Case in
 every number the model uses.
 """
-import copy
-import math
 import os
 import tomllib
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 
 import htg
-from htg.case import (LegacyConversionError, carbon_bound_messages, case_from_dict, check_carbon_bounds,
-                      effective_carbon_bounds, fluid_phase_count, is_v2, legacy_carbon_bounds, legacy_to_v2,
+from htg.case import (LegacyConversionError, case_from_dict, check_carbon_bounds,
+                      fluid_phase_count, is_v2, legacy_carbon_bounds, legacy_to_v2,
                       starts_from_multistart)
 from htg.feed_v2 import (FeedError, UNMODELLED_MESSAGE, feed_fractions, feed_summary, feed_v2_to_model,
                          legacy_feed_to_v2, molar_mass_function)
