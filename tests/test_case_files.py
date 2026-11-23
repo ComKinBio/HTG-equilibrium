@@ -63,6 +63,7 @@ def test_case_file_matches_reference(models, file, reference):
         np.testing.assert_allclose(getattr(new, attr), getattr(old, attr), rtol=1e-12, atol=1e-14,
                                    err_msg=attr)
     assert new.bounds == old.bounds
-    assert new.gas_min_fraction == old.gas_min_fraction
+    np.testing.assert_array_equal(new.ineq_rows, old.ineq_rows)
+    np.testing.assert_array_equal(new.ineq_targets, old.ineq_targets)
     final = np.array(list(pairs(entry['result']['amounts']).values()))
     assert new.total_G(final) == pytest.approx(old.total_G(final), rel=1e-13)

@@ -2,6 +2,7 @@
 import pandas as pd
 
 from . import standard_states as ss
+from .case import carbon_bound_messages
 from .equilibrium import apply_phase_rules, setup
 from .results import Result, SweepResult
 from .runner import WorkerPool, solve_chain
@@ -85,3 +86,20 @@ def preflight(model, case):
             row.update(status='invalid', error=f'{type(exc).__name__}: {exc}')
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def preflight_messages(model, case):
+    """Readable reasons the case cannot run ([]: none found).
+
+    First the carbon-bound checks (contradictory or impossible bounds); if they
+    pass, the per-point preflight, as "T °C, P bar: error" for each failed point.
+    """
+    solids = getattr(model.registry, 'solid', {})
+    carbon_solids = {name: bool(solids[name].get('elements', {}).get('C', 0))
+                     for name in case.phases.get('solid', []) if name in solids}
+    messages = carbon_bound_messages(case, carbon_solids)
+    if messages:
+        return messages
+    table = preflight(model, case)
+    return [f'{row.T_C:g} °C, {row.P_bar:g} bar: {row.error}'
+            for row in table.itertuples() if row.status != 'ready']
