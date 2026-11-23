@@ -109,10 +109,17 @@ def parse_nasa_header_elements(header):
 
 def read_nasa_database(path):
     """Parse 4-line NASA-7 records into {name: {T_low, T_mid, T_high, low, high, elements, phase}}."""
+    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        nasa_db = read_nasa_lines(f.readlines())
+    if not nasa_db:
+        raise ValueError('No NASA-7 entries found')
+    return nasa_db
+
+
+def read_nasa_lines(lines):
+    """The NASA-7 records found in ``lines`` (strict CHEMKIN columns); {} if there are none."""
     nasa_db = {}
     i = 0
-    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-        lines = f.readlines()
     while i < len(lines):
         line1 = lines[i].rstrip('\n')
         if len(line1) < 80 or line1[79:80] != '1':
@@ -148,8 +155,6 @@ def read_nasa_database(path):
                                  'elements': parse_nasa_header_elements(line1),
                                  'phase': line1[44:45].strip().upper()}
         i += 4
-    if not nasa_db:
-        raise ValueError('No NASA-7 entries found')
     return nasa_db
 
 
