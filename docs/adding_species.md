@@ -1,8 +1,41 @@
 # Adding species
 
-Most species are added by adding rows to the databases in `data/`; no code
-changes are needed. When the model loads, it scans the databases and makes a
-species available when its data are complete.
+There are two ways to add a species:
+
+- **In the app** (Species tab), for most cases. The species goes into your own
+  species database; the shipped databases in `data/` are not changed.
+- **In the database files** in `data/`, for species that should ship with the
+  repository.
+
+## In the app
+
+Open the Species tab of `uv run htg gui`.
+
+- **+ New species**: choose the kind (molecule, aqueous ion or solid), give a
+  name and formula, then the thermochemistry (a NASA-7 record already in the
+  database, NASA-7 coefficients, a pasted CHEMKIN record, an SUPCRT92 HKF
+  record or HKF parameters for ions, or Maier–Kelley data for solids) and, for
+  molecules and ions, the PC-SAFT or ePC-SAFT parameters. The check panel on
+  the right lists what is still missing. Incomplete species can be saved; they
+  are listed as not usable, with the reason.
+- **Edit selected**: change a shipped or own species. Changes to a shipped
+  species are stored as an override; *Reset to original* removes it.
+- **Import from file…**: read a PC-SAFT or ePC-SAFT table (same columns as the
+  shipped CSV files), a NASA-7 thermo file or an SUPCRT92 XML file. A preview
+  shows which species are new, which replace existing values (unticked by
+  default) and which are skipped, and why.
+- **Remove from my database**: delete one of your own species.
+
+The database folder is `~/.local/share/htg-equilibrium/species/` on Linux;
+`--user-data DIR` or `HTG_USER_DATA` chooses another, and `--no-user-species`
+turns it off. Saved runs record the user species they used in
+`user_species_used.toml`. The README describes the files.
+
+## In the database files
+
+Add rows to the databases in `data/`; no code changes are needed. When the
+model loads, it scans the databases and makes a species available when its
+data are complete.
 
 Check the result with:
 
@@ -13,7 +46,7 @@ uv run htg species --all --search <name>    # also incomplete ones, with the rea
 
 The `Reason` column tells you what is missing.
 
-## Fluid molecules (gas, organic liquid, aqueous neutral)
+### Fluid molecules (gas, organic liquid, aqueous neutral)
 
 A molecule needs two things:
 
@@ -44,7 +77,7 @@ acetone = "CH3COCH3"
 The left side is the `Species` name from the SAFT file (case-insensitive), the
 right side the NASA record name.
 
-### Binary interaction parameters
+#### Binary interaction parameters
 
 PC-SAFT k_ij values for the gas and organic-liquid phases are listed at the end
 of `data/species.toml`, by equation-of-state formula:
@@ -55,7 +88,7 @@ components = ["CO2", "CH4"]
 kij = 0.065
 ```
 
-## Aqueous ions
+### Aqueous ions
 
 An ion needs:
 
@@ -67,7 +100,7 @@ An ion needs:
 
 Ions can only be used in the aqueous phase with `model = "electrolyte"`.
 
-## Pure solids
+### Pure solids
 
 Either of these works:
 
@@ -88,9 +121,10 @@ elements = { C = 1 }
 
 ## Feed species
 
-A dry feed can be given as moles of species (`species_moles` in a case file),
-for example `{ cellulose = 1.0 }`. Any species with a NASA record can be
-used this way, including ones without SAFT parameters.
+A feed can be given as amounts of species (`[feed.species]` in a case file,
+for example `cellulose = { value = 0.5, unit = "kg" }`, next to the water
+entry). Any species with a NASA record can be used this way, including ones
+without SAFT parameters.
 
 ## After adding species
 
