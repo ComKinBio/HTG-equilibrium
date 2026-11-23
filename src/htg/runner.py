@@ -123,6 +123,13 @@ class _Task:
     chain: list
 
 
+def _current_point(task):
+    """The first point of a task's chain without an outcome yet (the one being solved)."""
+    if task is None:
+        return None
+    return next(((T, P) for T, P in task.chain if (T, P) not in task.run.outcomes), None)
+
+
 @dataclass
 class _Worker:
     id: int
@@ -290,10 +297,13 @@ class WorkerPool:
                 self._spawn()
 
     def status(self):
-        """Worker states and queue length (for display)."""
+        """Worker states and queue length (for display).
+
+        Each worker has 'point': the (T_C, P_bar) it is solving, or None.
+        """
         with self._lock:
             workers = [{'id': w.id, 'state': w.state, 'message': w.message,
-                        'case': w.task.run.name if w.task else ''}
+                        'case': w.task.run.name if w.task else '', 'point': _current_point(w.task)}
                        for w in self._workers.values() if w.state not in ('stopped',)]
             return {'workers': workers, 'queued_pieces': len(self._pending), 'target': self.target}
 

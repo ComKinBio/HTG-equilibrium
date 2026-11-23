@@ -1,8 +1,9 @@
-"""Small helpers shared by the tabs: tables and status text."""
+"""Small helpers shared by the tabs: tables, status text, swatches and saving files."""
 import math
 import time
+from pathlib import Path
 
-from nicegui import ui
+from nicegui import app, ui
 
 
 def table_rows(df, digits=6):
@@ -48,3 +49,76 @@ def worker_summary(status):
     if status['queued_pieces']:
         text += f' · {status["queued_pieces"]} piece(s) waiting'
     return text
+
+
+class OptionRadio(ui.radio):
+    """A radio group whose options can be disabled one by one.
+
+    set_disabled({value: reason}) disables those options; the reasons become the
+    group's tooltip.
+    """
+
+    def __init__(self, options, *, value=None, on_change=None):
+        self.disabled = {}
+        super().__init__(options, value=value, on_change=on_change)
+        with self:
+            self.reason = ui.tooltip('')
+        self.reason.set_visibility(False)
+
+    def _update_options(self):
+        super()._update_options()
+        for option, value in zip(self._props['options'], self._values):
+            if value in getattr(self, 'disabled', {}):
+                option['disable'] = True
+
+    def set_disabled(self, disabled):
+        disabled = dict(disabled)
+        if disabled == self.disabled:
+            return
+        self.disabled = disabled
+        self._update_options()
+        self.update()
+        text = ' '.join(dict.fromkeys(disabled.values()))
+        self.reason.set_text(text)
+        self.reason.set_visibility(bool(text))
+
+
+def swatch(colour, dash='solid', width=22):
+    """A short line in a series colour (dashed or dotted when the colour repeats)."""
+    style = {'solid': 'solid', 'dash': 'dashed', 'dot': 'dotted', 'dashdot': 'dashed'}.get(dash, 'solid')
+    return ui.element('span').style(f'display:inline-block;width:{width}px;height:0;'
+                                    f'border-top:3px {style} {colour};vertical-align:middle')
+
+
+def palette_strip(container, colours):
+    """Fill ``container`` with one small square per colour."""
+    container.clear()
+    with container:
+        for colour in colours:
+            ui.element('span').style(f'display:inline-block;width:12px;height:12px;background:{colour}')
+
+
+FILE_TYPES = {'png': 'PNG image (*.png)', 'svg': 'SVG image (*.svg)', 'pdf': 'PDF document (*.pdf)',
+              'zip': 'ZIP archive (*.zip)', 'csv': 'CSV table (*.csv)'}
+
+
+async def save_bytes(data, filename):
+    """Save ``data`` with a save dialog in the app window, or as a download in the browser.
+
+    Returns the path written (window), the file name (download), or None if cancelled.
+    """
+    window = getattr(app.native, 'main_window', None)
+    if window is None:
+        ui.download.content(data, filename)
+        return filename
+    import webview
+
+    kind = webview.FileDialog.SAVE if hasattr(webview, 'FileDialog') else webview.SAVE_DIALOG
+    suffix = Path(filename).suffix.lstrip('.').lower()
+    types = (FILE_TYPES[suffix],) if suffix in FILE_TYPES else ()
+    chosen = await window.create_file_dialog(kind, save_filename=filename, file_types=types)
+    if not chosen:
+        return None
+    path = chosen if isinstance(chosen, str) else chosen[0]
+    Path(path).write_bytes(data)
+    return path

@@ -12,11 +12,12 @@ import pandas as pd
 import pytest
 
 import htg
-from htg.gui import plots
+from htg import plotbuild as pb
 from htg.gui.app import State, add_species, build_page, table_rows
 from htg.gui.document import CaseDocument, case_from_data
 from htg.gui.editor import parse_elements, parse_numbers, parse_points
 from htg.gui.runs import case_differences, load_saved, output_folder, saved_runs
+from htg.plotrender import render_plotly
 from htg.runner import WorkerPool
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -171,35 +172,38 @@ def test_saved_runs_are_found(grid_run):
 
 
 def test_profiles_have_gaps_only_at_failed_points(grid_run):
-    fig = plots.species_vs_temperature(grid_run.species, grid_run.summary, 'gas', log=False)
-    assert len(fig.data) == 2 * len({t.legendgroup for t in fig.data})  # every species at both pressures
-    for trace in fig.data:
-        y = np.asarray(trace.y, dtype=float)
-        if trace.name.endswith('240 bar'):
-            assert list(trace.x) == [300, 350, 365, 380]
-            assert np.isnan(y[2]) and not np.isnan(y[[0, 1, 3]]).any()
-        else:  # 365 °C was only asked at 240 bar
-            assert list(trace.x) == [300, 350, 380]
-            assert not np.isnan(y).any()
+    for P, x in ((240, [300, 350, 365, 380]), (300, [300, 350, 380])):  # 365 °C was only asked at 240 bar
+        spec = pb.build_plot('phases', grid_run, pb.PlotOptions(fixed=P))
+        gas = spec.panels[0]
+        assert gas.series
+        for series in gas.series:
+            y = np.asarray(series.y, dtype=float)
+            assert series.x == x
+            if P == 240:
+                assert np.isnan(y[2]) and not np.isnan(y[[0, 1, 3]]).any()
+            else:
+                assert not np.isnan(y).any()
 
 
 def test_all_views_draw(grid_run):
-    for group in plots.GROUPS:
-        for quantity in plots.QUANTITIES:
-            plots.species_vs_temperature(grid_run.species, grid_run.summary, group, quantity)
-        plots.species_vs_pressure(grid_run.species, grid_run.summary, group, 350.0)
-    for item in plots.map_items(grid_run):
-        fig = plots.tp_map(grid_run, item)
-        assert np.asarray(fig.data[0].z).shape == (2, 4)
-    carbon = plots.carbon_vs_temperature(grid_run.phases, grid_run.summary)
-    assert {t.legendgroup for t in carbon.data} >= {'gas'}
-    both = plots.compare_runs([grid_run, grid_run], 'gas:methane')
-    assert len(both.data) == 4
+    for kind in pb.PLOTS:
+        for amount, basis in (('mol', 'dry'), ('g', 'daf')):
+            spec = pb.build_plot(kind, grid_run, pb.PlotOptions(amount=amount, basis=basis))
+            render_plotly(spec)
+        pb.build_plot(kind, grid_run, pb.PlotOptions(x_axis='P', fixed=350.0))
+    for item in pb.map_items(grid_run):
+        heat = pb.build_plot('map', grid_run, pb.PlotOptions(map_item=item)).panels[0].heatmap
+        assert np.asarray(heat.z).shape == (2, 4)
+    carbon = pb.build_plot('carbon', grid_run)
+    assert {s.key for s in carbon.panels[0].series} >= {'gas'}
+    runs = [pb.CompareRun('a', grid_run), pb.CompareRun('b', grid_run)]
+    both = pb.compare_runs(runs, 'gas:methane')
+    assert len(both.panels[0].series) == 4  # two runs at two pressures
 
 
 def test_gas_carbon_map_matches_summary(grid_run):
-    fig = plots.tp_map(grid_run, 'gas_carbon_percent')
-    z = np.asarray(fig.data[0].z, dtype=float)
+    heat = pb.build_plot('map', grid_run, pb.PlotOptions(map_item='gas_carbon_percent')).panels[0].heatmap
+    z = np.asarray(heat.z, dtype=float)
     row = grid_run.summary[(grid_run.summary.T_C == 350) & (grid_run.summary.P_bar == 300)].iloc[0]
     assert z[1, 1] == pytest.approx(row.gas_carbon_percent)
     assert np.isnan(z[0, 2])  # the failed point
