@@ -5,10 +5,12 @@
 # Species names:    uv run htg species --search methane
 #
 # Units: temperature in °C, pressure in bar (absolute). Species amounts
-# (constraints, results) are mol per mol of carbon in the dry feed.
+# (constraints, results) are mol per mol of carbon in the dry feed. Carbon
+# shares are fractions (0.9 = 90 %).
 # Lines starting with # are comments. Delete or comment out what you don't need;
 # anything left out takes its default value.
 
+format = 2
 name = "my_case"
 description = "What this case is about."
 
@@ -23,14 +25,17 @@ pressure_bar = 240.0                   # one value, or a list: every temperature
 # points = [[300, 240], [350, 250], [400, 260]]
 
 [feed]
-# Dry feed as an elemental analysis (mass %, dry basis) ...
+# The wet feed going into the reactor: solids plus water.
+total_kg = 5.0                              # solids + water
+solids = { value = 20.0, unit = "%" }       # "%" of the total mass, or "kg"
+ash = { value = 8.44, unit = "%" }          # "%" of the solids, or "kg"; leave out for no ash
+# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum
+# to 100 % when used.
 elements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }
-# basis = "dry"                 # or "dry_ash_free" (must sum to 100)
-# ash_wt_percent = 8.45         # bookkeeping only; elements + ash must then sum to 100
-# ... or as relative moles of registered species (replaces the analysis):
-# species_moles = { cellulose = 1.0 }
-water_g_per_g_dry = 4.0         # added process water, g per g dry feed
-# moisture_wt_percent = 0.0     # feed moisture, % of the wet feed
+# Or, instead of the four lines above, amounts of species (no ash in this mode):
+# [feed.species]
+# water = { value = 4.5, unit = "kg" }      # always present; "kg" or "mol"
+# cellulose = { value = 0.5, unit = "kg" }
 
 # Added salts supply atoms only; the products decide where those atoms go.
 # Every salt element needs a product that can carry it (an ion or a mineral).
@@ -55,18 +60,22 @@ cutoff_C = 390.0          # no aqueous phase at and above this temperature (a mo
 # water_floor = 1e-8      # minimum aqueous water, mol/mol C
 
 [constraints]
-# Carbon fractions count carbon atoms, relative to all feed carbon.
-# gas_carbon_fraction = 0.8          # exactly this fraction of the carbon in gas
-# gas_carbon_min_fraction = 0.9      # at least this fraction in gas
-# solid_carbon_fraction = 0.1        # exactly this fraction in solids
-# solid_carbon_target = "char"       # "char" (solid carbon only) or "all_solids"
-# phase_carbon_fractions = { organic_liquid = 0.05 }
+# solid_carbon_target = "char"       # what "solid" means below: "char" (solid carbon only) or "all_solids"
 # [constraints.minimum_amounts]      # lower bounds, mol/mol C
 # gas = { water = 1e-8 }
 
+# Share of the feed carbon in each phase, as fractions of all feed carbon.
+# Per phase: exact, or min and/or max. A phase left out is free.
+# [constraints.carbon]
+# gas = { min = 0.9 }
+# solid = { max = 0.05 }
+# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase
+
 [solver]
 method = "ipopt"          # "ipopt" (default), "slsqp", "trust-constr", or "slsqp-fd" (original)
-# multistart = 4          # extra starting points; keeps the lowest Gibbs energy
+# starts = 5              # starting points in total; distinct results are all kept
+# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]
+# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]
 # max_iterations = 5000
 
 [initial_guess]
@@ -77,7 +86,6 @@ initialization = "auto"   # "auto", "liquid" (water-rich aqueous), "vapor" (wate
 # pressure, or in the order of the points list. false: every point starts fresh
 # (then all points can run in parallel).
 continuation = true
-# refine = { start_C = 350, stop_C = 400, step_C = 5 }   # extra temperatures
 
 # Data to show next to the results in plots (CSV: T_C column, then "phase:species" columns).
 # [comparison]

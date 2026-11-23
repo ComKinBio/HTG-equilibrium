@@ -1,18 +1,22 @@
 # Default case of HTG_Configurable_Case: manure with three salts, organics in
 # every fluid phase, ions and minerals, aqueous cut-off at 385 °C, free carbon
-# allocation, extra temperatures every 5 °C between 300 and 400 °C.
+# allocation, temperatures every 5 °C between 300 and 400 °C.
 
+format = 2
 name = "manure_configurable"
 description = "Manure with salts, organics, ions and minerals (HTG_Configurable_Case)."
 
 [conditions]
-temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]
+temperature_C = [100, 150, 200, 250, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355,
+                 360, 365, 370, 375, 380, 385, 389.6, 390, 395, 400, 420, 460, 500, 540, 580]
 pressure_bar = 240.0
 
 [feed]
+# 1 kg of dry feed (8.45 % ash) with 3.999935304 kg of water
+total_kg = 4.999935304
+solids = { value = 1.0, unit = "kg" }
+ash = { value = 8.44688764, unit = "%" }
 elements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }
-water_g_per_g_dry = 3.999935304
-ash_wt_percent = 8.44688764
 
 [feed.salts.NaHCO3]
 mol_per_g_dry_feed = 1e-5
@@ -56,9 +60,6 @@ water_floor = 1e-6
 
 [solver]
 method = "ipopt"
-
-[sweep]
-refine = { start_C = 300, stop_C = 400, step_C = 5 }
 
 [comparison]
 file = "comparison/yakaboylu2013_fig7_8.csv"

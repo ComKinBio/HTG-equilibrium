@@ -18,6 +18,7 @@ from scipy.optimize import linprog, minimize
 from . import optimizer as opt
 from . import standard_states as ss
 from .constants import ATOMIC_WEIGHTS, PHASES
+from .feed_v2 import molar_mass_function, registry_elements
 from .phases import EOSFailure, ElectrolytePhase, FluidPhase, SolidPhase, build_pcsaft_model
 from .results import Result
 
@@ -68,7 +69,7 @@ def apply_phase_rules(case, registry):
         phases['aqueous'] = []
         minimum = {pair: v for pair, v in minimum.items() if pair[0] != 'aqueous'}
         liquid = False
-        if float(case.phase_carbon_fractions.get('aqueous', 0.0)) != 0.0:
+        if float(case.carbon_bounds.get('aqueous', {}).get('exact', 0.0)) != 0.0:
             raise ValueError('Aqueous cut-off conflicts with nonzero aqueous phase_carbon_fractions; '
                              'revise carbon targets explicitly')
     for phase, names in phases.items():
@@ -172,12 +173,18 @@ def setup(model, case, stage=None, build_phases=True):
         apply_phase_rules(case, registry)
     TEMPERATURE_C = float(case.temperature_C)
     PRESSURE_BAR = float(case.pressure_bar)
-    FEED = case.feed.dry_element_wt_percent(
+    feed = case.feed.resolved(molar_mass_function(registry_elements(registry), AW))
+    FEED = feed.dry_element_wt_percent(
         lambda moles: species_to_wt_percent(registry, moles, AW))
-    WATER = case.feed.total_water_g_per_g_dry()
-    SALTS = case.feed.salts
-    GAS_C = case.gas_carbon_fraction
-    GAS_C_MIN = case.gas_carbon_min_fraction
+    WATER = feed.total_water_g_per_g_dry()
+    SALTS = feed.salts
+    bounds = case.carbon_bounds
+    unsupported = [f'{phase} {kind}' for phase, bound in bounds.items() for kind in bound
+                   if kind == 'max' or (kind == 'min' and phase != 'gas')]
+    if unsupported:
+        raise ValueError(f'Carbon bounds {unsupported} are not supported yet.')
+    GAS_C = bounds.get('gas', {}).get('exact')
+    GAS_C_MIN = bounds.get('gas', {}).get('min')
     if GAS_C_MIN is not None:
         GAS_C_MIN = float(GAS_C_MIN)
         if not np.isfinite(GAS_C_MIN) or not 0 <= GAS_C_MIN <= 1:
@@ -185,7 +192,7 @@ def setup(model, case, stage=None, build_phases=True):
         if GAS_C is not None:
             raise ValueError('Use either gas_carbon_fraction (equality) or '
                              'gas_carbon_min_fraction (lower bound), not both')
-    SOLID_C = case.solid_carbon_fraction
+    SOLID_C = bounds.get('solid', {}).get('exact')
     WATER_FLOOR = float(case.aqueous_water_floor)
     AQUEOUS_MODEL = case.aqueous_model
     if AQUEOUS_MODEL == 'molecular' and any(s in registry.ion for s in phase_species['aqueous']):
@@ -276,7 +283,8 @@ def setup(model, case, stage=None, build_phases=True):
         rows.append(solid_carbon)
         targets.append(fraction * feed_carbon)
         carbon_constraints.append((solid_carbon, fraction))
-    phase_fractions = case.phase_carbon_fractions
+    phase_fractions = {phase: b['exact'] for phase, b in bounds.items()
+                       if phase not in ('gas', 'solid') and 'exact' in b}
     if set(phase_fractions) - set(PHASES):
         raise ValueError('Unknown phase in phase_carbon_fractions')
     fractions = {phase: float(v) for phase, v in phase_fractions.items()}
@@ -476,8 +484,10 @@ def _optimize(model, s):
             ineq_target=gas_min_target if use_min else None,
             lower=[low for low, _ in bounds], x_start=x_start, G0=initial_G,
             scale=energy_scale, model_total_G=total_G)
+        fluid = [p for p in s.phase_models if p != 'solid']
         options = {'method': case.solver, 'max_iterations': int(case.max_iterations),
-                   'multistart': int(case.multistart), 'seed': int(case.seed),
+                   'multistart': max(0, int(case.starts) - 1 - 2 * len(fluid)) if case.starts > 1 else 0,
+                   'seed': int(case.seed),
                    **case.solver_options}
         if case.stability_test is not None:
             options['stability_test'] = bool(case.stability_test)

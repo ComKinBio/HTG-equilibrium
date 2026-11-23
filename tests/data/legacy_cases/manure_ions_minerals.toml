@@ -1,0 +1,67 @@
+# The Yakaboylu manure feed with aqueous ions and SUPCRT minerals, and exactly
+# 80 % of the carbon in the gas. Below the 380 °C cut-off ions may occupy the
+# aqueous phase and compete with the minerals; above it the aqueous phase is
+# removed and salt elements must go to minerals. Salts are listed with zero
+# amounts; raise mol_per_g_dry_feed to add them.
+
+name = "manure_ions_minerals"
+description = "Manure with ions and minerals, 80 % gas carbon (HTG_Cases section 4)."
+atomic_weights = { C = 12.011, H = 1.008, O = 15.999, N = 14.007, S = 32.06, Na = 22.989769, K = 39.0983, Cs = 132.90545196, Li = 6.94, Mg = 24.305, Cl = 35.45 }
+
+[conditions]
+temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]
+pressure_bar = 240.0
+
+[feed]
+elements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }
+water_g_per_g_dry = 3.999935304
+
+[feed.salts.NaHCO3]
+mol_per_g_dry_feed = 0.0
+elements = { Na = 1, H = 1, C = 1, O = 3 }
+
+[feed.salts.KCl]
+mol_per_g_dry_feed = 0.0
+elements = { K = 1, Cl = 1 }
+
+[feed.salts.CsCl]
+mol_per_g_dry_feed = 0.0
+elements = { Cs = 1, Cl = 1 }
+
+[feed.salts.LiCl]
+mol_per_g_dry_feed = 0.0
+elements = { Li = 1, Cl = 1 }
+
+[feed.salts.MgCl2]
+mol_per_g_dry_feed = 0.0
+elements = { Mg = 1, Cl = 2 }
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+       "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+           "methanol", "ammonia", "hydrogen sulfide",
+           "Na+", "HCO3-", "CO3^2-", "K+", "Cs+", "Cl-", "Li+", "Mg2+"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon", "Artinite", "Hydromagnesite", "Brucite", "Magnesite", "Periclase",
+         "Halite", "Sylvite", "Sodium-Oxide", "Potassium-Oxide"]
+
+[aqueous]
+model = "electrolyte"
+cutoff_C = 380.0
+water_floor = 1e-6
+
+[constraints]
+gas_carbon_fraction = 0.8
+
+[initial_guess]
+# "auto": water-rich aqueous start below the cut-off, water-rich gas start above.
+# (The notebook used a liquid start up to 389.6 °C, i.e. a plain feasible
+# start at 380 and 389.6 °C, where the aqueous phase is already removed.)
+initialization = "auto"
+
+[solver]
+method = "ipopt"
+
+[sweep]
+continuation = false   # every temperature starts from its own feasible point, as in the notebook
