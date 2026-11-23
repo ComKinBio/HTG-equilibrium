@@ -16,6 +16,14 @@ import htg  # noqa: E402
 from convert import load  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def config_dir(tmp_path, monkeypatch):
+    """App preferences go to a temporary folder, never the user's config folder."""
+    folder = tmp_path / 'config'
+    monkeypatch.setenv('HTG_CONFIG_DIR', str(folder))
+    return folder
+
+
 @pytest.fixture(scope='session')
 def models():
     """'base': registry without extra NASA names; 'acetone': the shipped species.toml."""

@@ -5,7 +5,7 @@
     htg species [--all] [--phase PHASE] [--search TEXT]
     htg new CASE.toml
     htg plot RESULTS_DIR
-    htg gui [--workers N] [--port PORT] [--results DIR] [--cases DIR] [--no-browser]
+    htg gui [--browser] [--no-browser] [--workers N] [--port PORT] [--results DIR] [--cases DIR]
 """
 import argparse
 import sys
@@ -139,7 +139,8 @@ def cmd_new(args):
 def cmd_gui(args):
     from .gui.app import run_app
     run_app(results_dir=args.results, cases_dir=args.cases, workers=args.workers, port=args.port,
-            show=not args.no_browser, host=args.host, model_args={'data_dir': args.data} if args.data else None)
+            show=not args.no_browser, host=args.host, browser=args.browser,
+            model_args={'data_dir': args.data} if args.data else None)
     return 0
 
 
@@ -176,14 +177,15 @@ def main(argv=None):
     p.add_argument('results')
     p.set_defaults(func=cmd_plot)
 
-    p = sub.add_parser('gui', help='open the app in the web browser')
+    p = sub.add_parser('gui', help='open the app in its own window')
+    p.add_argument('--browser', action='store_true', help='open the app in the web browser instead')
     p.add_argument('--workers', type=int, help='worker processes (default: from free cores and memory)')
-    p.add_argument('--port', type=int, default=8080)
+    p.add_argument('--port', type=int, help='default: 8080 in the browser, a free port for the window')
     p.add_argument('--host', default='127.0.0.1',
                    help='network address (default 127.0.0.1: only this computer; 0.0.0.0: everyone on the network)')
     p.add_argument('--results', default='results', help='folder for results (default: results)')
     p.add_argument('--cases', default='cases', help='folder with case files (default: cases)')
-    p.add_argument('--no-browser', action='store_true', help='do not open a browser window')
+    p.add_argument('--no-browser', action='store_true', help='only start the server; open the address in a browser yourself')
     p.set_defaults(func=cmd_gui)
 
     args = parser.parse_args(argv)

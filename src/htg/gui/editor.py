@@ -1,10 +1,12 @@
 """The case editor: a form over a case file (CaseDocument.data)."""
+import math
 import re
 from pathlib import Path
 
 from nicegui import run as background
 from nicegui import ui
 
+from .. import units
 from ..case import INITIALIZATIONS, SOLVERS
 from .document import CaseDocument
 
@@ -33,22 +35,100 @@ def put(data, path, value):
         data[last] = value
 
 
-def parse_numbers(text):
-    """'100, 150 200' or 'start:stop:step' (inclusive) -> list of floats."""
-    text = (text or '').strip()
+MAX_LIST_VALUES = 10000
+_NUMBER_FORMATS = 'Write numbers like 300, 350, a range 300:400:50 or 300:400 n=5.'
+
+
+def _number(text):
+    try:
+        value = float(text)
+    except ValueError:
+        value = math.nan
+    if not math.isfinite(value):
+        raise ValueError(f'"{text}" is not a number. {_NUMBER_FORMATS}')
+    return value
+
+
+def _clean(value):
+    """Drop floating-point noise from generated or converted values: 299.99999999999994 -> 300."""
+    return float(f'{value:.12g}')
+
+
+def _range(token, count):
+    """'a:b:step' (count None) or 'a:b' with count -> values (in the unit typed)."""
+    parts = token.split(':')
+    if len(parts) not in (2, 3) or '' in parts:
+        raise ValueError(f'"{token}" is not a range. Write start:stop:step (300:400:50) '
+                         'or start:stop n=count (300:400 n=5).')
+    start, stop = _number(parts[0]), _number(parts[1])
+    if start > stop:
+        raise ValueError(f'In "{token}" the start is above the stop. Put the smaller value first.')
+    if len(parts) == 3:
+        if count is not None:
+            raise ValueError(f'"{token} n={count}" gives both a step and a count. Use one of them.')
+        step = _number(parts[2])
+        if step <= 0:
+            raise ValueError(f'In "{token}" the step must be above zero.')
+        steps = int(round((stop - start) / step)) if stop > start else 0
+        if steps + 1 > MAX_LIST_VALUES:
+            raise ValueError(f'"{token}" gives more than {MAX_LIST_VALUES} values. Use a larger step.')
+        return [_clean(start + i * step) for i in range(steps + 1) if start + i * step <= stop + 1e-9 * step]
+    if count is None:
+        raise ValueError(f'"{token}" needs a step or a count, e.g. {token}:10 or {token} n=5.')
+    return [_clean(start + i * (stop - start) / (count - 1)) for i in range(count - 1)] + [stop]
+
+
+def _count(token):
+    text = token[2:]
+    if not text.isdigit() or int(text) < 2:
+        raise ValueError(f'"{token}": the count after n= must be a whole number of 2 or more.')
+    if int(text) > MAX_LIST_VALUES:
+        raise ValueError(f'"{token}": the count can be at most {MAX_LIST_VALUES}.')
+    return int(text)
+
+
+def parse_numbers(text, unit=None, sort=True):
+    """Text of a number field -> list of floats.
+
+    Accepted (separators: comma, semicolon or whitespace; formats can be mixed):
+
+        300, 350, 400     list                          300, 350, 400
+        300:400:50        range start:stop:step         300, 350, 400 (stops at or before stop)
+        300:400 n=5       evenly spaced start:stop n=count   300, 325, 350, 375, 400
+        250, 300:400:50   mixed                         250, 300, 350, 400
+
+    ``n=`` belongs to the ``a:b`` range just before it; the count is a whole
+    number of 2 or more.
+
+    unit  the unit the numbers are typed in (a key of ``htg.units``, e.g. 'K' or
+          'MPa'); the result is converted to the file unit (°C or bar). None:
+          the numbers are already in file units.
+    sort  sort and remove duplicates (temperature and pressure grids). False
+          keeps the order as typed (e.g. one 'T, P' point).
+
+    Raises ValueError with a message that can be shown under the field.
+    """
+    text = re.sub(r'\s*:\s*', ':', (text or '').strip())
+    text = re.sub(r'\bn\s*=\s*', 'n=', text)
     if not text:
         return []
+    tokens = [t for t in re.split(r'[,;\s]+', text) if t]
     values = []
-    for part in re.split(r'[,;\s]+', text):
-        if ':' in part:
-            start, stop, step = (float(x) for x in part.split(':'))
-            if step <= 0:
-                raise ValueError('step must be positive')
-            n = int(round((stop - start) / step))
-            values += [round(start + i * step, 8) for i in range(n + 1) if start + i * step <= stop + 1e-9]
-        elif part:
-            values.append(float(part))
-    return values
+    for i, token in enumerate(tokens):
+        if token.startswith('n='):
+            previous = tokens[i - 1] if i else ''
+            if previous.count(':') != 1:
+                raise ValueError(f'"{token}" must follow a range start:stop, e.g. 300:400 n=5.')
+            continue
+        if ':' in token:
+            following = tokens[i + 1] if i + 1 < len(tokens) else ''
+            count = _count(following) if following.startswith('n=') else None
+            values += _range(token, count)
+        else:
+            values.append(_number(token))
+    if unit is not None and units.unit_key(unit) not in units.FILE_UNITS.values():
+        values = [_clean(units.to_file(v, unit)) for v in values]
+    return sorted(set(values)) if sort else values
 
 
 def format_numbers(value):
@@ -63,7 +143,7 @@ def parse_points(text):
     points = []
     for line in (text or '').splitlines():
         if line.strip():
-            numbers = parse_numbers(line)
+            numbers = parse_numbers(line, sort=False)
             if len(numbers) != 2:
                 raise ValueError(f'"{line.strip()}": give temperature and pressure')
             points.append(numbers)
