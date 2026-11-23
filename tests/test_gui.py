@@ -60,7 +60,8 @@ def test_edits_keep_comments(tmp_path):
     path.write_text(CaseDocument.new('edited').text(), encoding='utf-8')
     document = CaseDocument.open(path)
     comments = [line for line in path.read_text().splitlines() if line.strip().startswith('#')]
-    document.data['feed']['water_g_per_g_dry'] = 7.5
+    document.data['feed']['total_kg'] = 8.5  # 1 kg solids (20 % of 5 kg) -> 7.5 kg water
+    document.data['feed']['solids'] = {'value': 1.0, 'unit': 'kg'}
     document.data['conditions'] = {'temperature_C': [300, 350], 'pressure_bar': [240, 300]}
     document.data.setdefault('constraints', {})['minimum_amounts'] = {'gas': {'methane': 0.01}}
     document.save()
@@ -68,6 +69,7 @@ def test_edits_keep_comments(tmp_path):
     assert all(line in text for line in comments)
     case = htg.load_case(path)
     assert case.feed.water_g_per_g_dry == 7.5
+    assert 'solids = {value = 1.0, unit = "kg"}' in text or 'solids = { value = 1.0' in text
     assert case.grid() == [(300, 240), (350, 240), (300, 300), (350, 300)]
     assert case.minimum_amounts == {('gas', 'methane'): 0.01}
 
