@@ -93,7 +93,8 @@ def test_add_species_to_phases_and_feed():
     assert data['phases']['aqueous'] == ['Na+']
     data['feed'] = {'elements_wt_percent': {'C': 50}}
     assert add_species(data, 'feed', 'cellulose') == 'the feed'
-    assert data['feed'] == {'species_moles': {'cellulose': 1.0}}
+    assert data['feed'] == {'species': {'water': {'value': 0.0, 'unit': 'kg'},
+                                        'cellulose': {'value': 1.0, 'unit': 'kg'}}}
 
 
 # ---------------------------------------------------------------- restarting the workers

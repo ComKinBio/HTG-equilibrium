@@ -15,7 +15,7 @@ import htg
 from htg import plotbuild as pb
 from htg.gui.app import State, add_species, build_page, table_rows
 from htg.gui.document import CaseDocument, case_from_data
-from htg.gui.editor import parse_elements, parse_numbers, parse_points
+from htg.gui.editor import format_numbers, parse_numbers, parse_points
 from htg.gui.runs import case_differences, load_saved, output_folder, saved_runs
 from htg.plotrender import render_plotly
 from htg.runner import WorkerPool
@@ -65,14 +65,13 @@ def test_number_lists_in_display_units():
         parse_numbers('300', unit='F')
 
 
-def test_points_and_salt_elements():
+def test_points_and_formatting():
     assert parse_points('300, 240\n\n350 300\n') == [[300, 240], [350, 300]]
     with pytest.raises(ValueError):
         parse_points('300')
-    assert parse_elements('Na=1, H=1 C=1, O=3') == {'Na': 1, 'H': 1, 'C': 1, 'O': 3}
-    assert parse_elements('Ca=0.5') == {'Ca': 0.5}
-    with pytest.raises(ValueError):
-        parse_elements('NaCl')
+    assert format_numbers([300, 350.5]) == '300, 350.5'
+    assert format_numbers(240, 'Pa') == '2.4e7'
+    assert format_numbers([300], 'K') == '573.15'
 
 
 # ---------------------------------------------------------------- case documents
@@ -128,7 +127,9 @@ def test_add_species_to_case_data():
         add_species(data, 'gas', 'methane')
     data['feed'] = {'elements_wt_percent': {'C': 50}}
     add_species(data, 'feed', 'cellulose')
-    assert data['feed'] == {'species_moles': {'cellulose': 1.0}}
+    assert data['feed'] == {'species': {'water': {'value': 0.0, 'unit': 'kg'},
+                                        'cellulose': {'value': 1.0, 'unit': 'kg'}}}
+    assert case_from_data({**htg.gui.document.CaseDocument.new().data, 'feed': data['feed']}).feed_v2 == data['feed']
 
 
 # ---------------------------------------------------------------- runs and tables
@@ -225,7 +226,7 @@ def test_page_queues_a_case_and_shows_it(base_model, tmp_path):
             state.document = document
             async with user_simulation(lambda: build_page(state)) as user:
                 await user.open('/')
-                await user.should_see('4 point(s) in 2 independent piece(s)')
+                await user.should_see('Ready to run: 4 points in 2 independent pieces.')
                 user.find('Add to queue').click()
                 for _ in range(100):
                     if pool.runs and pool.runs[0].finished_running:

@@ -9,11 +9,13 @@ import re
 from nicegui import run as background
 from nicegui import ui
 
+from ..feed_v2 import elemental_masses
 from ..formulas import parse_element_list
 from ..model import Model
 from ..species_catalogue import (PHASE_LABELS, SHOW_OPTIONS, SOURCE_OPTIONS, build_catalogue, count_text,
                                  filter_catalogue, table_rows)
 from ..user_species import UserDatabase, spec_from_model
+from .case_form import tidy
 from .editor import PHASE_NAMES
 from .species_dialog import SpeciesDialog
 from .species_import_dialog import ImportDialog
@@ -66,10 +68,30 @@ def add_species(data, target, name):
 
 
 def add_feed_species(data, name):
-    """Add ``name`` to the feed species of case data (the feed is then given as species)."""
+    """Add ``name`` to the feed species of case data ([feed.species] of case-file format 2).
+
+    An elemental-analysis feed becomes a species feed: its water stays (water is
+    always present) and the first species gets the mass of the solids. Later
+    species start at 1 kg. Salts are kept.
+    """
     feed = data.setdefault('feed', {})
-    feed.pop('elements_wt_percent', None)
-    feed.setdefault('species_moles', {}).setdefault(name, 1.0)
+    species = feed.get('species')
+    amount = 1.0
+    if not isinstance(species, dict):
+        water = 0.0
+        try:
+            masses = elemental_masses(feed)
+            water, amount = tidy(masses['water']), tidy(masses['solids'])
+        except ValueError:  # FeedError: no usable elemental analysis
+            pass
+        salts = feed.get('salts')
+        feed.clear()
+        species = feed['species'] = {'water': {'value': water, 'unit': 'kg'}}
+        if salts:
+            feed['salts'] = salts
+    if name in species:
+        raise ValueError(f'{name} is already in the feed.')
+    species[name] = {'value': amount, 'unit': 'kg'}
     return 'the feed'
 
 
