@@ -67,22 +67,6 @@ def value(long, T, name, phase=None):
 
 # --- quantities -------------------------------------------------------------------------------
 
-def test_feed_fractions():
-    feed = {'total_kg': 10.0, 'solids': {'value': 15.0, 'unit': '%'}, 'ash': {'value': 8.0, 'unit': '%'}}
-    assert q.feed_fractions(feed) == pytest.approx((0.15, 0.08))
-    feed = {'total_kg': 10.0, 'solids': {'value': 2.0, 'unit': 'kg'}, 'ash': {'value': 0.5, 'unit': 'kg'}}
-    assert q.feed_fractions(feed) == pytest.approx((0.2, 0.25))
-    assert q.feed_fractions({'total_kg': 5.0, 'solids': {'value': 1.0, 'unit': 'kg'}}) == pytest.approx((0.2, 0.0))
-    species = {'species': {'water': {'value': 4.5, 'unit': 'kg'}, 'cellulose': {'value': 0.5, 'unit': 'kg'}}}
-    assert q.feed_fractions(species) == pytest.approx((0.1, 0.0))
-    species = {'species': {'water': {'value': 4.5, 'unit': 'kg'}, 'glucose': {'value': 2.0, 'unit': 'mol'}}}
-    assert q.feed_fractions(species) is None  # molar mass unknown
-    assert q.feed_fractions(species, {'glucose': 250.0}) == pytest.approx((0.1, 0.0))
-    assert q.feed_fractions({'total_kg': 1.0, 'solids': {'value': 2.0, 'unit': 'kg'}}) is None
-    assert q.feed_fractions({'elements_wt_percent': {'C': 50}}) is None
-    assert q.feed_fractions(None) is None
-
-
 def test_unit_bases(tables):
     s, a = 0.2, 0.1
     dry = q.amounts(tables.species, 'mol', 'dry')
@@ -145,27 +129,6 @@ def test_measured_amounts(tables):
     measured = pd.DataFrame({'T_C': [400.0], 'gas:carbon dioxide': [0.5]})
     long = q.measured_amounts(measured, 'mol_per_mol_C', tables.species, 'g', 'total', 0.5)
     assert float(long.value.iloc[0]) == pytest.approx(0.5 * FEED_C * 44.0 * 0.5)
-
-
-def test_alternative_tables(tables):
-    alternatives = pd.DataFrame([
-        {'T_C': 400.0, 'P_bar': 240.0, 'result': 'B', 'gibbs_J_per_mol_C': -0.9e6, 'n_starts': 2,
-         'phase': phase, 'species': name, 'mol_per_mol_C': mol / FEED_C}
-        for (phase, name), mol in {('gas', 'water'): 300.0, ('gas', 'carbon dioxide'): 10.0,
-                                   ('aqueous', 'water'): 100.0, ('solid', 'carbon'): 30.0}.items()])
-    summary, species, phases = q.alternative_tables(tables.summary, tables.species, tables.phases,
-                                                    alternatives, 'B')
-    gas = species[(species.T_C == 400) & (species.phase == 'gas')].set_index('species')
-    assert gas.loc['carbon dioxide', 'mol_per_kg_dry_feed'] == pytest.approx(10.0)
-    assert gas.loc['carbon dioxide', 'g_per_kg_dry_feed'] == pytest.approx(440.0)
-    assert 'methane' not in gas.index
-    row = summary[summary.T_C == 400].iloc[0]
-    assert row.gas_carbon_percent == pytest.approx(25.0)  # 10 of 40 mol C
-    assert row.gibbs_J_per_mol_C == -0.9e6
-    shares = phases[phases.T_C == 400].set_index('phase').carbon_percent
-    assert shares['gas'] == pytest.approx(25.0) and shares['solid'] == pytest.approx(75.0)
-    assert shares['aqueous'] == 0.0
-    assert species[species.T_C == 300].equals(tables.species[tables.species.T_C == 300].reset_index(drop=True))
 
 
 # --- plot specification -----------------------------------------------------------------------

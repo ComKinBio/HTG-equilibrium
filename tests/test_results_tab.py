@@ -80,13 +80,26 @@ def test_feed_fractions_of_a_run(tmp_path):
     assert run_feed_fractions(grid_tables(tmp_path / 'a')) == pytest.approx((0.15, 0.08))
     assert run_feed_fractions(grid_tables(tmp_path / 'b', case_text=None)) is None
     legacy = 'name = "x"\n[feed]\nelements_wt_percent = { C = 50 }\nwater_g_per_g_dry = 4.0\n'
-    try:
-        from htg.case import legacy_to_v2  # noqa: F401  (WP2)
-    except ImportError:
-        assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) is None
-    else:
-        # WP2 keeps the dry analysis: the 50 % not covered by elements becomes ash.
-        assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) == pytest.approx((0.2, 0.5))
+    # the dry analysis is kept: the 50 % not covered by elements is ash
+    assert run_feed_fractions(grid_tables(tmp_path / 'c', case_text=legacy)) == pytest.approx((0.2, 0.5))
+    species = ('format = 2\n[feed.species]\nwater = { value = 4.5, unit = "kg" }\n'
+               'cellulose = { value = 0.5, unit = "kg" }\n')
+    assert run_feed_fractions(grid_tables(tmp_path / 'd', case_text=species), {'cellulose': 162.14}) == \
+        pytest.approx((0.1, 0.0))
+    in_mol = species.replace('cellulose = { value = 0.5, unit = "kg" }', 'glucose = { value = 2.0, unit = "mol" }')
+    assert run_feed_fractions(grid_tables(tmp_path / 'e', case_text=in_mol)) is None  # molar mass unknown
+    assert run_feed_fractions(grid_tables(tmp_path / 'e'), {'glucose': 250.0}) == pytest.approx((0.15, 0.08))
+    assert run_feed_fractions(grid_tables(tmp_path / 'f', case_text=in_mol), {'glucose': 250.0}) == \
+        pytest.approx((0.1, 0.0))
+    # a run's Case (live runs) is used before its file
+    from pathlib import Path
+
+    import htg
+    case = htg.load_case(Path(__file__).resolve().parents[1] / 'src/htg/templates/case_template.toml')
+    with_case = grid_tables(tmp_path / 'g', case_text=None)
+    with_case.case = case
+    s, a = run_feed_fractions(with_case)
+    assert 0 < s < 1 and 0 <= a < 1
 
 
 def _figure(tab):

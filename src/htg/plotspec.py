@@ -262,8 +262,9 @@ def compare_results(base, others, flagged, base_label='A', descriptions=None):
 
     base         PlotSpec built from the tables of result A (the chosen result)
     others       {label: PlotSpec} built the same way (same options) from the tables with the
-                 flagged points replaced by that result (htg.quantities.alternative_tables)
-    flagged      x values (in the plot's x unit) of the points with more than one result
+                 flagged points replaced by that result (htg.gui.runs.RunTables.with_choices)
+    flagged      x values (in the plot's x unit) of the points with more than one result, or
+                 {label: x values} when the results exist (or are shown) at different points
     descriptions {label: text} for the line-style legend, e.g. {'A': 'lowest Gibbs energy'}
 
     Result A is drawn solid; B dashed, C dotted, D dash-dot. Each other result is drawn
@@ -273,7 +274,11 @@ def compare_results(base, others, flagged, base_label='A', descriptions=None):
     """
     descriptions = descriptions or {}
     spec = copy.deepcopy(base)
-    flagged = [float(x) for x in flagged]
+    if isinstance(flagged, dict):
+        per_label = {label: [float(x) for x in flagged.get(label, [])] for label in others}
+    else:
+        per_label = {label: [float(x) for x in flagged] for label in others}
+    flagged = sorted({x for xs in per_label.values() for x in xs})
     labels = [base_label, *others]
     spec.line_styles = [LineStyle(RESULT_DASHES[i % len(RESULT_DASHES)],
                                   result_label(label, descriptions.get(label, '')))
@@ -290,7 +295,7 @@ def compare_results(base, others, flagged, base_label='A', descriptions=None):
             for series in alt_panel.series:
                 if not series.lines or series.measured:
                     continue
-                y_window, x_marks, y_marks = _window(series.x, series.y, flagged)
+                y_window, x_marks, y_marks = _window(series.x, series.y, per_label[label])
                 if not any(_finite(v) for v in y_window):
                     continue
                 panel.series.append(Series(list(series.x), y_window, f'{series.name} ({label})',

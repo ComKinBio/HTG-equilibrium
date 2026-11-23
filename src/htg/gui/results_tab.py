@@ -4,15 +4,16 @@ Left: the settings panel. Right: the banner area, the plot card and the tables
 card. Every plot is built as a PlotSpec (htg.plotbuild) and drawn with Plotly;
 "Save plot…" draws the same spec with Matplotlib.
 
-Places for multiple results (WP6):
-- ``self.banner``: a column above the plot card, filled by ``show_banners()``;
-- ``view_tables()``: the tables that plots and tables show (choices.toml);
-- ``decorate(spec)``: changes a built spec (comparison mode).
+Points with more than one result (WP6): ``show_banners()`` fills the banner
+above the plot; the dialog (htg.gui.multiple_results) chooses the result each
+point uses (choices.toml, applied by RunTables.with_choices) and which results
+comparison mode draws; ``decorate(spec, options)`` turns a spec into the
+comparison spec (plotspec.compare_results).
 """
 import io
 import tomllib
 import zipfile
-from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -21,8 +22,18 @@ from nicegui import ui
 from .. import plotbuild as pb
 from .. import quantities as q
 from .. import units
+from ..case import Feed
+from ..feed_v2 import feed_fractions, feed_v2_to_model, is_v2_feed, water_molar_mass
 from ..plotrender import render_plotly
-from ..plotspec import LINE_WIDTHS, THEME_LABELS, Series, palette, resolve_style
+from ..plotspec import (
+    LINE_WIDTHS,
+    THEME_LABELS,
+    Series,
+    compare_results,
+    palette,
+    resolve_style,
+)
+from ..results import write_choices
 from .common import (
     OptionRadio,
     data_table,
@@ -30,6 +41,12 @@ from .common import (
     save_bytes,
     show_table,
     swatch,
+)
+from .multiple_results import (
+    MultipleResultsDialog,
+    banner_text,
+    comparing_text,
+    results_at,
 )
 from .save_plot import SavePlotDialog
 
@@ -42,64 +59,44 @@ TABLES = ('summary', 'species', 'phases')
 
 
 # ---------------------------------------------------------------- run information
-def _plain(value):
-    """tomlkit or other mappings -> plain dicts and lists."""
-    if isinstance(value, Mapping):
-        return {str(k): _plain(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_plain(v) for v in value]
-    return value
-
-
-def run_case_data(tables):
-    """The run's case as a plain dict: its case.toml, else the Case it was run with."""
-    path = getattr(tables, 'path', None)
-    if path is not None and (Path(path) / 'case.toml').exists():
-        try:
-            with open(Path(path) / 'case.toml', 'rb') as f:
-                return tomllib.load(f)
-        except (OSError, tomllib.TOMLDecodeError):
-            pass
+def run_feed(tables):
+    """The model Feed of a run: from the Case it was run with, else from its case.toml."""
     case = getattr(tables, 'case', None)
     if case is not None:
-        try:
-            return tomllib.loads(case.to_toml())
-        except Exception:
-            return None
-    return None
-
-
-def _is_v2_feed(data, feed):
-    if not isinstance(feed, Mapping):
-        return False
-    return data.get('format') == 2 or 'total_kg' in feed or isinstance(feed.get('species'), Mapping)
+        return case.feed
+    path = getattr(tables, 'path', None)
+    if path is None or not (Path(path) / 'case.toml').exists():
+        return None
+    try:
+        with open(Path(path) / 'case.toml', 'rb') as f:
+            feed = tomllib.load(f).get('feed')
+        if is_v2_feed(feed):
+            return feed_v2_to_model(feed)
+        return Feed(**feed) if isinstance(feed, dict) else None
+    except Exception:  # an unreadable or invalid file: no feed information
+        return None
 
 
 def run_feed_fractions(tables, molar_masses=None):
-    """(s, a) of a run's feed (htg.quantities.feed_fractions), or None if unknown.
+    """(s, a) of a run's feed (htg.feed_v2.feed_fractions), or None without a total mass.
 
-    s = solids / total feed, a = ash / solids. A case in the version-2 format gives
-    them directly; an old-format case goes through htg.case.legacy_to_v2 first.
-    None (no total mass) disables the "total feed" basis.
-    molar_masses  {species: g/mol} for feed species given in mol
+    s = solids / total feed, a = ash / solids. Old-format and version-2 cases both
+    work, through the model Feed. None disables the "total feed" basis.
+    molar_masses  {species: g/mol} for feeds given as species amounts
     """
-    if tables is None:
+    feed = run_feed(tables) if tables is not None else None
+    if feed is None:
         return None
-    data = run_case_data(tables)
-    if not isinstance(data, Mapping):
-        return None
-    feed = data.get('feed')
-    if not _is_v2_feed(data, feed):
-        try:
-            from ..case import legacy_to_v2
-            feed = _plain(legacy_to_v2(_plain(data))).get('feed')
-        except Exception:  # not available yet, or the case cannot be shown in the new format
-            return None
     masses = dict(molar_masses or {})
     species = getattr(tables, 'species', None)
     if species is not None and not species.empty:
         masses = {**q.molar_masses(species), **masses}
-    return q.feed_fractions(_plain(feed), masses)
+    masses.setdefault(q.WATER, water_molar_mass())
+    try:
+        s, a = feed_fractions(feed, masses.__getitem__)
+    except Exception:
+        return None
+    return None if s is None else (s, a)
 
 
 def run_measured(tables):
@@ -166,6 +163,9 @@ class ResultsTab:
         self.p_unit = self.settings.get('pressure_unit')
         self.species_checks = {}
         self._species_names = None
+        self.comparing = False  # comparison mode (WP6)
+        self.compare_show = {}  # {(T, P): {result: shown when comparing}}
+        self.results_dialog = None
 
         with ui.row().classes('w-full no-wrap items-start gap-4'):
             with ui.card().classes('w-80 shrink-0 gap-1'):
@@ -174,6 +174,7 @@ class ResultsTab:
                 self.banner = ui.column().classes('w-full gap-2')
                 self._plot_card()
                 self._tables_card()
+        self.dialog_host = ui.element('div')  # dialogs live here, not in the banner that is rebuilt
         self.controls()
         self.draw()
         ui.timer(2.0, self.follow)
@@ -297,6 +298,8 @@ class ResultsTab:
         tables = self.tables
         if not same_run:
             self.selected = None
+            self.comparing = False
+            self.compare_show = {}
         if not self._units_changed:
             self.t_unit = self.settings.get('temperature_unit')
             self.p_unit = self.settings.get('pressure_unit')
@@ -330,18 +333,97 @@ class ResultsTab:
         self.draw()
         self.fill_tables()
 
-    # ------------------------------------------------------------ hooks for WP6
+    # ------------------------------------------------------------ points with more than one result
     def view_tables(self):
-        """The tables shown in plots and tables (WP6 will apply choices.toml here)."""
+        """The tables shown in plots and tables (with the chosen results, see choices.toml)."""
         return self.tables
 
-    def decorate(self, spec):
-        """Change a built spec before drawing (WP6 comparison mode)."""
-        return spec
+    def compared(self):
+        """({result: points drawn for it}, results in the line-style order) of comparison mode."""
+        tables = self.tables
+        per_label = {}
+        for point in tables.flagged_points if tables is not None else []:
+            shown = self.compare_show.get(point, {})
+            for label in results_at(tables.alternatives, point):
+                if label != 'A' and shown.get(label, True):
+                    per_label.setdefault(label, []).append(point)
+        return per_label, ['A', *sorted(per_label)]
+
+    def decorate(self, spec, options):
+        """The comparison spec in comparison mode: result A solid, the other ticked results
+        dashed, dotted, … around the points that have them (plotspec.compare_results)."""
+        if not self.comparing or spec.message or self.kind.value == 'map':
+            return spec
+        per_label, _ = self.compared()
+        if not per_label:
+            return spec
+        kind = self.kind.value
+        options = replace(options, species=self.shown_species(options))
+        base = pb.build_plot(kind, self.tables.with_choices({}), options)
+        others = {label: pb.build_plot(kind, self.tables.with_choices({p: label for p in points}), options)
+                  for label, points in per_label.items()}
+        flagged = {label: pb.flagged_x(points, self.tables, options) for label, points in per_label.items()}
+        return compare_results(base, others, flagged, descriptions={'A': 'lowest Gibbs energy'})
 
     def show_banners(self):
-        """Fill the banner area above the plot (WP6: points with more than one result)."""
+        """The banner above the plot: points with more than one result, or comparison mode."""
         self.banner.clear()
+        tables = self.tables
+        flagged = tables.flagged_points if tables is not None else []
+        if not flagged:
+            self.comparing = False
+            return
+        with self.banner, ui.card().classes('w-full bg-amber-1 q-py-sm').props('flat bordered'):
+            with ui.row().classes('w-full items-center no-wrap gap-2'):
+                ui.icon('info', color='amber-9')
+                if self.comparing:
+                    per_label, labels = self.compared()
+                    points = {p for ps in per_label.values() for p in ps}
+                    ui.label(comparing_text(len(points), labels)).classes('grow')
+                    ui.button('Change', on_click=self.open_results).props('flat dense no-caps')
+                    ui.button('Stop comparing', on_click=self.stop_comparing).props('flat dense no-caps')
+                else:
+                    ui.label(banner_text(len(flagged), len(tables.summary))).classes('grow')
+                    ui.button('Compare them', on_click=self.open_results).props('flat dense no-caps')
+
+    def open_results(self):
+        if self.tables is None or not self.tables.flagged_points:
+            return
+        if self.results_dialog is not None and not self.results_dialog.dialog.is_deleted:
+            self.results_dialog.dialog.delete()
+        total = self.fractions is not None
+        with self.dialog_host:
+            self.results_dialog = MultipleResultsDialog(
+                self.tables, self.compare_show, self.apply_choices, self.start_comparing, self.t_unit,
+                self.p_unit, factor=self.fractions[0] if total else 1.0,
+                unit_text='mol / kg total feed' if total else 'mol / kg dry feed').open()
+
+    def apply_choices(self, choices):
+        """Use the chosen results in plots and tables and save them in choices.toml."""
+        folder = self.tables.path
+        if folder is not None:
+            Path(folder).mkdir(parents=True, exist_ok=True)
+            write_choices(folder, choices)
+        else:
+            ui.notify('This run has no results folder, so the choices are not saved.')
+        self.tables = self.tables.with_choices(choices)
+        self._species_names = None
+        self.show_banners()
+        self.draw()
+        self.fill_tables()
+
+    def start_comparing(self):
+        if not self.compared()[0]:
+            ui.notify('Tick at least one result other than A to compare.')
+            return
+        self.comparing = True
+        self.show_banners()
+        self.draw()
+
+    def stop_comparing(self):
+        self.comparing = False
+        self.show_banners()
+        self.draw()
 
     # ------------------------------------------------------------ units and choices
     def _unit_toggles(self):
@@ -531,7 +613,7 @@ class ResultsTab:
             self._quiet = False
         options = self.options()
         try:
-            spec = self.decorate(pb.build_plot(self.kind.value, tables, options))
+            spec = self.decorate(pb.build_plot(self.kind.value, tables, options), options)
             figure = render_plotly(spec, self.theme.value, self.line.value)
         except Exception as exc:
             self.spec = None
@@ -555,10 +637,11 @@ class ResultsTab:
         if self.spec is None:
             ui.notify('Choose a run first.')
             return
-        if self.save_dialog is not None:
+        if self.save_dialog is not None and not self.save_dialog.dialog.is_deleted:
             self.save_dialog.dialog.delete()
-        self.save_dialog = SavePlotDialog(self.settings, self.spec, self.theme.value, self.line.value,
-                                          f'{self.stem()}_{self.kind.value}').open()
+        with self.dialog_host:
+            self.save_dialog = SavePlotDialog(self.settings, self.spec, self.theme.value, self.line.value,
+                                              f'{self.stem()}_{self.kind.value}').open()
 
     # ------------------------------------------------------------ tables
     def fill_tables(self, _=None):
