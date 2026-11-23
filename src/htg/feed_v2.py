@@ -286,16 +286,22 @@ def feed_summary(feed, atomic_weights=None, species_elements=None):
             'ash_kg': masses['ash'], 'ash_free_kg': masses['ash_free']}
 
 
-def feed_fractions(feed_model):
+def feed_fractions(feed_model, molar_mass=None):
     """(s, a) for a model Feed: solids / total mass and ash / solids.
 
     Results use them to convert per kg dry feed into per kg total feed (s) or
     per kg dry ash-free feed (a). For an elemental analysis the ash is the dry
-    mass outside the elements (as in the legacy conversion). s is None while
-    species amounts are not resolved (the water ratio needs molar masses).
+    mass outside the elements (as in the legacy conversion). Species amounts are
+    resolved with ``molar_mass(name) -> g/mol``; without it (or when a molar
+    mass is unknown) s is None.
     """
     if feed_model.species_amounts is not None:
-        return None, 0.0
+        if molar_mass is None:
+            return None, 0.0
+        try:
+            feed_model = feed_model.resolved(molar_mass)
+        except (KeyError, ValueError, TypeError, ZeroDivisionError):
+            return None, 0.0
     s = 1.0 / (1.0 + feed_model.total_water_g_per_g_dry())
     if feed_model.species_moles is not None:
         return s, 0.0
