@@ -4,7 +4,6 @@ The page test uses NiceGUI's simulated user and stand-in workers (no Julia); the
 plot tests use a small real T-P grid.
 """
 import asyncio
-import tomllib
 from pathlib import Path
 
 import numpy as np
@@ -12,11 +11,12 @@ import pandas as pd
 import pytest
 
 import htg
-from htg.gui import plots
+from htg import plotbuild as pb
 from htg.gui.app import State, add_species, build_page, table_rows
 from htg.gui.document import CaseDocument, case_from_data
-from htg.gui.editor import parse_elements, parse_numbers, parse_points
-from htg.gui.runs import case_differences, load_saved, output_folder, saved_runs
+from htg.gui.editor import format_numbers, parse_numbers, parse_points
+from htg.gui.runs import load_saved, output_folder, saved_runs
+from htg.plotrender import render_plotly
 from htg.runner import WorkerPool
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,14 +36,41 @@ def test_number_lists():
         parse_numbers('hot')
 
 
-def test_points_and_salt_elements():
+def test_number_list_syntax():
+    assert parse_numbers('300:400 n=5') == [300, 325, 350, 375, 400]
+    assert parse_numbers('300, 350, 400') == [300, 350, 400]
+    assert parse_numbers('300:400:50') == [300, 350, 400]
+    assert parse_numbers('250, 300:400:50') == [250, 300, 350, 400]
+    assert parse_numbers('400; 250\t300:400 n=3') == [250, 300, 350, 400]  # sorted, duplicates removed
+    assert parse_numbers('300 : 400  n = 3') == [300, 350, 400]
+    assert parse_numbers('0:1:0.1') == [i / 10 for i in range(11)]
+    assert parse_numbers('350 300 300', sort=False) == [350, 300, 300]
+    for text, message in [('n=5', 'must follow a range'), ('300:400 n=1', '2 or more'),
+                          ('300:400 n=2.5', 'whole number'), ('300:400', 'needs a step or a count'),
+                          ('300:400:50 n=3', 'both a step and a count'), ('400:300:50', 'start is above'),
+                          ('300:400:-5', 'above zero'), ('1:2:3:4', 'not a range'), ('nan', 'not a number'),
+                          ('0:1e9:1', 'more than')]:
+        with pytest.raises(ValueError, match=message):
+            parse_numbers(text)
+
+
+def test_number_lists_in_display_units():
+    assert parse_numbers('573.15:673.15 n=3', unit='K') == [300, 350, 400]
+    assert parse_numbers('24, 30', unit='MPa') == [240, 300]
+    assert parse_numbers('2.4e7', unit='Pa') == [240]
+    assert parse_numbers('1', unit='atm') == [1.01325]
+    assert parse_numbers('300', unit='C') == [300]
+    with pytest.raises(ValueError, match='Unknown unit'):
+        parse_numbers('300', unit='F')
+
+
+def test_points_and_formatting():
     assert parse_points('300, 240\n\n350 300\n') == [[300, 240], [350, 300]]
     with pytest.raises(ValueError):
         parse_points('300')
-    assert parse_elements('Na=1, H=1 C=1, O=3') == {'Na': 1, 'H': 1, 'C': 1, 'O': 3}
-    assert parse_elements('Ca=0.5') == {'Ca': 0.5}
-    with pytest.raises(ValueError):
-        parse_elements('NaCl')
+    assert format_numbers([300, 350.5]) == '300, 350.5'
+    assert format_numbers(240, 'Pa') == '2.4e7'
+    assert format_numbers([300], 'K') == '573.15'
 
 
 # ---------------------------------------------------------------- case documents
@@ -60,7 +87,8 @@ def test_edits_keep_comments(tmp_path):
     path.write_text(CaseDocument.new('edited').text(), encoding='utf-8')
     document = CaseDocument.open(path)
     comments = [line for line in path.read_text().splitlines() if line.strip().startswith('#')]
-    document.data['feed']['water_g_per_g_dry'] = 7.5
+    document.data['feed']['total_kg'] = 8.5  # 1 kg solids (20 % of 5 kg) -> 7.5 kg water
+    document.data['feed']['solids'] = {'value': 1.0, 'unit': 'kg'}
     document.data['conditions'] = {'temperature_C': [300, 350], 'pressure_bar': [240, 300]}
     document.data.setdefault('constraints', {})['minimum_amounts'] = {'gas': {'methane': 0.01}}
     document.save()
@@ -68,6 +96,7 @@ def test_edits_keep_comments(tmp_path):
     assert all(line in text for line in comments)
     case = htg.load_case(path)
     assert case.feed.water_g_per_g_dry == 7.5
+    assert 'solids = {value = 1.0, unit = "kg"}' in text or 'solids = { value = 1.0' in text
     assert case.grid() == [(300, 240), (350, 240), (300, 300), (350, 300)]
     assert case.minimum_amounts == {('gas', 'methane'): 0.01}
 
@@ -97,18 +126,12 @@ def test_add_species_to_case_data():
         add_species(data, 'gas', 'methane')
     data['feed'] = {'elements_wt_percent': {'C': 50}}
     add_species(data, 'feed', 'cellulose')
-    assert data['feed'] == {'species_moles': {'cellulose': 1.0}}
+    assert data['feed'] == {'species': {'water': {'value': 0.0, 'unit': 'kg'},
+                                        'cellulose': {'value': 1.0, 'unit': 'kg'}}}
+    assert case_from_data({**htg.gui.document.CaseDocument.new().data, 'feed': data['feed']}).feed_v2 == data['feed']
 
 
 # ---------------------------------------------------------------- runs and tables
-def test_case_differences():
-    template = htg.load_case(ROOT / 'src/htg/templates/case_template.toml')
-    other = template.replace(name='other', pressure_bar=300, solver='slsqp')
-    table = case_differences({'a': template, 'b': other, 'missing': None})
-    assert list(table.columns) == ['setting', 'a', 'b']
-    assert set(table.setting) == {'conditions.pressure_bar', 'solver.method'}
-
-
 def test_output_folders_do_not_collide(tmp_path):
     import datetime
     now = datetime.datetime(2026, 1, 2, 3, 4, 5)
@@ -143,35 +166,38 @@ def test_saved_runs_are_found(grid_run):
 
 
 def test_profiles_have_gaps_only_at_failed_points(grid_run):
-    fig = plots.species_vs_temperature(grid_run.species, grid_run.summary, 'gas', log=False)
-    assert len(fig.data) == 2 * len({t.legendgroup for t in fig.data})  # every species at both pressures
-    for trace in fig.data:
-        y = np.asarray(trace.y, dtype=float)
-        if trace.name.endswith('240 bar'):
-            assert list(trace.x) == [300, 350, 365, 380]
-            assert np.isnan(y[2]) and not np.isnan(y[[0, 1, 3]]).any()
-        else:  # 365 °C was only asked at 240 bar
-            assert list(trace.x) == [300, 350, 380]
-            assert not np.isnan(y).any()
+    for P, x in ((240, [300, 350, 365, 380]), (300, [300, 350, 380])):  # 365 °C was only asked at 240 bar
+        spec = pb.build_plot('phases', grid_run, pb.PlotOptions(fixed=P))
+        gas = spec.panels[0]
+        assert gas.series
+        for series in gas.series:
+            y = np.asarray(series.y, dtype=float)
+            assert series.x == x
+            if P == 240:
+                assert np.isnan(y[2]) and not np.isnan(y[[0, 1, 3]]).any()
+            else:
+                assert not np.isnan(y).any()
 
 
 def test_all_views_draw(grid_run):
-    for group in plots.GROUPS:
-        for quantity in plots.QUANTITIES:
-            plots.species_vs_temperature(grid_run.species, grid_run.summary, group, quantity)
-        plots.species_vs_pressure(grid_run.species, grid_run.summary, group, 350.0)
-    for item in plots.map_items(grid_run):
-        fig = plots.tp_map(grid_run, item)
-        assert np.asarray(fig.data[0].z).shape == (2, 4)
-    carbon = plots.carbon_vs_temperature(grid_run.phases, grid_run.summary)
-    assert {t.legendgroup for t in carbon.data} >= {'gas'}
-    both = plots.compare_runs([grid_run, grid_run], 'gas:methane')
-    assert len(both.data) == 4
+    for kind in pb.PLOTS:
+        for amount, basis in (('mol', 'dry'), ('g', 'daf')):
+            spec = pb.build_plot(kind, grid_run, pb.PlotOptions(amount=amount, basis=basis))
+            render_plotly(spec)
+        pb.build_plot(kind, grid_run, pb.PlotOptions(x_axis='P', fixed=350.0))
+    for item in pb.map_items(grid_run):
+        heat = pb.build_plot('map', grid_run, pb.PlotOptions(map_item=item)).panels[0].heatmap
+        assert np.asarray(heat.z).shape == (2, 4)
+    carbon = pb.build_plot('carbon', grid_run)
+    assert {s.key for s in carbon.panels[0].series} >= {'gas'}
+    runs = [pb.CompareRun('a', grid_run), pb.CompareRun('b', grid_run)]
+    both = pb.compare_runs(runs, 'gas:methane')
+    assert len(both.panels[0].series) == 4  # two runs at two pressures
 
 
 def test_gas_carbon_map_matches_summary(grid_run):
-    fig = plots.tp_map(grid_run, 'gas_carbon_percent')
-    z = np.asarray(fig.data[0].z, dtype=float)
+    heat = pb.build_plot('map', grid_run, pb.PlotOptions(map_item='gas_carbon_percent')).panels[0].heatmap
+    z = np.asarray(heat.z, dtype=float)
     row = grid_run.summary[(grid_run.summary.T_C == 350) & (grid_run.summary.P_bar == 300)].iloc[0]
     assert z[1, 1] == pytest.approx(row.gas_carbon_percent)
     assert np.isnan(z[0, 2])  # the failed point
@@ -191,7 +217,7 @@ def test_page_queues_a_case_and_shows_it(base_model, tmp_path):
             state.document = document
             async with user_simulation(lambda: build_page(state)) as user:
                 await user.open('/')
-                await user.should_see('4 point(s) in 2 independent piece(s)')
+                await user.should_see('Ready to run: 4 points in 2 independent pieces.')
                 user.find('Add to queue').click()
                 for _ in range(100):
                     if pool.runs and pool.runs[0].finished_running:
@@ -204,7 +230,7 @@ def test_page_queues_a_case_and_shows_it(base_model, tmp_path):
                 user.find(kind=ui.button, content='Results').click()
                 await user.should_see('0 of 4 points solved')
                 assert (run.output_dir / 'summary.csv').exists()
-                user.find('Search name or formula').type('methane')
+                user.find('Name or formula').type('methane')
                 await user.should_see('Species')
 
     asyncio.run(scenario())

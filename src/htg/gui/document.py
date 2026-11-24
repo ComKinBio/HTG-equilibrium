@@ -12,22 +12,56 @@ from pathlib import Path
 import tomlkit
 from tomlkit.items import InlineTable, Table
 
-from ..case import case_from_dict
+from ..case import case_from_dict, is_v2, legacy_to_v2
 
 TEMPLATE = Path(__file__).resolve().parents[1] / 'templates' / 'case_template.toml'
+LEGACY_NOTICE = 'This case uses the old format. Saving will update it to the new format.'
+SALTS_NOTICE = "This case has added salts. The form can't edit them; they are kept when you save."
 
 
 class CaseDocument:
-    """A case file being edited: ``data`` (plain dict) plus the original document."""
+    """A case file being edited: ``data`` (plain dict) plus the original document.
 
-    def __init__(self, text, path=None):
+    Old (format-1) files are converted to format 2 when opened (``data`` holds
+    the new keys; saving writes them and removes the old ones). Flags for the form:
+        converted_from_legacy  True until the converted file is saved
+        legacy_blocker         why an old file was left in the old format (or None)
+        has_salts              the feed has [feed.salts] (kept, not editable)
+    ``molar_mass(name) -> g/mol`` is needed to convert an old species-moles feed.
+    """
+
+    def __init__(self, text, path=None, molar_mass=None):
         self.doc = tomlkit.parse(text)
         self.data = self.doc.unwrap()
         self.path = Path(path) if path else None
+        self.converted_from_legacy = False
+        self.legacy_blocker = None
+        if not is_v2(self.data):
+            try:
+                self.data = legacy_to_v2(self.data, molar_mass)
+                self.converted_from_legacy = True
+            except ValueError as exc:  # LegacyConversionError, or a broken old file
+                self.legacy_blocker = str(exc)
 
     @classmethod
-    def open(cls, path):
-        return cls(Path(path).read_text(encoding='utf-8'), path)
+    def open(cls, path, molar_mass=None):
+        return cls(Path(path).read_text(encoding='utf-8'), path, molar_mass)
+
+    @property
+    def has_salts(self):
+        feed = self.data.get('feed')
+        return isinstance(feed, dict) and bool(feed.get('salts'))
+
+    def notices(self):
+        """Notices for the Case tab, in the order to show them."""
+        out = []
+        if self.converted_from_legacy:
+            out.append(LEGACY_NOTICE)
+        if self.legacy_blocker:
+            out.append(self.legacy_blocker)
+        if self.has_salts:
+            out.append(SALTS_NOTICE)
+        return out
 
     @classmethod
     def new(cls, name='new_case'):
@@ -62,6 +96,7 @@ class CaseDocument:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding='utf-8')
         self.path = path
+        self.converted_from_legacy = False
         return path
 
 

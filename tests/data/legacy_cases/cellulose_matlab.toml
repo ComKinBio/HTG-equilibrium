@@ -1,0 +1,51 @@
+# Cellulose gasification compared with the former MATLAB model (data/Cellulose.xlsx).
+# Molecular aqueous model (no ions), exactly 90 % of the carbon in the gas,
+# water-rich gas starting point. Feed, atomic weights and water come from the
+# workbook's "Input" sheet.
+
+name = "cellulose_matlab"
+description = "Cellulose at 275 bar, compared with the former MATLAB model."
+atomic_weights = { C = 12.011, H = 1.0078, O = 15.999, N = 14.007, S = 32.065 }
+
+[conditions]
+temperature_C = [375, 400, 425, 450, 475, 500, 525, 550]
+pressure_bar = 275.0
+
+[feed]
+elements_wt_percent = { C = 44.2, H = 6.3, O = 49.5, N = 0.0, S = 0.0 }
+water_g_per_g_dry = 8.999660288377422
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+       "methanol", "ammonia", "hydrogen sulfide"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+           "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon", "cellulose", "Lignin1"]
+
+[aqueous]
+model = "molecular"
+water_floor = 0.0
+
+[constraints]
+gas_carbon_fraction = 0.9
+
+[constraints.minimum_amounts]
+gas = { water = 1e-8 }
+
+[initial_guess]
+initialization = "vapor"
+
+[solver]
+method = "ipopt"
+max_iterations = 1200
+# The original notebook used method = "slsqp-fd" with:
+fd_ftol = 1e-11
+
+[sweep]
+continuation = false   # every temperature starts from its own feasible point, as in the notebook
+
+[comparison]
+file = "comparison/cellulose_matlab.csv"
+quantity = "mol_per_mol_C"
+label = "Former MATLAB model"

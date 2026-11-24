@@ -1,5 +1,6 @@
 """The Model: databases + species registry, and the calculations that use them."""
 import os
+import tomllib
 from pathlib import Path
 
 import pandas as pd
@@ -29,27 +30,48 @@ class Model:
         self.databases = databases
         self.registry = registry
         self.data_dir = data_dir
-        self.load_args = {'data_dir': str(data_dir) if data_dir else None}
+        self.user_data = None   # user species folder in use (None: shipped data only)
+        self.user_info = {}     # {species: {'files': [...], 'overrides': bool}} from the user folder
+        self.load_args = {'data_dir': str(data_dir) if data_dir else None, 'user_data': None}
 
     @classmethod
-    def load(cls, data_dir=None, species_file=None, nasa_names=None, reference_temperature_C=350.0):
+    def load(cls, data_dir=None, species_file=None, nasa_names=None, reference_temperature_C=350.0,
+             user_data=None):
         """Read the databases and discover species.
 
         species_file  registry file (default: data_dir/species.toml)
         nasa_names    replaces the [nasa_names] table of the species file
         reference_temperature_C  used only to evaluate temperature-dependent SAFT
                       parameters while checking which species have complete data
+        user_data     user species folder (see htg.user_species), read after the
+                      shipped files; None (default): shipped data only. The command
+                      line and the app pass the user's folder unless --no-user-species.
         """
         data_dir = Path(data_dir) if data_dir is not None else default_data_dir()
         databases = Databases.load(data_dir)
-        registry = Registry.from_file(species_file or data_dir / 'species.toml', nasa_names)
+        with open(species_file or data_dir / 'species.toml', 'rb') as f:
+            config = tomllib.load(f)
+        if nasa_names is not None:
+            config['nasa_names'] = dict(nasa_names)
+        user_db, user_info = None, {}
+        if user_data is not None:
+            from .user_species import UserDatabase, apply_user_layer
+            user_db = UserDatabase.load(user_data)
+            user_info = apply_user_layer(databases, config, user_db)
+        registry = Registry(config)
         registry.discover(databases, float(reference_temperature_C) + 273.15)
+        if user_db is not None:
+            from .user_species import hide_species
+            hide_species(registry, user_db.hidden())
         model = cls(databases, registry, data_dir)
+        model.user_data = Path(user_db.directory) if user_db is not None else None
+        model.user_info = user_info
         # How to load the same model again (worker processes do this).
         model.load_args = {'data_dir': str(data_dir),
                            'species_file': str(species_file) if species_file else None,
                            'nasa_names': nasa_names,
-                           'reference_temperature_C': reference_temperature_C}
+                           'reference_temperature_C': reference_temperature_C,
+                           'user_data': str(model.user_data) if model.user_data else None}
         return model
 
     # ---------------------------------------------------------------- calculations
@@ -78,7 +100,11 @@ class Model:
     def sweep(self, case, progress=print, workers=1):
         """Equilibrium at every point of the case; see htg.sweep.run_sweep."""
         from .sweep import run_sweep
-        return run_sweep(self, case, progress=progress, workers=workers)
+        result = run_sweep(self, case, progress=progress, workers=workers)
+        if self.user_data is not None:
+            from .user_species import run_record
+            result.user_species = run_record(self.load_args, result)
+        return result
 
     def check(self, case):
         """Preflight every temperature without running the equation of state.

@@ -123,6 +123,13 @@ class _Task:
     chain: list
 
 
+def _current_point(task):
+    """The first point of a task's chain without an outcome yet (the one being solved)."""
+    if task is None:
+        return None
+    return next(((T, P) for T, P in task.chain if (T, P) not in task.run.outcomes), None)
+
+
 @dataclass
 class _Worker:
     id: int
@@ -197,6 +204,8 @@ class WorkerPool:
         self._lock = threading.RLock()
         self._stop = threading.Event()
         self._thread = None
+        self._restart_args = None  # model_args for the next workers, waiting for runs (see restart)
+        self._restart_runs = set()
 
     # ------------------------------------------------------------ public API
     def start(self):
@@ -258,11 +267,43 @@ class WorkerPool:
             for worker in active[self.target:]:
                 worker.retire = True
 
+    def restart(self, model_args):
+        """Replace the workers with new ones that load ``model_args`` (after species data changed).
+
+        Running work is never stopped. With no unfinished runs the workers are
+        replaced now and True is returned. Otherwise False: the runs already
+        submitted finish on the current workers (a run never mixes old and new
+        data), runs submitted later wait for the new workers.
+        """
+        with self._lock:
+            self._restart_args = dict(model_args or {})
+            self._restart_runs = {run.id for run in self.runs if not run.finished_running}
+            if self._restart_runs:
+                return False
+            self._apply_restart()
+            return True
+
+    def _restart_due(self):
+        return self._restart_args is not None and not any(
+            run.id in self._restart_runs and not run.finished_running for run in self.runs)
+
+    def _apply_restart(self):
+        self.model_args, self._restart_args, self._restart_runs = self._restart_args, None, set()
+        for worker in self._workers.values():
+            if worker.state not in ('stopped', 'crashed'):
+                worker.retire = True
+        if self._thread is not None:
+            for _ in range(self.target):
+                self._spawn()
+
     def status(self):
-        """Worker states and queue length (for display)."""
+        """Worker states and queue length (for display).
+
+        Each worker has 'point': the (T_C, P_bar) it is solving, or None.
+        """
         with self._lock:
             workers = [{'id': w.id, 'state': w.state, 'message': w.message,
-                        'case': w.task.run.name if w.task else ''}
+                        'case': w.task.run.name if w.task else '', 'point': _current_point(w.task)}
                        for w in self._workers.values() if w.state not in ('stopped',)]
             return {'workers': workers, 'queued_pieces': len(self._pending), 'target': self.target}
 
@@ -306,6 +347,8 @@ class WorkerPool:
                 if message is not None:
                     self._handle(message)
                 self._check_workers()
+                if self._restart_due():
+                    self._apply_restart()
                 self._dispatch()
 
     def _handle(self, message):
@@ -361,7 +404,9 @@ class WorkerPool:
                 worker.inbox.put(None)
                 continue
             if not self._pending:
-                break
+                continue
+            if self._restart_args is not None and self._pending[0].run.id not in self._restart_runs:
+                continue  # submitted after the species data changed: wait for the new workers
             task = self._pending.popleft()
             run = task.run
             if run.status == 'queued':
@@ -385,7 +430,11 @@ class WorkerPool:
         run.status, run.finished = status, time.time()
         if run.output_dir is not None and run.outcomes:
             try:
-                run.sweep_result().save(run.output_dir)
+                sweep = run.sweep_result()
+                if self.model_args.get('user_data'):
+                    from .user_species import run_record
+                    sweep.user_species = run_record(self.model_args, sweep)
+                sweep.save(run.output_dir)
                 run.log.append(f'results saved to {run.output_dir}')
             except Exception as exc:
                 run.log.append(f'saving results failed: {exc}')
