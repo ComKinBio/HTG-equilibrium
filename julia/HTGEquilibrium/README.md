@@ -35,7 +35,7 @@ case files (units, feed arithmetic).
 | `src/standard_states.jl` | `nasa_g0`, `supcrt_mineral_properties`, `solid_g0`, `hkf_records`, `hkf_ion_g0(water_model, hkf_table, ions, T, P)` | `standard_states.py` |
 | `src/model.jl` | `Model`, `load_model` (databases + registry + user layer), `species`, `mineral_inventory`, `product_candidates` (gas rule: `nasa_phase_is`); `hkf_ion_g0(water_model, model, ...)`, `nasa_g0`, `solid_g0` of a `Model` | `model.py` (data part) |
 | `test/test_units.jl`, `test/test_case.jl`, `test/test_feed.jl` | Ported Python tests; with `test/data/cases_python.json`, every case file and 119 variants against Python | `test_units.py`, `test_case_files.py`, `test_case_format.py` |
-| `test/dump_cases.py`, `test/python_cases.jl` | Write / compare `test/data/cases_python.json` (~0.5 MB, not committed) | – |
+| `test/dump_cases.py`, `test/python_cases.jl` | Write / compare `test/data/cases_python.json` (~0.6 MB, not committed) | – |
 | `test/data_setup.jl` | Shared setup of the three tests below: the reference models, Python's `same`/`close` | `tests/conftest.py`, `tests/helpers.py` |
 | `test/test_databases.jl` | Readers and Python helpers (CSV dtypes, XML, NASA-7, ordered TOML) | – |
 | `test/test_registry.jl` | `catalogue.json` (all of it), a user species folder, shipped `data/` smoke test, threaded reads | `tests/test_reference_catalogue.py`, `tests/test_user_species.py` (loading) |
@@ -236,7 +236,7 @@ does. Old keys (`gas_carbon_fraction`, `gas_carbon_min_fraction`,
 old `[feed]` keys) are read and moved into the new ones on creation.
 
 **Comparison with Python.** `uv run python julia/HTGEquilibrium/test/dump_cases.py`
-writes `test/data/cases_python.json` (~0.5 MB, ignored by git; without it the
+writes `test/data/cases_python.json` (~0.6 MB, ignored by git; without it the
 comparisons are skipped with an info message). The tests rebuild the same dump
 in Julia and compare it field by field: dict key order, Int vs Float, strings
 and error messages exactly; floats within 1e-12 relative (or 1e-13 absolute
