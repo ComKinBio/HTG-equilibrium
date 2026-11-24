@@ -86,7 +86,7 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 7 minutes (5290 tests, 4 threads); `test_phases.jl` and the
+The tests take about 7 minutes (5323 tests, 4 threads); `test_phases.jl` and the
 solves are most of it, almost all compilation of Clapeyron (PC-SAFT and
 ePC-SAFT, then again for the Duals of the exact Hessian, for each new set of
 association sites) and Ipopt. `Pkg.test()` does not pass `-t` on to the test
@@ -94,7 +94,7 @@ process; set `JULIA_NUM_THREADS` for the threaded tests.
 
 By default the solver tests solve a representative subset of the reference
 points (11 of 21, see `DEFAULT_SOLVES` in `test_equilibrium.jl`); set
-`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 5507 tests; the extra solves are
+`HTG_FULL_TESTS=1` to solve all of them (about 7 minutes, 5540 tests; the extra solves are
 fast once compiled):
 
 ```
@@ -260,6 +260,23 @@ does. Old keys (`gas_carbon_fraction`, `gas_carbon_min_fraction`,
 `solid_carbon_fraction`, `phase_carbon_fractions`, `multistart`, `refine`, the
 old `[feed]` keys) are read and moved into the new ones on creation.
 
+**Dropped solvers** (owner, PR #10). The Python solvers `"slsqp-fd"` and
+`"trust-constr"` and the `[solver]` keys `fd_ftol` and `fd_eps` (settings of
+`slsqp-fd`) are gone: `SOLVERS` is `("ipopt", "slsqp")` and `Case` has no
+`fd_ftol`/`fd_eps` fields. Old cases still open: a dropped solver is read as
+`"ipopt"` (also `Case(...; solver="slsqp-fd")` and `replace`), the two keys are
+ignored, and the Julia-only field `case.legacy_notes` says what was changed, for
+the app to show, e.g. "The solver 'slsqp-fd' is no longer available; this case
+now uses 'ipopt' (the default)." and "[solver] fd_ftol and fd_eps were settings
+of the removed solver 'slsqp-fd'; ignored." Writing such a case writes
+`ipopt` (the default, so no `method` line) and no fd keys. `legacy_notes` is
+not written and not compared by `==`. Files concerned: no case file names
+either solver; `cases/yakaboylu2013_fig7_8.toml` (`fd_ftol`, `fd_eps`) and
+`cases/cellulose_matlab.toml` (`fd_ftol`), and their old copies in
+`tests/data/legacy_cases/`, carry the keys next to `method = "ipopt"`; the
+template (`src/htg/templates/case_template.toml`) and its old copy list the
+two solvers in a comment only.
+
 **Comparison with Python.** `uv run python julia/HTGEquilibrium/test/dump_cases.py`
 writes `test/data/cases_python.json` (~0.6 MB, ignored by git; without it the
 comparisons are skipped with an info message). The tests rebuild the same dump
@@ -283,7 +300,13 @@ relative deviation 1.8e-15, one fraction 1.4e-16 where Python has 0.0. The
 text `to_toml` writes equals Python's exactly for all 76 cases that can be
 written (files, variants, converted old files; 5 more give the same error).**
 The Julia-only `water_model` field is left out of the comparison (Python has no
-such key; every Python case has the default).
+such key; every Python case has the default), and so is `legacy_notes`. The
+Python app still has the dropped solvers (above), so its dump (`dump_cases.py`,
+unchanged) is mapped on the Julia side before the comparison
+(`without_dropped_solvers` in `test/python_cases.jl`): Case fields without
+`fd_ftol`/`fd_eps` (a dropped solver would become `"ipopt"`), `to_toml` texts
+without their `fd_` lines, and the messages that list the solvers or the
+allowed `[solver]` keys without the dropped ones.
 
 **Differences from Python** (deliberate; everything else behaves the same):
 - Errors: `CaseError` (a ValueError raised in case.py), `FeedError`,
@@ -665,9 +688,10 @@ Python's exception names are kept in the message).
 - Points solved with IPOPT in the reference: G within 1e-15, compositions
   within 1e-12 (worst 1.8e-10 of the tolerance). SLSQP (`slsqp_exact`): G
   within 1.6e-13, compositions within 1.3 % of the tolerance.
-- Points solved with the original finite-difference SLSQP (`slsqp-fd`, not
-  ported) are solved with IPOPT: the G is never higher (worst +9e-11
-  relative). Four points have a lower minimum than the reference
+- Points solved with the original finite-difference SLSQP (`slsqp-fd`, dropped)
+  are solved with IPOPT. The stored reference of these points came from a bad
+  optimizer and is **a rough guide only** (owner, PR #10): the G must not be
+  higher (worst +9e-11 relative). Four points have a lower minimum than the reference
   (`LOWER_THAN_FD`): cellulose_400C (-2.2e-6 relative), full_text_250C
   (-2.6e-9), full_text_gas_min_300C (-6.9e-9), configurable_300C (-1.1e-9).
   For these the compositions are compared with the Python app's own IPOPT
@@ -688,14 +712,21 @@ else is shared. The tests set `BLAS.set_num_threads(1)`; the app should too
 
 **Differences from Python:**
 
-- **`trust-constr` and `slsqp-fd` are not ported.** A case asking for either
-  fails (stage "optimizer") with "The solver 'X' is not available in the
-  Julia version; use 'ipopt' (default) or 'slsqp'." `setup` still works for
-  such a case. Owner question: drop them for good?
+- **`trust-constr` and `slsqp-fd` are dropped** (owner, PR #10). A case that
+  names either is read as `ipopt` with a note (see "Case files: reading");
+  `optimize` knows only "ipopt" and "slsqp" ("Unknown optimizer 'slsqp-fd';
+  choose from ['ipopt', 'slsqp']").
 - SLSQP is NLopt's `LD_SLSQP`, not SciPy's: the same algorithm, other
   iteration counts and messages ("Optimization terminated successfully" /
   "Iteration limit reached" are mapped; others are NLopt's).
-  `max_iterations` counts function evaluations (SciPy counts iterations).
+- **`max_iterations` for SLSQP** (owner, PR #10): SciPy counted iterations,
+  NLopt counts function evaluations (each iteration takes one or more). SLSQP
+  stops after `SLSQP_EVALUATIONS_PER_ITERATION * max_iterations` = 10 ×
+  `max_iterations` evaluations: 50000 with the default 5000, and a value set in
+  the case scales the same way (so it still limits roughly the iterations, as
+  in Python). The tangent-plane test (SciPy: 200 iterations) gets 2000
+  evaluations. For IPOPT `max_iterations` is IPOPT's `max_iter`, as before.
+  `Result.iterations` and the `nit` of a start count NLopt's evaluations.
 - Random starts use a seeded `Xoshiro`, not NumPy's stream; the starts differ,
   the seed still makes a run repeatable.
 - The IPOPT Hessian is exact (`hessian_blocks`, owner PR #9); Python passed a
@@ -726,6 +757,11 @@ switched over. Still to do:
 - Setting `BLAS.set_num_threads(1)` in the app (sweep or CLI) when solving on
   several threads.
 - Running the example cases (`cases/`) in both versions.
+- Tests that do not depend on the old Python code (owner, PR #10): checks of
+  the solution itself (element balances, KKT/stationarity, tangent-plane
+  stability of absent phases) and comparisons with independent literature
+  data, so that the Python references (`solves.json`, the Python dumps) can be
+  retired.
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)
@@ -764,3 +800,21 @@ switched over. Still to do:
    dependent on the ordering of species." Every emptiness check of the
    electrolyte phase uses the water amount (tested with water not listed first,
    and with water not selected).
+
+## Owner decisions (PR #10)
+
+1. **Dropped solvers:** "Yes, drop them for good." `trust-constr` and
+   `slsqp-fd` are removed (with `fd_ftol`, `fd_eps`); old cases that name them
+   load as `ipopt` with a note in `case.legacy_notes` and are written as
+   `ipopt` (see "Case files: reading").
+2. **Reference points of `slsqp-fd`:** "Yes, the stored reference used a bad
+   optimizer. So those should be treated as a rough guide. In the future, we
+   should think about making testing a bit more independent of the old python
+   code." They are solved with IPOPT; a lower G is accepted when it matches the
+   Python app's IPOPT solution (`LOWER_THAN_FD`). Independent tests are listed
+   under "What remains for M2".
+3. **HiGHS_jll 1.12.0:** "Yes, that's fine." Pinned to SciPy's HiGHS so the
+   LP starts equal Python's.
+4. **SLSQP limit:** "Multiply the default by 10." SLSQP may use
+   10 × `max_iterations` function evaluations (50000 by default; see "Solver",
+   differences).
