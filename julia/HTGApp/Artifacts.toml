@@ -1,0 +1,6 @@
+[material_icons]
+git-tree-sha1 = "7adf26181efc1d52068a749760da33cf7f452751"
+
+    [[material_icons.download]]
+    sha256 = "31196d01fc9f0615eb35bd0c51a40a2248351268432c5939fe8a2ebee21aa599"
+    url = "https://registry.npmjs.org/material-icons/-/material-icons-1.13.14.tgz"
