@@ -11,8 +11,10 @@ case files (units, feed arithmetic), the phase models (G, mu, ln phi and
 Hessians of the solid, fluid and electrolyte phases), the solver (setup of
 one equilibrium point, IPOPT/SLSQP with multistart, the result data), the
 result tables and CSV files, sweeps, the preflight check, the worker pool
-on threads, and the command line (`htg run`, `check`, `species`, `new`; see
-"Command line").
+on threads, the command line (`htg run`, `check`, `species`, `new`; see
+"Command line") and the app preferences (`settings.jl`). The app itself (`htg
+gui`) is the separate package `julia/HTGApp` (M4), so that this package does
+not load the GUI packages.
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -58,9 +60,11 @@ on threads, and the command line (`htg run`, `check`, `species`, `new`; see
 | `src/results.jl` (tables) | `species_table`, `phase_summary`, `summary` (of `Result` and `SweepResult`), `SweepResult` (`results`, `alternatives_table`, `save`), `read_choices`, `write_choices`, `apply_choices`; `RunTables`, `with_choices`, `flagged_points`, `load_saved` | `results.py` (rest), `gui/runs.py` (data part) |
 | `src/sweep.jl` | `run_sweep`, `sweep` (`Model.sweep`), `preflight`, `check` (`Model.check`), `preflight_messages`, `point_text` | `sweep.py`, `Model.sweep`, `Model.check` |
 | `src/queue.jl` | `solve_chain`, `default_workers`, `Run`, `WorkerPool` (threads: `submit`, `cancel`, `set_workers`, `restart`, `status`, `shutdown`, `on_point`/`on_done`), `sweep_result`, `live_tables`, `load_model_from_args`, `CASE_TEMPLATE` | `runner.py` |
-| `src/cli.jl` | The command line: `main(args)` (`@main`, so `julia -m HTGEquilibrium ...`), `parse_cli` (argparse's rules and messages), `cmd_run`, `cmd_check`, `cmd_species`, `cmd_new`; `plot` and `gui` exit with a message | `cli.py` |
+| `src/cli.jl` | The command line: `main(args)` (`@main`, so `julia -m HTGEquilibrium ...`), `parse_cli` (argparse's rules and messages), `cmd_run`, `cmd_check`, `cmd_species`, `cmd_new`; `plot` exits with a message, `gui` with one that says how to start `julia/HTGApp` | `cli.py` |
+| `src/settings.jl` | App preferences (`settings.toml` in the user config folder): `Settings`, `load_settings`, `settings[key]`, `settings[key] = value`, `export_defaults`, `set_export_defaults`, `settings_path`, `SETTINGS_DEFAULTS`; `SettingsKeyError`, `SettingsValueError` | `settings.py` |
+| `test/test_settings.jl`, `test/dump_settings.py`, `test/data/python_settings/` | `tests/test_settings.py` ported; files written by Python read in Julia and the other way round (byte-identical output) | `tests/test_settings.py` |
 | `templates/case_template.toml` | The case template of `htg new` (and the pool's warm-up), a copy of `src/htg/templates/case_template.toml` (identical, tested) | `templates/case_template.toml` |
-| `../htg`, `../htg.cmd` | Launchers (Linux/macOS, Windows): `julia --project=<this package> --threads=auto -m HTGEquilibrium ARGS...` | the `htg` console script |
+| `../htg`, `../htg.cmd` | Launchers (Linux/macOS, Windows): `julia --project=<this package> --threads=auto -m HTGEquilibrium ARGS...`; for `gui`, the same with `julia/HTGApp` and `-m HTGApp` | the `htg` console script |
 | `test/test_cli.jl`, `test/dump_cli.py`, `test/data/python_cli/` | The command line against Python's output (~70 commands, `to_string` of hand-made tables, an `htg run` and the folder it wrote; 42 kB, committed) | `tests/test_user_species.py` (the CLI flags) |
 | `test/test_results.jl`, `test/dump_results.py`, `test/data/python_results/` | Tables and files against a run saved by the Python app (38 kB, committed): the same CSV files and choices.toml, Python's files read as pandas reads them, round trips | `results.py`, `gui/runs.py`, `tests/test_multiple_results.py` (choices) |
 | `test/test_sweep.jl` | Grids and chains, preflight messages, warm starts, failed points, solution checks, threads | `tests/test_grid.py`, `sweep.py` |
@@ -1026,9 +1030,13 @@ template with the name replaced).
   threads (with the plots note) gives the same files.
 
 **Differences from Python** (deliberate):
-- `htg plot` and `htg gui` are not available yet (M4): they parse their
-  arguments as Python does, then print "Error: htg plot is not available in the
-  Julia version yet ..." and exit with 2.
+- `htg plot` is not available yet (M4): it parses its arguments as Python
+  does, then prints "Error: htg plot is not available in the Julia version
+  yet ..." and exits with 2.
+- `htg gui` is the package `julia/HTGApp` (see its README). The launchers
+  start it with that project; started with this package (`julia
+  --project=julia/HTGEquilibrium -m HTGEquilibrium gui`), it prints how to
+  start the app and exits with 2.
 - `htg run` writes no plots: without `--no-plots` it says once, before the case
   lines, "Plots are not written by the Julia version yet (as with --no-plots);
   ...". Python printed a "Plot: ..." line per plot.
@@ -1057,6 +1065,40 @@ compilation, 147 s with Julia's start-up; tables printed as above).
 run once from a separate depot (`htg --data DIR species --phase ion`, and a
 usage error with exit code 2).
 
+## App preferences (`settings.jl`)
+
+The app's display preferences (units, plot colour theme, line width, the Save
+plot sizes per layout), as Python's `settings.py`. They never change a
+calculation. The file is `settings.toml` in the same folder Python uses, so
+both versions share it:
+
+- `HTG_CONFIG_DIR` if set;
+- otherwise the folder of `platformdirs.user_config_dir("htg-equilibrium",
+  appauthor=False)`: `$XDG_CONFIG_HOME/htg-equilibrium` (if absolute) or
+  `~/.config/htg-equilibrium` on Linux, `~/Library/Application
+  Support/htg-equilibrium` on macOS, `%LOCALAPPDATA%\htg-equilibrium` on
+  Windows.
+
+```julia
+settings = load_settings()                  # Python: Settings.load()
+settings["pressure_unit"]                   # settings.get("pressure_unit")
+settings["pressure_unit"] = "MPa"           # settings.set(...): checks, then writes the file
+export_defaults(settings, "row")            # a copy
+set_export_defaults(settings, "row"; width_mm=240)
+```
+
+Same keys, defaults and checks as Python. A missing, unreadable or invalid
+file, or one invalid value, falls back to the default with a logged warning
+(the same texts); failing to write is a warning too. Writing drops comments
+and keeps the key order; the text is the same as Python's `tomlkit.dumps`
+(tested byte for byte, and each version reads the other's files).
+
+Differences (Julia names): `settings[key]` and `settings[key] = value` instead
+of `get` and `set`; an unknown key or layout is a `SettingsKeyError` (Python:
+`KeyError`), an invalid value a `SettingsValueError` (a `ValueError`); a
+number setting given as `2.0` where the file has `2` counts as unchanged (no
+write), as in Python. Warnings are Julia log messages (`┌ Warning: ...`).
+
 ## What remains for M2
 
 Done: constants, formulas, water, HKF, band check; the data layer
@@ -1072,8 +1114,11 @@ example cases run in both versions (`test/compare_cases.jl`: all 87 points
 agree); the command line (`cli.jl`: `run`, `check`, `species`, `new`, the
 launchers). `test/data/hkf_ions.toml` equals the registry's records (tested) and
 can go when `test_water.jl` is switched over. Still to do:
-- `htg plot` and `htg gui` (with the plotting and GUI ports, M4): today they
-  exit with a message; `htg run` writes no plots.
+- `htg plot` (with the plotting port, M4): today it exits with a message;
+  `htg run` writes no plots.
+- The app (`htg gui`, M4) is the package `julia/HTGApp`; its README says
+  what is ported (so far the shell: window, header, status line, tabs,
+  preferences) and what remains.
 - The user species run record of a saved run (`user_species_used.toml`, the
   note in case.toml; `user_species.run_record`), with the user species port (M4).
 - Interim step (Python GUI calling the Julia core): skipped by the owner
