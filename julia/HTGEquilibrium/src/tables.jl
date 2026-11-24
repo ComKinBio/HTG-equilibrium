@@ -227,3 +227,112 @@ function read_csv(path::AbstractString)
     end
     return out
 end
+
+# ---------------------------------------------------------------- text (pandas to_string)
+# `DataFrame.to_string(index=False)` of pandas 3.1.1 with the display options of
+# the command line (`htg.cli._print_table`: no row/column limits; to_string
+# itself never truncates a value). pandas formats each column by its dtype
+# (format.py: FloatArrayFormatter, _IntArrayFormatter, _GenericArrayFormatter,
+# _ExtensionArrayFormatter for the `str` dtype), right-justifies values and
+# header to the widest of them, puts a space before the header of a numeric
+# column (int, float and bool), and joins the columns with one space. Widths
+# count characters (Python's len), not display width.
+
+"""The pandas dtype a table column would have: :int, :float, :bool, :str or :object."""
+function _pd_kind(t::DataTable, c)
+    values = t[c]
+    c in t.numeric && return all(v -> v isa Integer && !(v isa Bool), values) ? :int : :float
+    !isempty(values) && all(v -> v isa Bool, values) && return :bool
+    nonnull = [v for v in values if !_isnull(v)]
+    !isempty(nonnull) && all(v -> v isa AbstractString, nonnull) && return :str
+    return :object
+end
+
+"""pprint_thing with escape_chars ("\\t", "\\r", "\\n")."""
+_pd_escape(s) = replace(String(s), "\t" => "\\t", "\r" => "\\r", "\n" => "\\n")
+
+"""Python's `format(x, '.6f')` / `format(x, '.6e')` (inf and nan in lower case)."""
+function _pd_fmt(x::Float64, style::Char)
+    isnan(x) && return "nan"
+    isinf(x) && return x > 0 ? "inf" : "-inf"
+    return style == 'f' ? @sprintf("%.6f", x) : @sprintf("%.6e", x)
+end
+
+const _PD_DECIMAL = r"^\s*[+-]?[0-9]+\.[0-9]*$"
+
+"""pandas `_trim_zeros_float`: drop trailing zeros equally from all decimal numbers, keep one."""
+function _pd_trim_zeros(strings::Vector{String})
+    isnum = [occursin(_PD_DECIMAL, s) for s in strings]
+    any(isnum) || return strings
+    out = copy(strings)
+    while all(endswith(s, "0") for (s, n) in zip(out, isnum) if n)
+        out = [n ? String(chop(s)) : s for (s, n) in zip(out, isnum)]
+    end
+    return [n && endswith(s, ".") ? s * "0" : s for (s, n) in zip(out, isnum)]
+end
+
+"""pandas `FloatArrayFormatter` (precision 6, no leading space): fixed, or scientific when needed."""
+function _pd_float_column(values)
+    x = Float64[Float64(v) for v in values]
+    formatted(style) = _pd_trim_zeros(String[isnan(v) ? "NaN" : _pd_fmt(v, style) for v in x])
+    fixed = formatted('f')
+    too_long = !isempty(fixed) && maximum(length, fixed) > 6 + 6
+    large = any(v -> abs(v) > 1e6, x)
+    small = any(v -> 0 < abs(v) < 1e-6, x)
+    return (small || (too_long && large)) ? formatted('e') : fixed
+end
+
+"""A value of an object column (`_GenericArrayFormatter`): None, NaN; floats as `f"{x: .6f}"` trimmed."""
+function _pd_object_cell(v)
+    v === nothing && return "None"
+    _isnull(v) && return "NaN"
+    v isa Bool && return v ? "True" : "False"
+    if v isa AbstractFloat
+        s = rstrip((signbit(v) ? "" : " ") * _pd_fmt(Float64(v), 'f'), '0')
+        return endswith(s, ".") ? s * "0" : String(s)
+    end
+    return _pd_escape(v isa AbstractString ? v : py_str(v))
+end
+
+function _pd_column(t::DataTable, c)
+    kind = _pd_kind(t, c)
+    values = t[c]
+    cells = if kind == :float
+        _pd_float_column(values)
+    elseif kind == :int
+        String[string(v) for v in values]
+    elseif kind == :bool
+        String[v ? "True" : "False" for v in values]
+    elseif kind == :str
+        String[_isnull(v) ? "NaN" : _pd_escape(v) for v in values]
+    else
+        String[_pd_object_cell(v) for v in values]
+    end
+    header = kind in (:float, :int, :bool) ? " " * c : c
+    return header, cells
+end
+
+_rjust(s, n) = " "^max(0, n - length(s)) * s
+
+"""
+    to_string(table) -> String
+
+The text of pandas `DataFrame.to_string(index=False)`, as the command line
+prints tables: values and headers right-justified, numeric headers (int, float,
+bool) with a leading space, floats in pandas' common format per column
+(`300.0`, `-481234.56789`, `1.000000e-07`), `NaN` for missing numbers and text,
+`None` for Python's None (`nothing`) in an object column, bools as True/False.
+A table without rows gives pandas' "Empty DataFrame" text.
+"""
+function to_string(t::DataTable)
+    if isempty(t)
+        return "Empty DataFrame\nColumns: [$(join(t.columns, ", "))]\nIndex: []"
+    end
+    columns = Vector{String}[]
+    for c in t.columns
+        header, cells = _pd_column(t, c)
+        width = max(length(header), maximum(length, cells))
+        push!(columns, [_rjust(s, width) for s in [header; cells]])
+    end
+    return join((join((col[i] for col in columns), ' ') for i in 1:nrows(t)+1), '\n')
+end
