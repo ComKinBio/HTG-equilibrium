@@ -158,12 +158,19 @@ end
         @test code == 1 && err == "my_new_case.toml already exists; choose another name.\n"
     end
 
-    @testset "plot and gui are not available yet" begin
-        for args in (["plot", "results/x"], ["gui"], ["gui", "--browser", "--port", "8080"])
+    @testset "plot is not available yet; gui is in HTGApp" begin
+        code, out, err = run_cli(["plot", "results/x"])
+        @test code == 2 && isempty(out)
+        @test startswith(err, "Error: htg plot is not available in the Julia version yet")
+        for args in (["gui"], ["gui", "--browser", "--port", "8080"], ["--data", "d", "gui", "--work", "2"])
             code, out, err = run_cli(args)
             @test code == 2 && isempty(out)
-            @test startswith(err, "Error: htg $(args[1]) is not available in the Julia version yet")
+            @test startswith(err, "Error: the app is in the package julia/HTGApp. Start it with the launcher: julia/htg gui")
         end
+        # HTGApp parses the gui arguments with parse_cli
+        command, v = parse_cli(["--data", "d", "gui", "--work", "2", "--browser", "--res", "r", "--no-u"])
+        @test command == "gui" && v["workers"] == 2 && v["browser"] && v["results"] == "r" && v["data"] == "d"
+        @test v["no_user_species"] && v["cases"] == "cases" && v["port"] === nothing && !v["no_browser"]
     end
 
     @testset "worker threads" begin

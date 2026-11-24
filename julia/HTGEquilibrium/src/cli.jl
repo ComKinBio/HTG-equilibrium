@@ -5,7 +5,7 @@
 #     htg species [--all] [--phase PHASE] [--search TEXT]
 #     htg new CASE.toml
 #     htg plot RESULTS_DIR          (not in the Julia version yet: exits with a message)
-#     htg gui [...]                 (not in the Julia version yet: exits with a message)
+#     htg gui [...]                 (the app; in the package julia/HTGApp, see below)
 #
 # run, check and species read your own species database too (see
 # user_species.jl); --user-data DIR chooses its folder, --no-user-species turns
@@ -13,6 +13,10 @@
 #
 # Started with `julia/htg` (Linux, macOS) or `julia\htg.cmd` (Windows), which run
 # `julia --project=<this package> --threads=auto -m HTGEquilibrium ARGS...`;
+# for the `gui` command they run `-m HTGApp` with the project julia/HTGApp
+# instead, so that this package does not load the GUI packages (HTGApp parses
+# the arguments with `parse_cli` below). Started here, `gui` exits with a message
+# that says how to start the app.
 # `main(args)` is the entry point (`@main`). Arguments, defaults, printed text and
 # exit codes are Python's (argparse: usage errors exit 2 with "htg: error: ...";
 # ValueError and missing files print "Error: ..." and exit 2; failed points or
@@ -70,8 +74,8 @@ positional arguments:
     species             list species that can be used in case files
     new                 write a commented case-file template
     plot                re-plot saved results (not in the Julia version yet)
-    gui                 open the app in its own window (not in the Julia
-                        version yet)
+    gui                 open the app in its own window (its tabs are not in
+                        the Julia version yet)
 
 options:
   -h, --help            show this help message and exit
@@ -141,12 +145,14 @@ usage: htg gui [-h] [--browser] [--workers WORKERS] [--port PORT]
                [--host HOST] [--results RESULTS] [--cases CASES]
                [--no-browser] [--user-data DIR] [--no-user-species]""", """
 
-Not available in the Julia version yet (use the Python app: uv run htg gui).
+The Julia version has the window, header, status line and tabs; the tabs
+themselves are not ported yet (for them use the Python app: uv run htg gui).
 
 options:
   -h, --help         show this help message and exit
   --browser          open the app in the web browser instead
-  --workers WORKERS  worker threads (default: from free cores and memory)
+  --workers WORKERS  worker threads (default: from free cores and memory; at
+                     most the threads Julia was started with)
   --port PORT        default: 8080 in the browser, a free port for the window
   --host HOST        network address (default 127.0.0.1: only this computer;
                      0.0.0.0: everyone on the network)
@@ -505,9 +511,16 @@ function _not_available(command, example)
     end
 end
 
+"""`htg gui` started with this package: the app is the package julia/HTGApp (it loads the GUI packages)."""
+function cmd_gui(values, out::IO, err::IO)
+    println(err, "Error: the app is in the package julia/HTGApp. Start it with the launcher: julia/htg gui " *
+                 "(Windows: julia\\htg.cmd gui), or: julia --project=julia/HTGApp -t auto -m HTGApp gui")
+    return 2
+end
+
 const _HANDLERS = Dict{String,Function}(
     "run" => cmd_run, "check" => cmd_check, "species" => cmd_species, "new" => cmd_new,
-    "plot" => _not_available("plot", "uv run htg plot RESULTS_DIR"), "gui" => _not_available("gui", "uv run htg gui"))
+    "plot" => _not_available("plot", "uv run htg plot RESULTS_DIR"), "gui" => cmd_gui)
 
 """Python's `str(exc)` of the errors the command line reports as "Error: ..."."""
 _error_text(e::ArgumentError) = e.msg
