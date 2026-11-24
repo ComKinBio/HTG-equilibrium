@@ -51,11 +51,22 @@ end
             end
             @test same(plain(mineral_inventory(model)), ref["mineral_inventory"])
             # The original default element set; source labels were renamed, so they are not compared.
+            # Intended change (owner, PR #7): gas candidates are listed (NASA phase "G" or blank);
+            # Python listed none, so the solid rows must equal the golden data and the gas rows
+            # are checked below.
             columns = ["Species", "Phase", "Elements", "Ready", "Reason"]
-            new_pc = [OrderedDict(c => r[c] for c in columns)
-                      for r in product_candidates(model, ["Na", "K", "Cs", "Li", "Cl", "Mg"]; temperature_C=400.0)]
+            rows = product_candidates(model, ["Na", "K", "Cs", "Li", "Cl", "Mg"]; temperature_C=400.0)
+            new_pc = [OrderedDict(c => r[c] for c in columns) for r in rows if r["Phase"] == "solid"]
             ref_pc = [OrderedDict(c => r[c] for c in columns) for r in ref["ion_product_candidates_400C"]]
+            @test all(r -> r["Phase"] == "solid", ref_pc)
             @test same(new_pc, ref_pc)
+            gas = [r for r in rows if r["Phase"] == "gas"]
+            @test [r["Species"] for r in gas] == ["chlorine", "NOCL", "CLCO", "CL", "CLO", "HCL", "HOCL"]
+            @test [r["Ready"] for r in gas] == [true, false, false, false, false, false, false]
+            @test gas[1]["Reason"] == "" && gas[1]["Source"] == "NASA-7 database"
+            @test gas[end]["Reason"] == "No PC-SAFT formula mapping for 'HOCL'."
+            @test same(gas[6]["Elements"], Dict("H" => 1, "Cl" => 1))
+            @test findfirst(r -> r["Phase"] == "solid", rows) == length(gas) + 1   # gas rows first, as Python orders
         end
     end
 end
@@ -73,16 +84,17 @@ end
     @test (try nasa_name(reg, "nope"); catch e; e.key end) == "No NASA mapping for nope"
     @test HTGEquilibrium.entry(reg, "aqueous", "Na+")["charge"] == 1
     @test (try HTGEquilibrium.entry(reg, "solid", "water"); catch e; e.msg end) |> startswith("solid: 'water' is not registered.")
-    @test molecular_weight("CH4") == 12.011 + 4 * 1.008
+    @test isapprox(molecular_weight("CH4"), 12.011 + 4 * 1.008; rtol=RTOL)
     @test formula_elements("C2H6O") == OrderedDict("C" => 2.0, "H" => 6.0, "O" => 1.0)
     @test formula_elements("Na+") === nothing
-    @test reg.binary_interactions == [(("CO2", "CH4"), 0.065)]
+    @test length(reg.binary_interactions) == 1 && reg.binary_interactions[1][1] == ("CO2", "CH4") &&
+          isapprox(reg.binary_interactions[1][2], 0.065; rtol=RTOL)
     @test reg.aqueous_reference_ions == ["Na+", "HCO3-", "CO3^2-"]
     @test (try resolve_parameters(reg, model.databases, 600.0, ["ASH"]); catch e; e.key end) ==
           "No PC-SAFT formula mapping for 'ASH'."           # a NASA-only record has no SAFT formula
     @test (try resolve_parameters(reg, model.databases, 600.0, ["butane"]); catch e; e.msg end) ==
           "butane: not found in the molecular database registry"
-    @test model.load_args["water_model"] == "SUPCRT92" && model.water_model isa SUPCRT92Water
+    @test !hasfield(Model, :water_model) && !haskey(model.load_args, "water_model")   # a per-case choice
 end
 
 @testset "user species folder (Python fixture)" begin
@@ -90,6 +102,7 @@ end
     model = load_model(FROZEN; user_data=USER_FOLDER)
     reg = model.registry
     T, P = expected["T"], expected["P"]
+    # No Python reference test covers this folder: floats within RTOL.
     @test same(plain(model.user_info), expected["user_info"])
     @test collect(keys(model.user_info)) == collect(keys(expected["user_info"]))
     @test model.user_data == USER_FOLDER
@@ -102,26 +115,27 @@ end
     end
     @test !haskey(reg.molecular, "ethane")       # hidden shipped species
     for (name, e) in expected["entries"]
-        @test same(plain(HTGEquilibrium.any_entry(reg, name)), e)
+        @test same(plain(HTGEquilibrium.any_entry(reg, name)), e; rtol=RTOL)
     end
     resolved = resolve_parameters(reg, model.databases, T, collect(keys(expected["saft_parameters"])))
     for (name, e) in expected["saft_parameters"]
-        @test same(Dict(k => get(resolved[name], k, nothing) for k in keys(e)), e)
+        @test same(Dict(k => get(resolved[name], k, nothing) for k in keys(e)), e; rtol=RTOL)
     end
     @test resolved["testanol"]["Source"] == "user_pcsaft.csv" && resolved["methane"]["Database row"] < 0
-    @test same(plain(reg.binary_interactions), expected["binary_interactions"])
-    @test same(plain(reg.ion_epcsaft_table), expected["ion_epcsaft_table"])
-    @test same(plain(reg.ion_hkf_table), expected["ion_hkf_table"])
+    @test same(plain(reg.binary_interactions), expected["binary_interactions"]; rtol=RTOL)
+    @test same(plain(reg.ion_epcsaft_table), expected["ion_epcsaft_table"]; rtol=RTOL)
+    @test same(plain(reg.ion_hkf_table), expected["ion_hkf_table"]; rtol=RTOL)
     names = collect(keys(expected["nasa_g0"]))
-    @test allclose_np(nasa_g0(model, names, T), [expected["nasa_g0"][n] for n in names])
+    @test allclose_np(nasa_g0(model, names, T), [expected["nasa_g0"][n] for n in names]; rtol=RTOL)
     names = collect(keys(expected["solid_g0"]))
-    @test allclose_np(solid_g0(model, names, T, P), [expected["solid_g0"][n] for n in names])
+    @test allclose_np(solid_g0(model, names, T, P), [expected["solid_g0"][n] for n in names]; rtol=RTOL)
     names = collect(keys(expected["hkf_ion_g0"]))
-    @test allclose_np(hkf_ion_g0(model, names, 573.15, 240e5), [expected["hkf_ion_g0"][n] for n in names])
+    @test allclose_np(hkf_ion_g0(SUPCRT92Water(), model, names, 573.15, 240e5),
+                      [expected["hkf_ion_g0"][n] for n in names]; rtol=RTOL)
     # The shipped model is unchanged by the user layer, and without the layer the original is back.
     plain_model = load_model(FROZEN)
-    @test resolve_parameters(plain_model.registry, plain_model.databases, T, ["methane"])["methane"]["m"] ==
-          resolved["methane"]["m"] / 1.5
+    @test isapprox(resolve_parameters(plain_model.registry, plain_model.databases, T, ["methane"])["methane"]["m"],
+                   resolved["methane"]["m"] / 1.5; rtol=RTOL)
     @test haskey(plain_model.registry.molecular, "ethane") && !haskey(plain_model.registry.solid, "Testite")
     # An empty or missing folder changes nothing.
     empty = load_model(FROZEN; user_data=joinpath(@__DIR__, "data", "no-such-folder"))
@@ -162,7 +176,7 @@ end
     minerals = [n for (n, d) in reg.solid if get(d, "adapter", nothing) == "supcrt_mineral" &&
                                                d["supcrt_mineral"]["Tmax"] >= T]
     @test all(isfinite, solid_g0(model, minerals, T, 240e5))
-    @test all(isfinite, hkf_ion_g0(model, collect(keys(reg.ion)), T - 50, 240e5))
+    @test all(isfinite, hkf_ion_g0(SUPCRT92Water(), model, collect(keys(reg.ion)), T - 50, 240e5))
 end
 
 @testset "a loaded model is read safely from several threads" begin
@@ -179,6 +193,7 @@ end
     Threads.@threads for i in eachindex(temps)
         threaded[i] = work(temps[i])
     end
+    # Julia against Julia (same code, same input): threads must not change a single bit.
     @test all(isequal(plain(serial[i]), plain(threaded[i])) for i in eachindex(temps))
 end
 

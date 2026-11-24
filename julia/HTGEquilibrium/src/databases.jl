@@ -351,7 +351,7 @@ function nasa7_properties(nasa_db, species_name, T)
     T <= 0.0 && throw(ArgumentError("NASA temperature must be positive."))
     a, _ = nasa7_coefficients(nasa_db, species_name, T)
     a1, a2, a3, a4, a5, a6, a7 = a
-    T2, T3, T4 = pypow(T, 2), pypow(T, 3), pypow(T, 4)
+    T2, T3, T4 = T^2, T^3, T^4
     cp_R = a1 + a2 * T + a3 * T2 + a4 * T3 + a5 * T4
     h_RT = a1 + a2 * T / 2.0 + a3 * T2 / 3.0 + a4 * T3 / 4.0 + a5 * T4 / 5.0 + a6 / T
     s_R = a1 * log(T) + a2 * T + a3 * T2 / 2.0 + a4 * T3 / 3.0 + a5 * T4 / 4.0 + a7

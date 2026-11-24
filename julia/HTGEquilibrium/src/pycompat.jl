@@ -11,9 +11,10 @@
 #
 # Python ValueError/TypeError become ArgumentError with the same message,
 # KeyError becomes KeyError(message).
-
-"""Python `x ** y` for floats: C `pow` (the platform libm, as CPython)."""
-pypow(x::Real, y::Real) = ccall(:pow, Float64, (Float64, Float64), Float64(x), Float64(y))
+#
+# These reproduce Python's *behaviour* (what is read, which texts and errors
+# result). Arithmetic is plain Julia: results are compared with Python within
+# tolerances, not bit for bit.
 
 isna(x) = x === missing || x === nothing || (x isa AbstractFloat && isnan(x))   # pd.isna
 

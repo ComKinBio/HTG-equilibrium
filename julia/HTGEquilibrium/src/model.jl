@@ -3,7 +3,9 @@
 # (`solve`, `sweep`, `check`) come with the equilibrium port.
 #
 # A Model is built once and then only read, so one Model can be shared by
-# all threads.
+# all threads and all cases. It holds no water model: the water model
+# (SUPCRT92Water() or IAPWS95Water()) is a per-case choice and is passed to
+# every calculation that needs water properties, so one case never mixes models.
 
 const REPO_DATA = normpath(joinpath(@__DIR__, "..", "..", "..", "data"))
 
@@ -14,8 +16,7 @@ default_data_dir() = (d = get(ENV, "HTG_DATA_DIR", ""); isempty(d) ? REPO_DATA :
     Model
 
 Thermodynamic model data built from the databases in `data_dir`:
-`databases`, `registry`, the `water_model` used for every aqueous property
-(SUPCRT92Water() unless chosen otherwise), the user species folder in use
+`databases`, `registry`, the user species folder in use
 (`user_data`, `nothing`: shipped data only), what that folder contributes
 (`user_info`) and how to load the same model again (`load_args`).
 """
@@ -23,19 +24,14 @@ struct Model
     databases::Databases
     registry::Registry
     data_dir::Union{Nothing,String}
-    water_model::WaterModel
     user_data::Union{Nothing,String}
     user_info::OrderedDict{String,Any}
     load_args::OrderedDict{String,Any}
 end
 
-_water_model_name(::SUPCRT92Water) = "SUPCRT92"
-_water_model_name(::IAPWS95Water) = "IAPWS95"
-_water_model_name(m::WaterModel) = string(typeof(m))
-
 """
     load_model(data_dir=default_data_dir(); species_file=nothing, nasa_names=nothing,
-               reference_temperature_C=350.0, user_data=nothing, water_model=SUPCRT92Water()) -> Model
+               reference_temperature_C=350.0, user_data=nothing) -> Model
 
 Read the databases and discover species (Python: `Model.load`).
 
@@ -45,10 +41,12 @@ Read the databases and discover species (Python: `Model.load`).
   parameters while checking which species have complete data
 - `user_data`: user species folder (see user_species.jl), read after the
   shipped files; `nothing` (default): shipped data only
-- `water_model`: the water model of every aqueous property (one model throughout)
+
+The water model is not part of the model data; pass it to the calculations
+(`hkf_ion_g0(water_model, model, ions, T, P)`, `water_properties(water_model, T, P)`).
 """
 function load_model(data_dir=nothing; species_file=nothing, nasa_names=nothing, reference_temperature_C=350.0,
-                    user_data=nothing, water_model::WaterModel=SUPCRT92Water())
+                    user_data=nothing)
     data_dir = data_dir === nothing ? default_data_dir() : String(data_dir)
     databases = load_databases(data_dir)
     config = parsefile_ordered(species_file === nothing ? joinpath(data_dir, "species.toml") : String(species_file))
@@ -65,17 +63,19 @@ function load_model(data_dir=nothing; species_file=nothing, nasa_names=nothing, 
     load_args = OrderedDict{String,Any}(
         "data_dir" => data_dir, "species_file" => species_file === nothing ? nothing : String(species_file),
         "nasa_names" => nasa_names, "reference_temperature_C" => reference_temperature_C,
-        "user_data" => user_dir, "water_model" => _water_model_name(water_model))
-    return Model(databases, registry, data_dir, water_model, user_dir, user_info, load_args)
+        "user_data" => user_dir)
+    return Model(databases, registry, data_dir, user_dir, user_info, load_args)
 end
 
 # ---------------------------------------------------------------- standard states with the model's data
-"""Water properties at T [K], P [Pa] from the model's water model."""
-water_properties(model::Model, T::Real, P::Real) = water_properties(model.water_model, T, P)
+"""
+    hkf_ion_g0(water_model, model::Model, ions, T, P)
 
-"""g° [J/mol] of aqueous ions at T [K], P [Pa] with the model's HKF records and water model."""
-hkf_ion_g0(model::Model, ions, T::Real, P::Real) =
-    hkf_ion_g0(model.water_model, model.registry.ion_hkf_table, ions, T, P)
+g° [J/mol] of aqueous ions at T [K], P [Pa] from the model's HKF records, with
+all water properties from `water_model` (the case's choice).
+"""
+hkf_ion_g0(water_model::WaterModel, model::Model, ions, T::Real, P::Real) =
+    hkf_ion_g0(water_model, model.registry.ion_hkf_table, ions, T, P)
 
 nasa_g0(model::Model, species, T) = nasa_g0(model.registry, model.databases.nasa, species, T)
 solid_g0(model::Model, species, T, P) = solid_g0(model.registry, model.databases.nasa, species, T, P)
@@ -132,10 +132,26 @@ _exception_text(e::KeyError) = py_repr(e.key isa AbstractString ? e.key : string
 _exception_text(e) = sprint(showerror, e)
 
 """
+    nasa_phase_is(record, phase) -> Bool
+
+Whether a NASA-7 record belongs to `phase` ("gas" or "solid") by its phase
+letter (header column 45). Solids are "S". Gases are "G" **or blank**: in
+Thermdat_WasteMech.txt the gas-phase mechanism species (CH4, H2, N2O, ...,
+187 of 229 records) leave the column blank and only TARN has "G"; CHEMKIN
+reads a gas-phase mechanism file the same way. "L" (liquid) is neither.
+(Python requires "G" for a gas, so its `product_candidates` never lists one;
+the Julia rule is the owner's fix, PR #7.)
+"""
+nasa_phase_is(record::NASARecord, phase) =
+    phase == "solid" ? record.phase == "S" : record.phase in ("G", "")
+
+"""
     product_candidates(model, elements; temperature_C=nothing) -> Vector of rows
 
 Neutral gas molecules and pure solids that can carry `elements` (e.g. salt
-elements): rows with Species, Phase, Elements, Source, Ready, Reason.
+elements): rows with Species, Phase, Elements, Source, Ready, Reason. A gas
+candidate needs a gas NASA-7 record (`nasa_phase_is`) and is ready only with
+complete SAFT parameters (otherwise Reason says why).
 """
 function product_candidates(model::Model, elements; temperature_C=nothing)
     registry, nasa_db = model.registry, model.databases.nasa
@@ -154,7 +170,7 @@ function product_candidates(model::Model, elements; temperature_C=nothing)
             else
                 key = get(d, "nasa", nothing)
                 record = _has(nasa_db, key) ? nasa_db[key] : nothing
-                (record === nothing || record.phase != (phase == "solid" ? "S" : "G")) && continue
+                (record === nothing || !nasa_phase_is(record, phase)) && continue
                 source = "NASA-7 database"
                 if temperature_C !== nothing && !(record.T_low <= temperature_C + 273.15 <= record.T_high)
                     reason = "Outside NASA temperature range"
@@ -166,7 +182,7 @@ function product_candidates(model::Model, elements; temperature_C=nothing)
                     resolve_parameters(registry, model.databases, T, [name])
                 catch err
                     (err isa ArgumentError || err isa KeyError) || rethrow()
-                    reason = _exception_text(err)
+                    reason = err isa KeyError ? string(err.key) : err.msg   # plain text, no repr quotes
                 end
             end
             push!(rows, OrderedDict{String,Any}("Species" => name, "Phase" => phase,

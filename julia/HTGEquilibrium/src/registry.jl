@@ -216,7 +216,7 @@ function resolve_parameters(reg::Registry, databases::Databases, T, species; ato
         data = saft_parameters(reg, databases, name, T)
         data === nothing && throw(ArgumentError("$name: NASA data alone is insufficient for PC-SAFT; " *
                                                 "complete SAFT parameters/mapping required"))
-        data["Mw"] = pysum(atomic_weights[e] * v for (e, v) in molecules[name]["elements"])
+        data["Mw"] = sum(atomic_weights[e] * v for (e, v) in molecules[name]["elements"])
         if name == "water" && get(data, "association_scheme", nothing) in ("-", "", nothing)
             data["association_scheme"] = "2B"
         end
