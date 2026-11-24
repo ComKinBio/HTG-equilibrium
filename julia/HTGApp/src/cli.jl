@@ -21,8 +21,10 @@ end
 """
     main(args=ARGS; out=stdout, err=stderr) -> exit code
 
-`htg ... gui ...`: parse the arguments and run the app until its window is closed.
-Other commands belong to the core (`julia -m HTGEquilibrium`).
+`htg ... gui ...`: parse the arguments and run the app until its window is closed;
+then end the process at once (`exit_now`, exit code 0, or 1 if the self-test
+failed). Usage errors and help return their exit code. Other commands belong to
+the core (`julia -m HTGEquilibrium`).
 """
 function main(args=ARGS; out::IO=stdout, err::IO=stderr)
     TIMING[] = get(ENV, "HTG_TIMING", "0") == "1" || get(ENV, "HTG_SELFTEST", "0") == "1"
@@ -37,7 +39,7 @@ function main(args=ARGS; out::IO=stdout, err::IO=stderr)
         options = gui_options(values)
         on_usable = get(ENV, "HTG_SELFTEST", "0") == "1" ? selftest : nothing
         run_app(; options..., on_usable)
-        return SELFTEST_FAILED[] ? 1 : 0
+        exit_now(SELFTEST_FAILED[] ? 1 : 0)
     catch exc
         exc isa HTGEquilibrium._CLIExit && return exc.code
         exc isa InterruptException && return 130

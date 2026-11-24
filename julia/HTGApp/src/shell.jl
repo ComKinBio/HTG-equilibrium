@@ -181,6 +181,46 @@ function serve_until_interrupted()
     return nothing
 end
 
+const SESSIONS_DIR = Ref("")
+
+"""
+Genie's session cookie and session files, for this run only. Genie encrypts the
+cookie with the secret token, which is new in every run (`register_page`), and
+keeps the cookie 30 days; a cookie of an earlier run then decrypts to garbage
+and every request logs "Failed to store session data". So the cookie gets a new
+name per run and lives only as long as the browser (or window). The session files
+go to a temporary folder that is removed when Julia exits (Genie's default is a
+fixed folder in the system temp folder that is never emptied).
+"""
+function private_sessions!()
+    sessions = Stipple.ModelStorage.Sessions
+    SESSIONS_DIR[] = mktempdir(; prefix = "htg-sessions-")
+    sessions.GenieSessionFileSession.sessions_path(SESSIONS_DIR[])
+    sessions.GenieSession.session_key_name("__htg_" * bytes2hex(rand(UInt8, 8)))
+    options = copy(sessions.GenieSession.session_options())
+    delete!(options, "MaxAge")
+    sessions.GenieSession.session_options(options)
+    return nothing
+end
+
+# ---------------------------------------------------------------- exit
+"""
+End the process now with `code`, without Julia's exit. Called by `main` after
+`run_app` (the window, the server and the pool are stopped and "Stopped. ..."
+is printed). Julia's exit waits until a compilation step in progress on a
+worker thread has finished; without a sysimage that took 20-30 s when the
+window was closed during the warm-up (and any first call of uncompiled code
+waits in the same way). The session folder, the only temporary folder left,
+is removed first.
+"""
+function exit_now(code)
+    stamp("exiting")
+    isempty(SESSIONS_DIR[]) || rm(SESSIONS_DIR[]; recursive = true, force = true)
+    flush(stdout)
+    flush(stderr)
+    ccall(:_exit, Cvoid, (Cint,), code)
+end
+
 # ---------------------------------------------------------------- run_app
 """
     run_app(; results_dir="results", cases_dir="cases", workers=nothing, port=nothing, show=true,
@@ -212,7 +252,9 @@ function run_app(; results_dir="results", cases_dir="cases", workers=nothing, po
     problem = browser || !show ? nothing : @async window_problem()
     state = State(; results_dir, cases_dir, settings)
     STATE[] = state
-    loader = Threads.@spawn :default load!(state; workers, model_args, warm_up)
+    # Compiled now: called during the warm-up, it would wait for the compiling worker.
+    precompile(exit_now, (Int,))
+    Threads.@spawn :default load!(state; workers, model_args, warm_up)
     stopped = Ref(false)
     function stop()
         stopped[] && return
@@ -229,11 +271,15 @@ function run_app(; results_dir="results", cases_dir="cases", workers=nothing, po
         ENV["GENIE_ENV"] = Genie.config.app_env = "prod"   # minified Vue/Quasar, no file watching
         Genie.config.log_requests = false
         Genie.config.server_host = host
+        private_sessions!()
         register_page()
         window = window_or_browser(browser || !show; problem = () -> fetch(problem))
         stamp("page registered, window check done")
         port = something(port, window ? free_port() : 8080)
-        Genie.up(port, host; async = true, open_browser = false)
+        # Genie prints empty lines around its (hidden) start-up messages.
+        redirect_stdout(devnull) do
+            Genie.up(port, host; async = true, open_browser = false)
+        end
         url = local_url(host, port)
         stamp("server listening on $host:$port")
         if window && run_window(url, port; on_usable)

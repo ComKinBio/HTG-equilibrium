@@ -6,6 +6,7 @@
 #
 #   HTG_SELFTEST_SET=unit      set the pressure unit preference to `unit` in this session
 #   HTG_SELFTEST_EXPECT=unit   the pressure unit this session must have read at start-up
+#   HTG_SELFTEST_EARLY=1       close the window as soon as the page is checked (during the warm-up)
 #   HTG_SELFTEST_IDLE=s        after the solver is compiled, sit idle s seconds, then report memory
 #   HTG_SELFTEST_SHOT=path     write a PNG screenshot of the window there
 
@@ -129,6 +130,14 @@ function _selftest(app, win, results)
                 "\"$set\" in $(state.settings.path)")
     end
 
+    if get(ENV, "HTG_SELFTEST_EARLY", "") == "1"
+        # close the window during the loading or the warm-up: the process must end at once
+        report!(results, "a worker is still loading or compiling when the window closes", occursin(r"Loading|starting|warming", status_text(state)),
+                "\"$(status_text(state))\"")
+        print_processes(app)
+        return results
+    end
+
     # the model loads and the pool starts behind the window
     loaded = wait_until(() -> ready(state) || !isempty(state.problem); timeout=300)
     stamp("model loaded, pool started (status line: \"$(window_status(win))\")")
@@ -150,8 +159,10 @@ function _selftest(app, win, results)
         report!(results, "status line updates (set_workers $n -> $(n + 1))", changed,
                 "\"$before\" -> \"$after\" after $(round(Int, 1000 * (time() - t))) ms")
         warm = wait_until(() -> !any(w -> w["state"] in ("warming", "starting"), status(state.pool)["workers"]); timeout=300)
-        stamp("solver compiled: warm-up done (status line: \"$(window_status(win))\")")
-        report!(results, "warm-up finished", warm, window_status(win))
+        stamp("solver compiled: warm-up done")
+        # the status line follows within a second
+        shown = wait_until(() -> !occursin(r"warming|starting", window_status(win)); timeout=5)
+        report!(results, "warm-up finished (status line follows)", warm && shown, "\"$(window_status(win))\"")
     end
 
     blocked = blocked_requests(app)
@@ -167,9 +178,12 @@ function _selftest(app, win, results)
         sleep(idle)
         memory_report(app)
     end
-    Sys.islinux() && println("[htg] processes: julia $(getpid()); electron $(join(process_tree(getpid(app.proc)), " "))")
+    print_processes(app)
     return results
 end
+
+print_processes(app) =
+    Sys.islinux() && println("[htg] processes: julia $(getpid()); electron $(join(process_tree(getpid(app.proc)), " "))")
 
 """Write a PNG of the window to `path`."""
 function screenshot(app, win, path)

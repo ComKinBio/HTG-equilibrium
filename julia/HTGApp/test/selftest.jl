@@ -9,7 +9,10 @@
 # (src/selftest.jl); the first session writes a setting (pressure unit MPa),
 # the second must read it at start-up. After each session: exit code 0, every
 # check passed, no Julia or Electron process of the session left, nothing
-# written to the working folder.
+# written to the working folder, no error or warning logged, no htg-* folder
+# (session files, window check) left in the system temp folder. A third
+# session closes the window during the warm-up; the process must end within
+# seconds.
 #
 # --offline  run the sessions in a network namespace without internet
 #            (`unshare -rn`, loopback only), so the page cannot reach the network
@@ -21,16 +24,19 @@
 
 const APP = normpath(joinpath(@__DIR__, ".."))
 
-function session(n, config; set="", expect="", idle=0, offline=false)
+function session(n, config; set="", expect="", idle=0, offline=false, early=false)
     work = mktempdir()
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
     cmd = `$julia --project=$APP --threads=auto --startup-file=no -m HTGApp gui --no-user-species`
     offline && (cmd = `unshare -rn sh -c 'ip link set lo up && exec "$@"' sh $cmd`)
     env = copy(ENV)
     merge!(env, Dict("HTG_SELFTEST" => "1", "HTG_SELFTEST_SET" => set, "HTG_SELFTEST_EXPECT" => expect,
-                     "HTG_SELFTEST_IDLE" => string(idle), "HTG_CONFIG_DIR" => config, "HTG_T0" => string(time())))
+                     "HTG_SELFTEST_IDLE" => string(idle), "HTG_SELFTEST_EARLY" => early ? "1" : "", "HTG_CONFIG_DIR" => config, "HTG_T0" => string(time())))
+    temp_before = Set(readdir(tempdir()))
     output = IOBuffer()
+    t0 = time()
     proc = run(pipeline(ignorestatus(setenv(Cmd(cmd; dir=work), env)); stdout=output, stderr=output))
+    elapsed = time() - t0
     text = String(take!(output))
     sleep(1)
     lines = split(text, '\n')
@@ -48,11 +54,21 @@ function session(n, config; set="", expect="", idle=0, offline=false)
     checks = count(l -> occursin(r"^\[htg\]   (PASS|FAIL)", l), lines)
     failed = count(l -> occursin(r"^\[htg\]   FAIL", l), lines)
     written = readdir(work)
-    ok = proc.exitcode == 0 && checks > 0 && failed == 0 && !isempty(pids) && isempty(left) && isempty(written)
+    logged = count(l -> occursin(r"^┌ (Error|Warning)", l), lines)
+    temp_left = [d for d in setdiff(readdir(tempdir()), temp_before) if startswith(d, "htg-")]
+    # closed during the warm-up: the process ends within seconds of the window (not when the compilation is done)
+    closed = match(r"([\d.]+) s  electron exited", text)
+    after_close = closed === nothing ? Inf : elapsed - parse(Float64, closed[1])
+    quick = !early || after_close < 5
+    ok = proc.exitcode == 0 && checks > 0 && failed == 0 && !isempty(pids) && isempty(left) && isempty(written) &&
+         logged == 0 && isempty(temp_left) && quick
     println("session $n: exit code $(proc.exitcode); $(checks - failed)/$checks checks passed; " *
             "processes left: $(isempty(pids) ? "not reported" : length(left)) of $(length(pids)); " *
             "files in the working folder: $(isempty(written) ? "none" : join(written, ", ")); " *
-            "usable after $(usable === nothing ? "?" : usable[1]) s" * (memory === nothing ? "" : "; " * memory[1]))
+            "logged errors and warnings: $logged; " *
+            "htg folders left in $(tempdir()): $(isempty(temp_left) ? "none" : join(temp_left, ", ")); " *
+            "usable after $(usable === nothing ? "?" : usable[1]) s; process ended after $(round(elapsed; digits=1)) s, " *
+            "$(round(after_close; digits=1)) s after the window" * (memory === nothing ? "" : "; " * memory[1]))
     rm(work; recursive=true, force=true)
     return ok
 end
@@ -65,9 +81,10 @@ function main(args)
     config = mktempdir()
     ok1 = session(1, config; set="MPa", expect="bar", offline)
     ok2 = session(2, config; expect="MPa", idle, offline)
+    ok3 = session(3, config; expect="MPa", offline, early=true)
     stored = readdir(config) == ["settings.toml"]
     stored || println("config folder should hold settings.toml only: $(readdir(config))")
-    passed = ok1 && ok2 && stored
+    passed = ok1 && ok2 && ok3 && stored
     println(passed ? "Self-test passed." : "Self-test FAILED.")
     return passed ? 0 : 1
 end

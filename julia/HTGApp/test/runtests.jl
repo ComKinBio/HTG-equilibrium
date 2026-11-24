@@ -152,6 +152,7 @@ stand_in(model, case, chain, on_point; stop=() -> false) = (sleep(0.05); for (T,
             STATE[] = State(; settings=load_settings(mktempdir()))
             Genie.config.app_env = "prod"
             Genie.config.log_requests = false
+            HTGApp.private_sessions!()
             register_page()
             port = HTGApp.free_port()
             Genie.up(port, "127.0.0.1"; async=true, open_browser=false)
@@ -166,6 +167,18 @@ stand_in(model, case, chain, on_point; stop=() -> false) = (sleep(0.05); for (T,
                 end
                 font = Genie.Router.HTTP.get("http://127.0.0.1:$port$FONT_ROUTE")
                 @test font.status == 200 && font.body == read(icon_font_path())
+                # the session cookie: a name of this run, no expiry date; a cookie of an earlier run is ignored
+                sessions = HTGApp.Stipple.ModelStorage.Sessions
+                name = sessions.GenieSession.session_key_name()
+                @test startswith(name, "__htg_") && !haskey(sessions.GenieSession.session_options(), "MaxAge")
+                @test startswith(basename(sessions.GenieSessionFileSession.sessions_path()), "htg-sessions-")
+                response = Genie.Router.HTTP.get("http://127.0.0.1:$port/")
+                cookie = join([v for (k, v) in response.headers if lowercase(k) == "set-cookie"], "; ")
+                @test occursin(name * "=", cookie) && !occursin(r"max-age"i, cookie)
+                logs, _ = Test.collect_test_logs() do
+                    Genie.Router.HTTP.get("http://127.0.0.1:$port/"; headers=["Cookie" => "__geniesid=$("ab"^40); __htg_0123456789abcdef=$("cd"^40)"])
+                end
+                @test isempty(logs)
             finally
                 Genie.Server.down!()
             end
