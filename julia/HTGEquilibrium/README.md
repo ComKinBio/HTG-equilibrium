@@ -1,20 +1,32 @@
 # HTGEquilibrium.jl
 
 The Julia science core of the HTG equilibrium app (Phase 2, milestone M2 of
-`docs/spec/julia_migration_plan.md`). This is the first part: water properties,
-HKF standard states of aqueous ions, and the SUPCRT92 failure-band check that
-the Julia GUI will use to warn about sweeps.
+`docs/spec/julia_migration_plan.md`). It is ported from the Python package
+`src/htg` one module at a time, keeping the Python names so the two are easy to
+compare. So far: constants, formula parsing, water properties, HKF standard
+states of aqueous ions, and the SUPCRT92 failure-band check that the Julia GUI
+will use to warn about sweeps.
 
 | File | Contents | Python counterpart |
 |---|---|---|
+| `src/constants.jl` | R, P0, reference states, atomic weights, phase names; `pysum` (Python's `sum()` bit for bit) | `constants.py` |
+| `src/formulas.jl` | `parse_formula`, `split_charge`, `molar_mass`, `formula_summary`, `hill_formula`, `parse_element_list` | `formulas.py` |
 | `src/water.jl` | Water models: `SUPCRT92Water()` (original Fortran) and `IAPWS95Water()` (Clapeyron). `water_properties(model, T, P)` returns the same 8 quantities as `supcrt_water`. | `standard_states.supcrt_water` |
 | `src/hkf.jl` | `HKFRecord`, g-function, revised HKF G, `hkf_ion_g0(model, records, T, P)` | `standard_states.hkf_ion_g0` |
 | `src/supcrt92_bands.jl` | `supcrt92_failed`, `supcrt92_failure_bands`, `supcrt92_band_check` | – (new) |
 | `vendor/supcrt92/H2O92D.f` | SUPCRT92 water code, unmodified | compiled inside pychnosz |
 | `deps/build.jl` | Compiles `H2O92D.f` to `deps/build/libh2o92.so` | – |
-| `test/runtests.jl` | Golden tests, band check, IAPWS-95 self-consistency | `tests/test_reference_thermo.py` (electrolyte part) |
+| `test/runtests.jl` | Runs one test file per area | – |
+| `test/test_formulas.jl` | Formula functions against Python outputs (`test/data/formulas_python.json`, written by `test/dump_formulas.py`) | – |
+| `test/test_water.jl` | Golden tests, band check, IAPWS-95 self-consistency | `tests/test_reference_thermo.py` (electrolyte part) |
 | `test/data/hkf_ions.toml` | HKF records of the 8 shipped ions, as the app's registry reads them | `registry.ion_hkf_table` |
 | `test/dump_pychnosz.py` | Writes the fixture above and, with `--grid`, a wide pychnosz grid (not committed) | – |
+
+**Matching Python's arithmetic.** Python 3.12's `sum()` of floats uses
+compensated summation; Julia's `sum` does not, so results can differ in the last
+bit. Use `pysum` where the Python code uses `sum()` and the result is compared
+with Python. Python's `dict` keeps insertion order; use `OrderedDict` where order
+matters (element lists, species lists).
 
 Units follow the Python code: `water_properties` and `hkf_ion_g0` take T in K
 and P in Pa and return rho in kg/m3, QBorn and beta in 1/bar, mu0 in J/mol on
