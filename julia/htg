@@ -1,0 +1,22 @@
+#!/bin/sh
+# htg: the HTG equilibrium command line, Julia version (Linux and macOS).
+#
+#     julia/htg check cases/manure_gas_min.toml
+#     julia/htg run cases/manure_gas_min.toml --workers 4
+#
+# Runs `julia -m HTGEquilibrium ARGS...` with this repository's package
+# (julia/HTGEquilibrium) and one thread per CPU thread, so that `--workers N`
+# can use N threads. JULIA_NUM_THREADS chooses another thread count, JULIA
+# another julia executable (default: julia on PATH).
+set -e
+script=$0
+while [ -L "$script" ]; do   # follow links, e.g. ~/bin/htg -> this file
+    target=$(readlink "$script")
+    case $target in
+        /*) script=$target ;;
+        *) script=$(dirname -- "$script")/$target ;;
+    esac
+done
+here=$(CDPATH= cd -- "$(dirname -- "$script")" && pwd -P)
+exec "${JULIA:-julia}" --project="$here/HTGEquilibrium" --threads="${JULIA_NUM_THREADS:-auto}" \
+    --startup-file=no -m HTGEquilibrium "$@"
