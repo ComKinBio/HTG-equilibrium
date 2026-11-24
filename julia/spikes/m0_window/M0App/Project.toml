@@ -1,0 +1,14 @@
+name = "M0App"
+uuid = "6d8e44a2-f4c0-41fb-baf8-6051a10b77d3"
+version = "0.1.0"
+
+[deps]
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Electron = "a1bb12fb-d4d1-54b4-b10a-ee7951ef7ad3"
+Genie = "c43c736e-a2d1-11e8-161f-af95117fbd1e"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
+Stipple = "4acbeb90-81a0-11ea-1966-bdaff8155998"
+StipplePlotly = "ec984513-233d-481d-95b0-a3b58b97af2b"
+StippleUI = "a3c5d34a-b254-4859-a8fa-b86abb7e84a3"
