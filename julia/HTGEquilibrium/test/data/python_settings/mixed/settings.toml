@@ -1,0 +1,16 @@
+# Settings edited by hand
+line_width = 1.5        # thinner lines
+color_theme = "Set2"
+temperature_unit = "F"
+pressure_unit = "MPa"
+input_formats_open = 1
+solver = "ipopt"
+
+[export_defaults]
+one = { width_mm = 90, dpi = -1, format = "svg" }
+poster = { width_mm = 1 }
+
+[export_defaults.row]
+height_mm = 70.5
+shared_legend = "yes"
+colour = "red"

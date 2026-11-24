@@ -1,0 +1,48 @@
+{
+ "values": {
+  "temperature_unit": "C",
+  "pressure_unit": "MPa",
+  "color_theme": "Set2",
+  "line_width": 1.5,
+  "input_formats_open": false,
+  "export_defaults": {
+   "one": {
+    "width_mm": 90,
+    "height_mm": 65,
+    "dpi": 300,
+    "format": "svg",
+    "shared_legend": true
+   },
+   "grid": {
+    "width_mm": 170,
+    "height_mm": 130,
+    "dpi": 300,
+    "format": "png",
+    "shared_legend": true
+   },
+   "row": {
+    "width_mm": 250,
+    "height_mm": 70.5,
+    "dpi": 300,
+    "format": "png",
+    "shared_legend": true
+   },
+   "present": {
+    "width_mm": 190,
+    "height_mm": 65,
+    "dpi": 300,
+    "format": "png",
+    "shared_legend": true
+   }
+  }
+ },
+ "warnings": [
+  "Ignoring invalid value 'F' for \"temperature_unit\" in <path>.",
+  "Ignoring invalid value 1 for \"input_formats_open\" in <path>.",
+  "Ignoring unknown setting \"solver\" in <path>.",
+  "Ignoring export_defaults.one.dpi = -1 in <path>.",
+  "Ignoring export_defaults.poster in <path>.",
+  "Ignoring export_defaults.row.shared_legend = 'yes' in <path>.",
+  "Ignoring export_defaults.row.colour = 'red' in <path>."
+ ]
+}
