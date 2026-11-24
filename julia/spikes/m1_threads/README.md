@@ -206,7 +206,12 @@ solver loaded) is 0.5 GB.
    cannot be validated by bitwise comparison with Python; use the tolerances of
    `tests/test_reference_solves.py`.
 
-## Decision for the owner
+## Owner decision (PR #2)
+
+**Threads.** Performance is tested later, once the whole Julia app works:
+make the app usable first, then optimise if needed.
+
+## Recommendation given to the owner
 
 - **Recommended: Threads.** One Julia process with a task queue and N solver
   threads (N ≤ performance cores), BLAS at 1 thread, the GUI on its own thread.
