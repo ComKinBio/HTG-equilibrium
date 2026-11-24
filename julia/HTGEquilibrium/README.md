@@ -6,8 +6,9 @@ The Julia science core of the HTG equilibrium app (Phase 2, milestone M2 of
 compare. So far: constants, formula parsing, water properties, HKF standard
 states of aqueous ions, the SUPCRT92 failure-band check that the Julia GUI
 will use to warn about sweeps, the data layer (databases, species
-registry, user species folder, standard states, model loading) and reading
-case files (units, feed arithmetic).
+registry, user species folder, standard states, model loading), reading
+case files (units, feed arithmetic) and the phase models (G, mu, ln phi and
+Hessians of the solid, fluid and electrolyte phases).
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -40,6 +41,8 @@ case files (units, feed arithmetic).
 | `test/test_databases.jl` | Readers and Python helpers (CSV dtypes, XML, NASA-7, ordered TOML) | – |
 | `test/test_registry.jl` | `catalogue.json` (all of it), a user species folder, shipped `data/` smoke test, threaded reads | `tests/test_reference_catalogue.py`, `tests/test_user_species.py` (loading) |
 | `test/test_standard_states.jl` | `thermo.json`: molecular and solid g°, SAFT parameters, mu0 of the fluid and electrolyte phases | `tests/test_reference_thermo.py` |
+| `src/phases.jl` | `EOSFailure`, `PhaseError`, `association_sites`, `build_pcsaft_model`, `SolidPhase`, `FluidPhase`, `ElectrolytePhase` (water model selectable), `gibbs`, `gibbs_and_mu`, `mu_at`, `lnphi`, `hessian`, `phi`, `gibbs_full`, `expand`, `_hessian` | `phases.py` |
+| `test/test_phases.jl` | `thermo.json`: fluid G and ln phi, electrolyte `lnphi_infinity`, G and ln phi; mu = dG/dn, homogeneity, Hessians, ForwardDiff comparison, water model, errors, threads | `tests/test_reference_thermo.py` (phase part), `tests/test_phases.py` |
 | `test/data/user_species/`, `test/data/user_species_python.json` | A user species folder written by the Python app and what Python loads from it; written by `test/dump_user_species.py` | – |
 
 **Python is the reference, not bit for bit** (owner, PR #7: "8e-14 is
@@ -75,6 +78,11 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 (Clapeyron 0.6.30, ForwardDiff 1.5.0, JSON 1.13.4, Roots 3.0.14, ...). The
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
+
+The tests take about 4 minutes; `test_phases.jl` is ~2.5 of them, almost all
+compilation of Clapeyron (PC-SAFT and ePC-SAFT, then again for ForwardDiff's
+Duals). `Pkg.test()` does not pass `-t` on to the test process; set
+`JULIA_NUM_THREADS` for the threaded tests.
 
 Optional wider comparison with pychnosz (785 points: 300–600 °C × 200–300 bar,
 100–390 °C at 240 bar, and 360–420 °C every 0.5 °C at five pressures). The
@@ -435,9 +443,166 @@ with `registry.binary_interactions`. The electrolyte phase needs
 dielectric_constant), `hkf_ion_g0(water_model, model, ions, T, P)`,
 `nasa_g0(model, neutrals, T)` and `water_properties(water_model, T, P)` for the
 validity check and the dielectric constant (Python calls `supcrt_water` there;
-Julia takes the case's water model). Still untested from `thermo.json`: the fluid-phase G and ln phi
-points (rel 1e-10 / abs 1e-8 and rtol 1e-9 / atol 1e-11), and the electrolyte
-`lnphi_infinity`, G and ln phi.
+Julia takes the case's water model). The phase parts of `thermo.json` are
+tested in `test_phases.jl` (see "Phase models").
+
+## Phase models (`phases.jl`)
+
+Port of `phases.py` with Python's names, formulas and messages. Clapeyron is
+used directly, with the arguments the Python app passes through juliacall
+(`src/htg/backends.py`): `PCSAFT(components; userlocations)` for fluid
+phases; for the electrolyte `ePCSAFT(components, charges, short_range.idealmodel,
+short_range, hsdDH(components, ConstRSP(eps_r), String[]), String[])` with
+`short_range = PCSAFT(components; userlocations, verbose=false)`. While solving,
+the only Clapeyron call is `fugacity_coefficient(model, P, T, n; phase)`, as in
+Python. The M1 spike (`julia/spikes/m1_threads/replay.jl`) was the starting
+point; the phases now take their data from the registry and standard states.
+
+```julia
+model = load_model()
+T, P = 573.15, 240e5
+names = ["water", "hydrogen", "carbon dioxide", "methane"]
+resolved = resolve_parameters(model.registry, model.databases, T, names)
+eos = build_pcsaft_model(names, resolved, model.registry.binary_interactions)
+gas = FluidPhase("gas", names, nasa_g0(model, names, T), eos, T, P, "vapour")
+G, mu = gibbs_and_mu(gas, n); lnphi(gas, n); hessian(gas, n)
+solid = SolidPhase(minerals, solid_g0(model, minerals, T, P))
+# resolved must also hold registry.aqueous_reference_neutrals
+aq = ElectrolytePhase(water_model_of(case), model, selected, T, P, resolved, ATOMIC_WEIGHTS)
+gibbs(aq, n); gibbs_and_mu(aq, n); aq.lnphi_infinity; HTGEquilibrium.phi(aq, full)
+```
+
+**API** (`Phase` is the abstract type of the three):
+
+| | `SolidPhase` | `FluidPhase` | `ElectrolytePhase` |
+|---|---|---|---|
+| `gibbs(p, n)`, `gibbs_and_mu(p, n)` | ✓ | ✓ (empty phase: G = 0 and the pure-component mu, cached) | ✓ (no water: 0, zeros) |
+| `mu_at(p, n)`, `lnphi(p, n)`, `hessian(p, n)` | – | ✓ | ✓ |
+| `phi(p, full)`, `gibbs_full(p, full)`, `expand(p, n)` (not exported) | – | – | ✓ |
+
+Fields: `species` (all); `name`, `mu0`, `eos_model`, `T`, `P`, `root` (fluid);
+`water_model`, `T`, `P`, `species`, `neutrals`, `ions`, `all_species`,
+`positions` (1-based indices of `species` in `all_species`), `z`,
+`probe_weights`, `water` (a `WaterProperties`), `components`, `charges`,
+`short_range`, `eos_model`, `mu0_ion`, `mu0_neutral`, `lnphi_infinity`
+(electrolyte). The functions accept any real element type, so ForwardDiff can
+differentiate through them.
+
+**Errors.** `EOSFailure <: ValueError` (Python: `class EOSFailure(ValueError)`):
+no valid fugacity coefficients; on the optimizer path (`gibbs_and_mu`,
+`lnphi`, `hessian` of the electrolyte) every probe failure becomes an
+`EOSFailure`, as in Python. `PhaseError <: ValueError` stands for the plain
+Python `ValueError`s of `phases.py` (same messages); missing parameter sets are
+`KeyError(message)` as in the data layer.
+
+**Water model** (owner decision, PR #7). `ElectrolytePhase` takes the case's
+water model as its first argument (`water_model_of(case)`; Python has no
+argument and calls `supcrt_water`). That one model gives the validity check
+(`rho >= 350 kg/m3`, `epsilon > 1`), the dielectric constant of the
+Debye-Hückel term and, through `hkf_ion_g0(water_model, model, ...)`, the ion
+g°; `phase.water_model` and `phase.water` record it. Tested: with
+`IAPWS95Water()` the phase's water properties are IAPWS-95's, mu0 of the ions
+equals `hkf_ion_g0(IAPWS95Water(), ...)`, and G differs from SUPCRT92's.
+
+**Threads** (M1 decision). No global state. Clapeyron models are only read,
+so one model may be shared by several phase objects and threads. An
+`ElectrolytePhase` is not changed after construction. The only cache,
+`FluidPhase`'s pure-component mu of an empty phase (per phase object, as in
+Python), is filled under the phase's own lock. The intended pattern: each task
+builds its own phase objects; it may reuse a fluid phase's Clapeyron model.
+Building an `ElectrolytePhase` (its two Clapeyron models and the
+infinite-dilution reference) takes ~0.5 ms after compilation. Tested: 24 tasks
+on 4 threads (the gas phase of all six `thermo.json` states with one shared
+Clapeyron model per state, the electrolyte phases of three states built per
+task; G, mu, ln phi, Hessians, empty phases) give results identical bit for
+bit to the serial run; 16 tasks filling one shared phase's cache get the same
+values.
+
+**Results against `thermo.json`** (tolerances of `tests/test_reference_thermo.py`:
+G rel 1e-10 / abs 1e-8, ln phi and `lnphi_infinity` rtol 1e-9 / atol 1e-11;
+6 states × 3 fluid phases × 5 points, 3 states × 2 electrolyte selections × 5
+points). All pass; worst relative deviations: fluid G 3.1e-16, fluid ln phi
+2.2e-16, electrolyte G 6.0e-16, electrolyte ln phi 3.1e-13 (on a small value;
+absolute < 1e-14), `lnphi_infinity` 2.4e-14. The 7 reference EOS failures
+(fluid phases at 200, 350 and 375 °C) raise `EOSFailure` with Python's message
+(the composition list within 1e-12). Ported from `tests/test_phases.py`: mu =
+dG/dn by central differences (and for the Na+ + HCO3- pair), Euler
+`G = n·mu`, homogeneity of degree one.
+
+**Derivatives.** As in Python, mu (from the fugacity coefficients) is the
+gradient of G, and `hessian` is the analytic ideal part plus forward
+differences of ln phi (step 1e-7·sum(n)), symmetrised. `test_phases.jl`
+compares both with ForwardDiff through Clapeyron (Jacobian of [G; mu]) at
+300 °C, 240 bar:
+
+| | deviation from ForwardDiff (relative to the largest entry) |
+|---|---|
+| fluid mu vs gradient of G (3 phases, 2 points each) | 3.7e-15 |
+| fluid Hessian | 3.6e-8 (H·n = 0, Gibbs-Duhem: within 1e-9 of the largest entry; ForwardDiff 1e-16) |
+| electrolyte mu along electroneutral directions | 2.1e-14 |
+| electrolyte Hessian, neutral block | 3.8e-10 |
+| electrolyte Hessian on electroneutral directions incl. the Na+ + HCO3- pair | **0.16** |
+
+The last line is Python's behaviour, kept: the forward step moves one ion at a
+time, the EOS probe neutralises the step with the first counter-ion, so the
+ln phi part of each ion column is the derivative along (ion + counter-ion);
+for the pair it is counted twice. ForwardDiff's reduced Hessian agrees with
+central differences of the reduced mu (1e-5), so it is the correct one. G and
+mu are exact either way; only IPOPT's Newton model is affected.
+
+Cost per call after compilation (one point, 1 thread): gas (5 species)
+`gibbs_and_mu` 9 µs, `hessian` 47 µs, ForwardDiff Jacobian of mu 17 µs;
+electrolyte (5 selected, 11 components) 40 µs, 215 µs and 80 µs. ForwardDiff
+costs one compilation of Clapeyron for Duals per function type and chunk size
+(~20 s PC-SAFT, ~40 s ePC-SAFT); the tests use one callable struct and a fixed
+chunk so it compiles once per phase type.
+
+**Recommendation for the optimizer.** Keep mu from the fugacity coefficients
+as the gradient (exact, no extra cost). Port `hessian_blocks` with Python's
+`hessian` first, so `solves.json` and the M1 replay (iteration counts) can be
+compared one to one; then switch the Hessian to the ForwardDiff Jacobian of mu
+(a callable struct per phase, fixed chunk, compiled once per session or
+precompiled): exact, symmetric, correct on electroneutral directions and
+2.5-3× faster than the forward differences. Decide on the switch with the
+`solves.json` results (owner question).
+
+**Differences from Python** (deliberate):
+- `ElectrolytePhase(water_model, model, selected, T, P, resolved, atomic_weights)`:
+  the water model comes first (above). The validity message keeps Python's
+  text, "State outside SUPCRT aqueous validity checks", also for IAPWS-95.
+- Methods are functions (`gibbs(phase, n)`); `positions` are 1-based;
+  `phase.water` is a `WaterProperties` (`water_dict` gives Python's dict);
+  Python's `hasattr(model, 'all_species')` is `phase isa ElectrolytePhase`.
+- `PhaseError` for Python's plain ValueErrors (above).
+- `np.polyfit(x, y, 1)` of the infinite-dilution extrapolation is the
+  centred least-squares line (the same line; `lnphi_infinity` within 2.4e-14).
+- `SolidPhase`'s `gibbs_and_mu` returns a copy of mu0 (Python returns the
+  array itself).
+- The pure-component cache of `FluidPhase` is filled under a lock.
+
+**Kept from Python, for the owner** (conservative choice: match Python):
+1. The electrolyte Hessian's ion columns (above).
+2. `hessian(::ElectrolytePhase, n)` returns zeros when `n[1] <= 1e-9`, i.e. it
+   tests the first *selected* species (Python `n[0]`), while `gibbs_and_mu`
+   tests the water amount. They agree when water is listed first among the
+   aqueous species (equilibrium.py only requires that water is selected).
+3. An empty gas phase containing water raises `EOSFailure` where pure water
+   has no vapour root (e.g. 300 °C, 240 bar), because the pure-component mu is
+   evaluated at pure water.
+
+**For the optimizer and equilibrium steps.** `GibbsProblem` needs, per phase:
+`gibbs_and_mu(phase, n)` (the objective and gradient; an `EOSFailure` makes
+`fun_and_grad` return NaN), `hessian(phase, n)` (`hessian_blocks`; skip
+`SolidPhase`), `mu_at(phase, n)` (tangent-plane test), `gibbs(phase, n)`
+(`phase_G`, the G check) and `phase.species`, `phase.T`. Equilibrium builds the
+phases as `equilibrium.py` does: `resolve_parameters` over all non-ion species
+(plus the reference neutrals when the aqueous model is electrolyte), then
+`ElectrolytePhase(water_model_of(case), model, ...)`, `SolidPhase(names,
+solid_g0(model, names, T, P))`, `FluidPhase(phase, names, nasa_g0(model,
+names, T), build_pcsaft_model(names, resolved, registry.binary_interactions),
+T, P, root)`. Catch `EOSFailure` where Python catches it and `ValueError`
+(the abstract type) where Python catches `ValueError`; note that the data
+layer still throws `ArgumentError` for Python ValueErrors.
 
 ## What remains for M2
 
@@ -445,16 +610,18 @@ Done: constants, formulas, water, HKF, band check; the data layer
 (`databases.jl`, `saft.jl`, `registry.jl`, `user_species.jl` loading,
 `standard_states.jl`, `model.jl` data part; `catalogue.json` and the
 standard-state parts of `thermo.json`); case files and feed arithmetic
-(`units.jl`, `case.jl` reading and writing, `feed_v2.jl`). `test/data/hkf_ions.toml`
+(`units.jl`, `case.jl` reading and writing, `feed_v2.jl`); the phase models
+(`phases.jl`, the electrolyte phase taking the case's water model; all of
+`thermo.json` is now tested). `test/data/hkf_ions.toml`
 equals the registry's records (tested) and can go when `test_water.jl` is
 switched over. Still to do:
-- `phases.jl` (electrolyte phase with the water model selectable; validity
-  check `rho >= 350 and epsilon > 1`), `equilibrium.jl`, `optimizer.jl`,
-  `results.jl`, `sweep.jl`, `queue.jl`, `cli.jl`; the fluid-phase and
-  electrolyte G / ln phi parts of `thermo.json`; `solves.json` tests; running
-  the example cases in both versions.
-- Passing the case's water model (`water_model_of(case)`, see "Case files")
-  to phases; results record it.
+- `optimizer.jl` (next; see "For the optimizer and equilibrium steps" under
+  "Phase models"), `equilibrium.jl`, `results.jl`, `sweep.jl`, `queue.jl`,
+  `cli.jl`; `solves.json` tests; running the example cases in both versions.
+- `equilibrium.jl` passes `water_model_of(case)` to `ElectrolytePhase`;
+  results record the water model.
+- Owner questions from the phases port (below): the Hessian's ion columns,
+  `hessian` of the electrolyte phase testing `n[1]`.
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)
