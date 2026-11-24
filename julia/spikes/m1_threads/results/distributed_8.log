@@ -1,0 +1,5 @@
+8 workers: started and loaded in 12.5 s, warm-up (compilation, in parallel) 200.5 s
+wall time per batch of 108 solves: median 0.91 s (min 0.85, max 1.73)
+solves differing bitwise from the serial baseline: 0 / 2160
+memory: master RSS 495 MB; workers RSS 1422/1360/1350/1379/1423/1386/1359/1364 MB; total RSS 11540 MB, PSS 9755 MB, sum of peaks 12438 MB
+wrote /home/dannylong/programming/fadilla/HTG-equilibrium/.claude/worktrees/agent-ae98c7730f5ec8f48/julia/spikes/m1_threads/results/distributed_8.json
