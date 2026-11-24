@@ -202,7 +202,17 @@ spike there, ideally as the first M5 CI job (build the sysimage and run
 ubuntu-latest). Things to watch there: Electron.jl's pipe set-up on Windows, the
 macOS app bundle and Gatekeeper, and sysimage build memory on CI runners.
 
-## Decisions for the owner
+## Owner decisions (PR #3)
+
+1. **Go.** No separate Windows/macOS test is needed now. Compile as much as possible
+   ahead of time during the install step: the sysimage (or a PackageCompiler app) is
+   built there, not at first launch. Note for M5: building it here took ~10 min and
+   peaked at 15.7 GB RAM, which an install step on a laptop must allow for.
+2. **Electron.jl as is**, with its bundled Electron 34.2.0.
+3. **Native dialogs** from Electron for open, save and save-as.
+4. **Bundle the icon font** and drop the Google font imports, so the app works offline.
+
+## Questions that were put to the owner
 
 1. Accept the conditional go (Linux measured; Windows and macOS checked in CI before M4)?
 2. Electron version: accept Electron.jl's bundled Electron 34.2.0 for now, or plan in M5
