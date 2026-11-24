@@ -1,0 +1,2907 @@
+{
+"cellulose_400C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -5000905.537841441,
+"phase_gibbs_J_per_mol_C": {
+"gas": -4968276.911395414,
+"aqueous": -0.109089359049318,
+"organic_liquid": -1.791958418417573e-05,
+"solid": -32628.517338748607
+},
+"amounts": [
+[
+"gas",
+"water",
+13.405294087409251
+],
+[
+"gas",
+"hydrogen",
+0.06439380049730549
+],
+[
+"gas",
+"carbon dioxide",
+0.46366728685243586
+],
+[
+"gas",
+"carbon monoxide",
+0.0003722446909133594
+],
+[
+"gas",
+"methane",
+0.43596042916811917
+],
+[
+"gas",
+"methanol",
+3.9288531676745835e-08
+],
+[
+"gas",
+"ammonia",
+0.0
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0
+],
+[
+"aqueous",
+"water",
+3.067849522348961e-07
+],
+[
+"aqueous",
+"hydrogen",
+5.736180795113768e-09
+],
+[
+"aqueous",
+"carbon dioxide",
+3.082566611060722e-09
+],
+[
+"aqueous",
+"carbon monoxide",
+9.427984522452554e-10
+],
+[
+"aqueous",
+"methane",
+3.029806027439799e-09
+],
+[
+"aqueous",
+"methanol",
+4.690111709197133e-10
+],
+[
+"aqueous",
+"ammonia",
+0.0
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+1.1267312275640886e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.438043484268852e-11
+],
+[
+"solid",
+"carbon",
+1.5834179532039187e-09
+],
+[
+"solid",
+"cellulose",
+0.016666641738914228
+],
+[
+"solid",
+"Lignin1",
+6.32691875145509e-09
+]
+],
+"iterations": 23,
+"starts": [
+{
+"start": "initial",
+"G": -5000905.537841441,
+"message": "Solve_Succeeded",
+"nit": 23
+}
+],
+"stationarity_major_RT": 1.2251733245763398e-05,
+"polish_used": false,
+"seconds": 69.75134251499549
+},
+"cellulose_500C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -5250305.694629685,
+"phase_gibbs_J_per_mol_C": {
+"gas": -5214813.114661433,
+"aqueous": -0.10507775619208315,
+"organic_liquid": -2.268494966588587e-05,
+"solid": -35492.47486781065
+},
+"amounts": [
+[
+"gas",
+"water",
+13.316311952740945
+],
+[
+"gas",
+"hydrogen",
+0.24468020980345215
+],
+[
+"gas",
+"carbon dioxide",
+0.5069971277743939
+],
+[
+"gas",
+"carbon monoxide",
+0.002694542565545068
+],
+[
+"gas",
+"methane",
+0.39030816167979593
+],
+[
+"gas",
+"methanol",
+1.6798026525311603e-07
+],
+[
+"gas",
+"ammonia",
+0.0
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0
+],
+[
+"aqueous",
+"water",
+2.8131574037027165e-07
+],
+[
+"aqueous",
+"hydrogen",
+1.0293114381535317e-08
+],
+[
+"aqueous",
+"carbon dioxide",
+2.323849829355559e-09
+],
+[
+"aqueous",
+"carbon monoxide",
+9.78271713213448e-10
+],
+[
+"aqueous",
+"methane",
+2.1859719879220983e-09
+],
+[
+"aqueous",
+"methanol",
+4.4785078113481887e-10
+],
+[
+"aqueous",
+"ammonia",
+0.0
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+9.885819285943315e-11
+],
+[
+"organic_liquid",
+"toluene",
+7.607621011593166e-11
+],
+[
+"solid",
+"carbon",
+1.1663645002001947e-09
+],
+[
+"solid",
+"cellulose",
+0.016666662305898285
+],
+[
+"solid",
+"Lignin1",
+8.153008638995417e-10
+]
+],
+"iterations": 22,
+"starts": [
+{
+"start": "initial",
+"G": -5250305.694629685,
+"message": "Solve_Succeeded",
+"nit": 22
+}
+],
+"stationarity_major_RT": 1.5424963453817171e-06,
+"polish_used": false,
+"seconds": 0.15159087799838744
+},
+"fig78_300C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3328076.630207031,
+"phase_gibbs_J_per_mol_C": {
+"gas": -146343.96488113992,
+"aqueous": -3175855.8946507,
+"organic_liquid": -1.1904927363987798e-05,
+"solid": -5876.770663285977
+},
+"amounts": [
+[
+"gas",
+"water",
+0.2052920801639114
+],
+[
+"gas",
+"hydrogen",
+0.00014900555939601948
+],
+[
+"gas",
+"carbon dioxide",
+0.14833293303646303
+],
+[
+"gas",
+"carbon monoxide",
+5.147134456438502e-06
+],
+[
+"gas",
+"methane",
+0.002861551137946518
+],
+[
+"gas",
+"methanol",
+1.67437687570431e-09
+],
+[
+"gas",
+"ammonia",
+2.8407648848120338e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0018178488221013073
+],
+[
+"gas",
+"nitrogen",
+0.03755083678783588
+],
+[
+"aqueous",
+"water",
+9.417112830366436
+],
+[
+"aqueous",
+"hydrogen",
+3.189727629710408e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.08911377667265546
+],
+[
+"aqueous",
+"carbon monoxide",
+1.5064734413255135e-06
+],
+[
+"aqueous",
+"methane",
+0.0016675653558695656
+],
+[
+"aqueous",
+"methanol",
+1.7287541885099964e-09
+],
+[
+"aqueous",
+"ammonia",
+4.576640054928821e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0044257297758596515
+],
+[
+"organic_liquid",
+"benzene",
+1.2427010645843763e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.455781943470707e-11
+],
+[
+"solid",
+"carbon",
+0.7580175154485113
+]
+],
+"iterations": 19,
+"starts": [
+{
+"start": "initial",
+"G": -3328076.630207031,
+"message": "Solve_Succeeded",
+"nit": 19
+}
+],
+"stationarity_major_RT": 0.003315743050872973,
+"polish_used": false,
+"seconds": 22.040345362998778
+},
+"fig78_380C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3441039.2605178137,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3441036.1033216775,
+"aqueous": -3.1571133844074066,
+"organic_liquid": -1.7284480269385465e-05,
+"solid": -6.54672824592178e-05
+},
+"amounts": [
+[
+"gas",
+"water",
+8.846043841236012
+],
+[
+"gas",
+"hydrogen",
+0.035481128527220115
+],
+[
+"gas",
+"carbon dioxide",
+0.6254684125906258
+],
+[
+"gas",
+"carbon monoxide",
+0.0003150228672153551
+],
+[
+"gas",
+"methane",
+0.3742156008093453
+],
+[
+"gas",
+"methanol",
+2.3759507423608738e-08
+],
+[
+"gas",
+"ammonia",
+0.001193492991948016
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243568502477504
+],
+[
+"gas",
+"nitrogen",
+0.03699117519892709
+],
+[
+"aqueous",
+"water",
+8.112183767246028e-06
+],
+[
+"aqueous",
+"hydrogen",
+3.777335060421388e-08
+],
+[
+"aqueous",
+"carbon dioxide",
+5.792865826749409e-07
+],
+[
+"aqueous",
+"carbon monoxide",
+2.606108192503516e-09
+],
+[
+"aqueous",
+"methane",
+3.492211011452467e-07
+],
+[
+"aqueous",
+"methanol",
+5.525906435677982e-10
+],
+[
+"aqueous",
+"ammonia",
+4.23526695183729e-09
+],
+[
+"aqueous",
+"hydrogen sulfide",
+1.0095483454822863e-08
+],
+[
+"organic_liquid",
+"benzene",
+1.2062651922440708e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.423344092397306e-11
+],
+[
+"solid",
+"carbon",
+6.99353001746761e-09
+]
+],
+"iterations": 37,
+"starts": [
+{
+"start": "initial",
+"G": -3441039.2605178137,
+"message": "Solve_Succeeded",
+"nit": 37
+}
+],
+"stationarity_major_RT": 0.0004371523972662793,
+"polish_used": false,
+"seconds": 0.13726484699873254
+},
+"fig78_450C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3561138.034579513,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561138.0345046017,
+"aqueous": 0.0,
+"organic_liquid": -2.1922630692951482e-05,
+"solid": -5.298862173074195e-05
+},
+"amounts": [
+[
+"gas",
+"water",
+8.814975348655906
+],
+[
+"gas",
+"hydrogen",
+0.09804900682821703
+],
+[
+"gas",
+"carbon dioxide",
+0.6404611061382076
+],
+[
+"gas",
+"carbon monoxide",
+0.0014073543397004828
+],
+[
+"gas",
+"methane",
+0.35813146173560867
+],
+[
+"gas",
+"methanol",
+7.16875920169292e-08
+],
+[
+"gas",
+"ammonia",
+0.0016452612912560807
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.036765293166906535
+],
+[
+"organic_liquid",
+"benzene",
+1.159541461794554e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.245052521078136e-11
+],
+[
+"solid",
+"carbon",
+4.826012627409006e-09
+]
+],
+"iterations": 25,
+"starts": [
+{
+"start": "initial",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 25
+}
+],
+"stationarity_major_RT": 2.6535862205485532e-06,
+"polish_used": false,
+"seconds": 0.07328772400796879
+},
+"fig78_340C_continued": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3378304.3152322797,
+"phase_gibbs_J_per_mol_C": {
+"gas": -498478.6231971498,
+"aqueous": -2874458.9962320314,
+"organic_liquid": -1.5496764729337633e-05,
+"solid": -5366.6957876018605
+},
+"amounts": [
+[
+"gas",
+"water",
+1.06914556907254
+],
+[
+"gas",
+"hydrogen",
+0.0020207926474097673
+],
+[
+"gas",
+"carbon dioxide",
+0.24220404268549042
+],
+[
+"gas",
+"carbon monoxide",
+3.895959794968063e-05
+],
+[
+"gas",
+"methane",
+0.054800447413432124
+],
+[
+"gas",
+"methanol",
+4.7160291408970346e-09
+],
+[
+"gas",
+"ammonia",
+0.0002224372519190719
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0034854906964676313
+],
+[
+"gas",
+"nitrogen",
+0.03741515490479074
+],
+[
+"aqueous",
+"water",
+8.423575749512684
+],
+[
+"aqueous",
+"hydrogen",
+0.00019899331221761302
+],
+[
+"aqueous",
+"carbon dioxide",
+0.060065675752850024
+],
+[
+"aqueous",
+"carbon monoxide",
+5.26379813541912e-06
+],
+[
+"aqueous",
+"methane",
+0.013347495948607797
+],
+[
+"aqueous",
+"methanol",
+3.3855980997680377e-09
+],
+[
+"aqueous",
+"ammonia",
+0.00012310056356860198
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0027580879014933277
+],
+[
+"organic_liquid",
+"benzene",
+1.309438738646198e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.920562343744841e-11
+],
+[
+"solid",
+"carbon",
+0.6295381052918045
+]
+],
+"iterations": 17,
+"starts": [
+{
+"start": "initial",
+"G": -3378304.3152322797,
+"message": "Solve_Succeeded",
+"nit": 17
+}
+],
+"stationarity_major_RT": 0.0009288991860661866,
+"polish_used": false,
+"seconds": 0.1991882220027037
+},
+"fig78_300C_ipopt": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3328076.630207031,
+"phase_gibbs_J_per_mol_C": {
+"gas": -146343.96488113992,
+"aqueous": -3175855.8946507,
+"organic_liquid": -1.1904927363987798e-05,
+"solid": -5876.770663285977
+},
+"amounts": [
+[
+"gas",
+"water",
+0.2052920801639114
+],
+[
+"gas",
+"hydrogen",
+0.00014900555939601948
+],
+[
+"gas",
+"carbon dioxide",
+0.14833293303646303
+],
+[
+"gas",
+"carbon monoxide",
+5.147134456438502e-06
+],
+[
+"gas",
+"methane",
+0.002861551137946518
+],
+[
+"gas",
+"methanol",
+1.67437687570431e-09
+],
+[
+"gas",
+"ammonia",
+2.8407648848120338e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0018178488221013073
+],
+[
+"gas",
+"nitrogen",
+0.03755083678783588
+],
+[
+"aqueous",
+"water",
+9.417112830366436
+],
+[
+"aqueous",
+"hydrogen",
+3.189727629710408e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.08911377667265546
+],
+[
+"aqueous",
+"carbon monoxide",
+1.5064734413255135e-06
+],
+[
+"aqueous",
+"methane",
+0.0016675653558695656
+],
+[
+"aqueous",
+"methanol",
+1.7287541885099964e-09
+],
+[
+"aqueous",
+"ammonia",
+4.576640054928821e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0044257297758596515
+],
+[
+"organic_liquid",
+"benzene",
+1.2427010645843763e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.455781943470707e-11
+],
+[
+"solid",
+"carbon",
+0.7580175154485113
+]
+],
+"iterations": 19,
+"starts": [
+{
+"start": "initial",
+"G": -3328076.630207031,
+"message": "Solve_Succeeded",
+"nit": 19
+}
+],
+"stationarity_major_RT": 0.003315743050872973,
+"polish_used": false,
+"seconds": 0.09380317700561136
+},
+"fig78_450C_ipopt": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3561138.034579513,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561138.0345046017,
+"aqueous": 0.0,
+"organic_liquid": -2.1922630692951482e-05,
+"solid": -5.298862173074195e-05
+},
+"amounts": [
+[
+"gas",
+"water",
+8.814975348655906
+],
+[
+"gas",
+"hydrogen",
+0.09804900682821703
+],
+[
+"gas",
+"carbon dioxide",
+0.6404611061382076
+],
+[
+"gas",
+"carbon monoxide",
+0.0014073543397004828
+],
+[
+"gas",
+"methane",
+0.35813146173560867
+],
+[
+"gas",
+"methanol",
+7.16875920169292e-08
+],
+[
+"gas",
+"ammonia",
+0.0016452612912560807
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.036765293166906535
+],
+[
+"organic_liquid",
+"benzene",
+1.159541461794554e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.245052521078136e-11
+],
+[
+"solid",
+"carbon",
+4.826012627409006e-09
+]
+],
+"iterations": 25,
+"starts": [
+{
+"start": "initial",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 25
+}
+],
+"stationarity_major_RT": 2.6535862205485532e-06,
+"polish_used": false,
+"seconds": 0.07372498098993674
+},
+"fig78_450C_ipopt_multistart": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3561138.0345795136,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561138.034504602,
+"aqueous": 0.0,
+"organic_liquid": -2.1922630692951486e-05,
+"solid": -5.298862173074204e-05
+},
+"amounts": [
+[
+"gas",
+"water",
+8.814975348655906
+],
+[
+"gas",
+"hydrogen",
+0.09804900682821713
+],
+[
+"gas",
+"carbon dioxide",
+0.6404611061382082
+],
+[
+"gas",
+"carbon monoxide",
+0.0014073543397004852
+],
+[
+"gas",
+"methane",
+0.3581314617356081
+],
+[
+"gas",
+"methanol",
+7.168759201692945e-08
+],
+[
+"gas",
+"ammonia",
+0.0016452612912560794
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.036765293166906535
+],
+[
+"organic_liquid",
+"benzene",
+1.1595414617945543e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.245052521078136e-11
+],
+[
+"solid",
+"carbon",
+4.826012627409015e-09
+]
+],
+"iterations": 23,
+"starts": [
+{
+"start": "initial",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 25
+},
+{
+"start": "max gas",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 23
+},
+{
+"start": "min gas",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 25
+},
+{
+"start": "max organic_liquid",
+"G": -3561138.034579513,
+"message": "Solve_Succeeded",
+"nit": 23
+},
+{
+"start": "min organic_liquid",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 25
+},
+{
+"start": "random 0",
+"G": -3561138.0345795127,
+"message": "Solve_Succeeded",
+"nit": 17
+},
+{
+"start": "random 1",
+"G": -3561138.034579513,
+"message": "Solve_Succeeded",
+"nit": 17
+}
+],
+"stationarity_major_RT": 2.6535862205485532e-06,
+"polish_used": false,
+"seconds": 0.22648097199271433
+},
+"fig78_450C_slsqp_exact": {
+"solver": "slsqp",
+"gibbs_J_per_mol_C": -3561138.034674675,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561138.034674675,
+"aqueous": 0.0,
+"organic_liquid": 0.0,
+"solid": -7.107036014580161e-14
+},
+"amounts": [
+[
+"gas",
+"water",
+8.814976717710568
+],
+[
+"gas",
+"hydrogen",
+0.09804582943221014
+],
+[
+"gas",
+"carbon dioxide",
+0.6404604492187912
+],
+[
+"gas",
+"carbon monoxide",
+0.0014072986911031133
+],
+[
+"gas",
+"methane",
+0.3581321799697426
+],
+[
+"gas",
+"methanol",
+7.212036291714213e-08
+],
+[
+"gas",
+"ammonia",
+0.0016455090813888673
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.03676516927184014
+],
+[
+"organic_liquid",
+"benzene",
+1.0134662434246813e-17
+],
+[
+"organic_liquid",
+"toluene",
+0.0
+],
+[
+"solid",
+"carbon",
+6.4728321721785204e-18
+]
+],
+"iterations": 34,
+"starts": [
+{
+"start": "initial",
+"G": -3561138.034674675,
+"message": "Optimization terminated successfully",
+"nit": 34
+}
+],
+"stationarity_major_RT": 8.895930922195956e-05,
+"polish_used": null,
+"seconds": 0.07660245899751317
+},
+"fig78_450C_allocations": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3558067.0252559087,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3556072.519010144,
+"aqueous": 0.0,
+"organic_liquid": -896.5269029467861,
+"solid": -1097.979342818059
+},
+"amounts": [
+[
+"gas",
+"water",
+8.95408805694604
+],
+[
+"gas",
+"hydrogen",
+0.0947147883137746
+],
+[
+"gas",
+"carbon dioxide",
+0.5710084946926278
+],
+[
+"gas",
+"carbon monoxide",
+0.00119988157807345
+],
+[
+"gas",
+"methane",
+0.2777915646790501
+],
+[
+"gas",
+"methanol",
+5.9050248575315844e-08
+],
+[
+"gas",
+"ammonia",
+0.001579443324844376
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.03679820215011239
+],
+[
+"organic_liquid",
+"benzene",
+0.008333199774741026
+],
+[
+"organic_liquid",
+"toluene",
+1.1447879340642415e-07
+],
+[
+"solid",
+"carbon",
+0.1
+]
+],
+"iterations": 22,
+"starts": [
+{
+"start": "initial",
+"G": -3558067.0252559087,
+"message": "Solve_Succeeded",
+"nit": 22
+}
+],
+"stationarity_major_RT": 3.0640019196463023e-06,
+"polish_used": false,
+"seconds": 0.4909518049971666
+},
+"fig78_450C_all_solids": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3559661.978861349,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3557466.020154387,
+"aqueous": 0.0,
+"organic_liquid": -2.1325849334689405e-05,
+"solid": -2195.958685636118
+},
+"amounts": [
+[
+"gas",
+"water",
+9.016626751949772
+],
+[
+"gas",
+"hydrogen",
+0.09456556498131886
+],
+[
+"gas",
+"carbon dioxide",
+0.5397757242731622
+],
+[
+"gas",
+"carbon monoxide",
+0.0011267307150111072
+],
+[
+"gas",
+"methane",
+0.25909748802481114
+],
+[
+"gas",
+"methanol",
+5.57485071737481e-08
+],
+[
+"gas",
+"ammonia",
+0.00157860653857036
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.0367986205432494
+],
+[
+"organic_liquid",
+"benzene",
+1.1253088277535632e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.047468522571697e-11
+],
+[
+"solid",
+"carbon",
+0.2
+]
+],
+"iterations": 21,
+"starts": [
+{
+"start": "initial",
+"G": -3559661.978861349,
+"message": "Solve_Succeeded",
+"nit": 21
+}
+],
+"stationarity_major_RT": 3.2470117152334535e-06,
+"polish_used": false,
+"seconds": 0.07093171399901621
+},
+"fig78_450C_gas_min": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3561138.0345781767,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561138.034502244,
+"aqueous": 0.0,
+"organic_liquid": -2.222154061285129e-05,
+"solid": -5.371110457275439e-05
+},
+"amounts": [
+[
+"gas",
+"water",
+8.814975348653347
+],
+[
+"gas",
+"hydrogen",
+0.09804900689036616
+],
+[
+"gas",
+"carbon dioxide",
+0.6404611060698104
+],
+[
+"gas",
+"carbon monoxide",
+0.0014073544116666827
+],
+[
+"gas",
+"methane",
+0.35813146158149306
+],
+[
+"gas",
+"methanol",
+7.175498213935591e-08
+],
+[
+"gas",
+"ammonia",
+0.00164526136100462
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960959
+],
+[
+"gas",
+"nitrogen",
+0.036765293132032265
+],
+[
+"organic_liquid",
+"benzene",
+1.1753515360981634e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.357471887062004e-11
+],
+[
+"solid",
+"carbon",
+4.891813759892803e-09
+]
+],
+"iterations": 17,
+"starts": [
+{
+"start": "initial",
+"G": -3561138.0345781767,
+"message": "Solve_Succeeded",
+"nit": 17
+}
+],
+"stationarity_major_RT": 2.689767149734806e-06,
+"polish_used": false,
+"seconds": 0.06591624599241186
+},
+"cellulose_species_feed_450C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -2464760.043907318,
+"phase_gibbs_J_per_mol_C": {
+"gas": -2129829.518015188,
+"aqueous": 0.0,
+"organic_liquid": -9.251303068224105e-06,
+"solid": -334930.5258828784
+},
+"amounts": [
+[
+"gas",
+"water",
+5.982339102877733
+],
+[
+"gas",
+"hydrogen",
+0.030328960603538107
+],
+[
+"gas",
+"carbon dioxide",
+0.015749963900276318
+],
+[
+"gas",
+"carbon monoxide",
+1.6483001171335464e-05
+],
+[
+"gas",
+"methane",
+0.0005937240728989454
+],
+[
+"gas",
+"methanol",
+1.7650355508883543e-09
+],
+[
+"gas",
+"ammonia",
+0.0
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0
+],
+[
+"gas",
+"nitrogen",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+4.760032507096662e-11
+],
+[
+"organic_liquid",
+"toluene",
+3.61377023740147e-11
+],
+[
+"solid",
+"carbon",
+6.259668422591778e-10
+],
+[
+"solid",
+"cellulose",
+0.1639399710160142
+]
+],
+"iterations": 25,
+"starts": [
+{
+"start": "initial",
+"G": -2464760.043907318,
+"message": "Solve_Succeeded",
+"nit": 25
+}
+],
+"stationarity_major_RT": 0.00018231399949531082,
+"polish_used": false,
+"seconds": 0.07345570999314077
+},
+"full_text_250C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3263429.7560098968,
+"phase_gibbs_J_per_mol_C": {
+"gas": -408130.8605152514,
+"aqueous": -2853965.0233353334,
+"organic_liquid": -8.74111513148443e-06,
+"solid": -1333.8721505706135
+},
+"amounts": [
+[
+"gas",
+"water",
+0.3319543746356265
+],
+[
+"gas",
+"hydrogen",
+0.00031757890217714397
+],
+[
+"gas",
+"carbon dioxide",
+0.5155097481196421
+],
+[
+"gas",
+"carbon monoxide",
+1.0841827058970074e-05
+],
+[
+"gas",
+"methane",
+0.28447940718103454
+],
+[
+"gas",
+"methanol",
+2.8722643572293632e-09
+],
+[
+"gas",
+"ammonia",
+7.899285476051124e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.003988065496792192
+],
+[
+"gas",
+"nitrogen",
+0.03753447153380779
+],
+[
+"aqueous",
+"water",
+8.726269552319456
+],
+[
+"aqueous",
+"hydrogen",
+1.0752272808950938e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.004025338196208682
+],
+[
+"aqueous",
+"carbon monoxide",
+4.146327703949572e-08
+],
+[
+"aqueous",
+"methane",
+0.002041938365523617
+],
+[
+"aqueous",
+"methanol",
+1.2102278715344168e-09
+],
+[
+"aqueous",
+"ammonia",
+2.791170269302768e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0022555131011687646
+],
+[
+"aqueous",
+"Na+",
+0.0
+],
+[
+"aqueous",
+"HCO3-",
+5.2573357108577945e-17
+],
+[
+"aqueous",
+"CO3^2-",
+0.0
+],
+[
+"aqueous",
+"K+",
+0.0
+],
+[
+"aqueous",
+"Cs+",
+0.0
+],
+[
+"aqueous",
+"Cl-",
+0.0
+],
+[
+"aqueous",
+"Li+",
+0.0
+],
+[
+"aqueous",
+"Mg2+",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+1.2654773129258542e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.527002660283246e-11
+],
+[
+"solid",
+"carbon",
+0.1939326794085862
+],
+[
+"solid",
+"Artinite",
+0.0
+],
+[
+"solid",
+"Hydromagnesite",
+0.0
+],
+[
+"solid",
+"Brucite",
+0.0
+],
+[
+"solid",
+"Magnesite",
+0.0
+],
+[
+"solid",
+"Periclase",
+0.0
+],
+[
+"solid",
+"Halite",
+0.0
+],
+[
+"solid",
+"Sylvite",
+0.0
+],
+[
+"solid",
+"Sodium-Oxide",
+0.0
+],
+[
+"solid",
+"Potassium-Oxide",
+0.0
+]
+],
+"iterations": 34,
+"starts": [
+{
+"start": "initial",
+"G": -3263429.7560098963,
+"message": "Solve_Succeeded",
+"nit": 34
+}
+],
+"stationarity_major_RT": 0.0005810250059362214,
+"polish_used": false,
+"seconds": 0.40036988600331824
+},
+"full_text_400C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3473670.1025239755,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3471709.416011313,
+"aqueous": 0.0,
+"organic_liquid": -2.0765973853050022e-05,
+"solid": -1960.6864918967235
+},
+"amounts": [
+[
+"gas",
+"water",
+9.040112729083
+],
+[
+"gas",
+"hydrogen",
+0.04731859271330331
+],
+[
+"gas",
+"carbon dioxide",
+0.5283965775643436
+],
+[
+"gas",
+"carbon monoxide",
+0.0003990764941773752
+],
+[
+"gas",
+"methane",
+0.2712043196877338
+],
+[
+"gas",
+"methanol",
+2.625374529965295e-08
+],
+[
+"gas",
+"ammonia",
+0.0012768669960560243
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960956
+],
+[
+"gas",
+"nitrogen",
+0.036949490314506554
+],
+[
+"organic_liquid",
+"benzene",
+1.3433963107057588e-10
+],
+[
+"organic_liquid",
+"toluene",
+9.217702108123587e-11
+],
+[
+"solid",
+"carbon",
+0.1999999985487229
+],
+[
+"solid",
+"Artinite",
+0.0
+],
+[
+"solid",
+"Hydromagnesite",
+0.0
+],
+[
+"solid",
+"Brucite",
+0.0
+],
+[
+"solid",
+"Magnesite",
+0.0
+],
+[
+"solid",
+"Periclase",
+0.0
+],
+[
+"solid",
+"Halite",
+0.0
+],
+[
+"solid",
+"Sylvite",
+0.0
+],
+[
+"solid",
+"Sodium-Oxide",
+0.0
+],
+[
+"solid",
+"Potassium-Oxide",
+0.0
+]
+],
+"iterations": 20,
+"starts": [
+{
+"start": "initial",
+"G": -3473670.102523976,
+"message": "Solve_Succeeded",
+"nit": 20
+}
+],
+"stationarity_major_RT": 8.898309365523354e-06,
+"polish_used": false,
+"seconds": 0.06867982399126049
+},
+"full_text_250C_ipopt": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3263429.7560098968,
+"phase_gibbs_J_per_mol_C": {
+"gas": -408130.8605152514,
+"aqueous": -2853965.0233353334,
+"organic_liquid": -8.74111513148443e-06,
+"solid": -1333.8721505706135
+},
+"amounts": [
+[
+"gas",
+"water",
+0.3319543746356265
+],
+[
+"gas",
+"hydrogen",
+0.00031757890217714397
+],
+[
+"gas",
+"carbon dioxide",
+0.5155097481196421
+],
+[
+"gas",
+"carbon monoxide",
+1.0841827058970074e-05
+],
+[
+"gas",
+"methane",
+0.28447940718103454
+],
+[
+"gas",
+"methanol",
+2.8722643572293632e-09
+],
+[
+"gas",
+"ammonia",
+7.899285476051124e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.003988065496792192
+],
+[
+"gas",
+"nitrogen",
+0.03753447153380779
+],
+[
+"aqueous",
+"water",
+8.726269552319456
+],
+[
+"aqueous",
+"hydrogen",
+1.0752272808950938e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.004025338196208682
+],
+[
+"aqueous",
+"carbon monoxide",
+4.146327703949572e-08
+],
+[
+"aqueous",
+"methane",
+0.002041938365523617
+],
+[
+"aqueous",
+"methanol",
+1.2102278715344168e-09
+],
+[
+"aqueous",
+"ammonia",
+2.791170269302768e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0022555131011687646
+],
+[
+"aqueous",
+"Na+",
+0.0
+],
+[
+"aqueous",
+"HCO3-",
+5.2573357108577945e-17
+],
+[
+"aqueous",
+"CO3^2-",
+0.0
+],
+[
+"aqueous",
+"K+",
+0.0
+],
+[
+"aqueous",
+"Cs+",
+0.0
+],
+[
+"aqueous",
+"Cl-",
+0.0
+],
+[
+"aqueous",
+"Li+",
+0.0
+],
+[
+"aqueous",
+"Mg2+",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+1.2654773129258542e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.527002660283246e-11
+],
+[
+"solid",
+"carbon",
+0.1939326794085862
+],
+[
+"solid",
+"Artinite",
+0.0
+],
+[
+"solid",
+"Hydromagnesite",
+0.0
+],
+[
+"solid",
+"Brucite",
+0.0
+],
+[
+"solid",
+"Magnesite",
+0.0
+],
+[
+"solid",
+"Periclase",
+0.0
+],
+[
+"solid",
+"Halite",
+0.0
+],
+[
+"solid",
+"Sylvite",
+0.0
+],
+[
+"solid",
+"Sodium-Oxide",
+0.0
+],
+[
+"solid",
+"Potassium-Oxide",
+0.0
+]
+],
+"iterations": 34,
+"starts": [
+{
+"start": "initial",
+"G": -3263429.7560098963,
+"message": "Solve_Succeeded",
+"nit": 34
+}
+],
+"stationarity_major_RT": 0.0005810250059362214,
+"polish_used": false,
+"seconds": 0.16390302099171095
+},
+"full_text_gas_min_300C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3324459.8582708533,
+"phase_gibbs_J_per_mol_C": {
+"gas": -689476.3995952867,
+"aqueous": -2634362.058312276,
+"organic_liquid": -1.2367582830281994e-05,
+"solid": -621.4003509229276
+},
+"amounts": [
+[
+"gas",
+"water",
+1.0443818338484894
+],
+[
+"gas",
+"hydrogen",
+0.001746429286483804
+],
+[
+"gas",
+"carbon dioxide",
+0.5644416149553819
+],
+[
+"gas",
+"carbon monoxide",
+4.606255774598945e-05
+],
+[
+"gas",
+"methane",
+0.33586796804636493
+],
+[
+"gas",
+"methanol",
+5.693942702246296e-09
+],
+[
+"gas",
+"ammonia",
+0.00023031758123432942
+],
+[
+"gas",
+"hydrogen sulfide",
+0.00453039070977057
+],
+[
+"gas",
+"nitrogen",
+0.0374437198958595
+],
+[
+"aqueous",
+"water",
+7.8992046886836285
+],
+[
+"aqueous",
+"hydrogen",
+5.7786223884352076e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.012394354408136375
+],
+[
+"aqueous",
+"carbon monoxide",
+4.927700983244342e-07
+],
+[
+"aqueous",
+"methane",
+0.007098012666836762
+],
+[
+"aqueous",
+"methanol",
+1.9630641546196206e-09
+],
+[
+"aqueous",
+"ammonia",
+5.809025211581365e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.0017131878881903864
+],
+[
+"aqueous",
+"Na+",
+0.00039516256835603716
+],
+[
+"aqueous",
+"HCO3-",
+0.00039513855042484276
+],
+[
+"aqueous",
+"CO3^2-",
+1.217277504417247e-08
+],
+[
+"aqueous",
+"K+",
+0.0003951626200134072
+],
+[
+"aqueous",
+"Cs+",
+0.0
+],
+[
+"aqueous",
+"Cl-",
+0.00039516229239451334
+],
+[
+"aqueous",
+"Li+",
+0.0
+],
+[
+"aqueous",
+"Mg2+",
+0.0
+],
+[
+"organic_liquid",
+"benzene",
+1.2930091812716587e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.755718883555517e-11
+],
+[
+"solid",
+"carbon",
+0.0801514980289258
+],
+[
+"solid",
+"Artinite",
+0.0
+],
+[
+"solid",
+"Hydromagnesite",
+0.0
+],
+[
+"solid",
+"Brucite",
+0.0
+],
+[
+"solid",
+"Magnesite",
+0.0
+],
+[
+"solid",
+"Periclase",
+0.0
+],
+[
+"solid",
+"Halite",
+4.6049053215746246e-10
+],
+[
+"solid",
+"Sylvite",
+4.4951754673880643e-10
+],
+[
+"solid",
+"Sodium-Oxide",
+8.677801145450348e-11
+],
+[
+"solid",
+"Potassium-Oxide",
+6.643581911159684e-11
+]
+],
+"iterations": 28,
+"starts": [
+{
+"start": "initial",
+"G": -3324459.858270853,
+"message": "Solve_Succeeded",
+"nit": 28
+}
+],
+"stationarity_major_RT": 9.94318481330688e-05,
+"polish_used": false,
+"seconds": 0.14593201399839018
+},
+"configurable_300C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3329237.790162984,
+"phase_gibbs_J_per_mol_C": {
+"gas": -135490.83338917632,
+"aqueous": -3187406.9732026076,
+"organic_liquid": -0.00026798984080302074,
+"solid": -6339.98330320992
+},
+"amounts": [
+[
+"gas",
+"water",
+0.18654267364742902
+],
+[
+"gas",
+"hydrogen",
+0.00013131897016718292
+],
+[
+"gas",
+"carbon dioxide",
+0.1410918702540893
+],
+[
+"gas",
+"carbon monoxide",
+4.773008913511144e-06
+],
+[
+"gas",
+"methane",
+0.0024641539183160393
+],
+[
+"gas",
+"ammonia",
+2.2486699090864026e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0016730355192550726
+],
+[
+"gas",
+"nitrogen",
+0.027902978431817913
+],
+[
+"gas",
+"benzene",
+2.0371833832445038e-10
+],
+[
+"gas",
+"toluene",
+1.1481833034738883e-10
+],
+[
+"gas",
+"methanol",
+1.623456765577966e-09
+],
+[
+"gas",
+"ethanol",
+6.41991764276105e-10
+],
+[
+"gas",
+"acetone",
+4.686048497009977e-10
+],
+[
+"aqueous",
+"water",
+9.436773173007092
+],
+[
+"aqueous",
+"hydrogen",
+3.186441915340654e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.09589826579961436
+],
+[
+"aqueous",
+"carbon monoxide",
+1.5850285627971335e-06
+],
+[
+"aqueous",
+"methane",
+0.0016261825123524234
+],
+[
+"aqueous",
+"ammonia",
+4.068213496724044e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.004570543078705884
+],
+[
+"aqueous",
+"nitrogen",
+0.009653360963687596
+],
+[
+"aqueous",
+"benzene",
+2.1575863908246126e-10
+],
+[
+"aqueous",
+"toluene",
+1.18647476270989e-10
+],
+[
+"aqueous",
+"methanol",
+1.718307202571815e-09
+],
+[
+"aqueous",
+"ethanol",
+6.560659501493851e-10
+],
+[
+"aqueous",
+"acetone",
+5.067135729128096e-10
+],
+[
+"aqueous",
+"Na+",
+0.00039516258976635165
+],
+[
+"aqueous",
+"K+",
+0.0003951626377951235
+],
+[
+"aqueous",
+"Mg2+",
+8.392385111359133e-07
+],
+[
+"aqueous",
+"Cl-",
+0.0003951623170556708
+],
+[
+"aqueous",
+"HCO3-",
+0.00039683309968716344
+],
+[
+"aqueous",
+"CO3^2-",
+4.143920456425142e-09
+],
+[
+"organic_liquid",
+"benzene",
+1.2633777207101923e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.527189597271288e-11
+],
+[
+"organic_liquid",
+"methanol",
+2.9162083394447946e-10
+],
+[
+"organic_liquid",
+"ethanol",
+2.224305046191296e-10
+],
+[
+"organic_liquid",
+"acetone",
+1.9570919466904118e-10
+],
+[
+"solid",
+"carbon",
+0.7589123221345481
+],
+[
+"solid",
+"Artinite",
+4.786054952371104e-10
+],
+[
+"solid",
+"Hydromagnesite",
+4.4632832226671255e-10
+],
+[
+"solid",
+"Brucite",
+1.4403879663142835e-09
+],
+[
+"solid",
+"Magnesite",
+0.0003943185473859197
+],
+[
+"solid",
+"Periclase",
+7.872649684788759e-10
+],
+[
+"solid",
+"Halite",
+4.4824922857370504e-10
+],
+[
+"solid",
+"Sylvite",
+4.3709769286778206e-10
+],
+[
+"solid",
+"Sodium-Oxide",
+8.219350597078161e-11
+],
+[
+"solid",
+"Potassium-Oxide",
+6.375488791427774e-11
+]
+],
+"iterations": 33,
+"starts": [
+{
+"start": "initial",
+"G": -3329237.790162984,
+"message": "Solve_Succeeded",
+"nit": 33
+}
+],
+"stationarity_major_RT": 0.003116262846478885,
+"polish_used": false,
+"seconds": 16.130598750998615
+},
+"configurable_450C": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3562183.0947756832,
+"phase_gibbs_J_per_mol_C": {
+"gas": -3561421.478251093,
+"aqueous": 0.0,
+"organic_liquid": -0.00031256519141148215,
+"solid": -761.6162120248554
+},
+"amounts": [
+[
+"gas",
+"water",
+8.815178296614285
+],
+[
+"gas",
+"hydrogen",
+0.09803945196172843
+],
+[
+"gas",
+"carbon dioxide",
+0.6408532584439748
+],
+[
+"gas",
+"carbon monoxide",
+0.001408031206920567
+],
+[
+"gas",
+"methane",
+0.35813380947641127
+],
+[
+"gas",
+"ammonia",
+0.0016449006752156073
+],
+[
+"gas",
+"hydrogen sulfide",
+0.006243578597960956
+],
+[
+"gas",
+"nitrogen",
+0.03676547347492676
+],
+[
+"gas",
+"benzene",
+2.4230587435693593e-10
+],
+[
+"gas",
+"toluene",
+1.3216834126666637e-10
+],
+[
+"gas",
+"methanol",
+7.17330574478959e-08
+],
+[
+"gas",
+"ethanol",
+1.8552101040491575e-09
+],
+[
+"gas",
+"acetone",
+8.384217224713006e-10
+],
+[
+"organic_liquid",
+"benzene",
+1.2046198378649302e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.484172272380995e-11
+],
+[
+"organic_liquid",
+"methanol",
+3.0368398498057666e-10
+],
+[
+"organic_liquid",
+"ethanol",
+2.2444276960373808e-10
+],
+[
+"organic_liquid",
+"acetone",
+1.9125033902669628e-10
+],
+[
+"solid",
+"carbon",
+4.862559905018697e-09
+],
+[
+"solid",
+"Artinite",
+4.119381562919388e-10
+],
+[
+"solid",
+"Hydromagnesite",
+3.8948078682898656e-10
+],
+[
+"solid",
+"Brucite",
+1.9051654488715673e-08
+],
+[
+"solid",
+"Magnesite",
+0.0003951374643361799
+],
+[
+"solid",
+"Periclase",
+3.91513167685585e-09
+],
+[
+"solid",
+"Halite",
+1.2743897546807774e-09
+],
+[
+"solid",
+"Sylvite",
+0.0003951619280128375
+],
+[
+"solid",
+"Sodium-Oxide",
+0.00019758096400641876
+],
+[
+"solid",
+"Potassium-Oxide",
+6.371948773403887e-10
+]
+],
+"iterations": 25,
+"starts": [
+{
+"start": "initial",
+"G": -3562183.0947756832,
+"message": "Solve_Succeeded",
+"nit": 25
+}
+],
+"stationarity_major_RT": 2.672012429855323e-06,
+"polish_used": false,
+"seconds": 0.08974936400773004
+},
+"configurable_300C_ipopt": {
+"solver": "ipopt",
+"gibbs_J_per_mol_C": -3329237.790162984,
+"phase_gibbs_J_per_mol_C": {
+"gas": -135490.83338917632,
+"aqueous": -3187406.9732026076,
+"organic_liquid": -0.00026798984080302074,
+"solid": -6339.98330320992
+},
+"amounts": [
+[
+"gas",
+"water",
+0.18654267364742902
+],
+[
+"gas",
+"hydrogen",
+0.00013131897016718292
+],
+[
+"gas",
+"carbon dioxide",
+0.1410918702540893
+],
+[
+"gas",
+"carbon monoxide",
+4.773008913511144e-06
+],
+[
+"gas",
+"methane",
+0.0024641539183160393
+],
+[
+"gas",
+"ammonia",
+2.2486699090864026e-05
+],
+[
+"gas",
+"hydrogen sulfide",
+0.0016730355192550726
+],
+[
+"gas",
+"nitrogen",
+0.027902978431817913
+],
+[
+"gas",
+"benzene",
+2.0371833832445038e-10
+],
+[
+"gas",
+"toluene",
+1.1481833034738883e-10
+],
+[
+"gas",
+"methanol",
+1.623456765577966e-09
+],
+[
+"gas",
+"ethanol",
+6.41991764276105e-10
+],
+[
+"gas",
+"acetone",
+4.686048497009977e-10
+],
+[
+"aqueous",
+"water",
+9.436773173007092
+],
+[
+"aqueous",
+"hydrogen",
+3.186441915340654e-05
+],
+[
+"aqueous",
+"carbon dioxide",
+0.09589826579961436
+],
+[
+"aqueous",
+"carbon monoxide",
+1.5850285627971335e-06
+],
+[
+"aqueous",
+"methane",
+0.0016261825123524234
+],
+[
+"aqueous",
+"ammonia",
+4.068213496724044e-05
+],
+[
+"aqueous",
+"hydrogen sulfide",
+0.004570543078705884
+],
+[
+"aqueous",
+"nitrogen",
+0.009653360963687596
+],
+[
+"aqueous",
+"benzene",
+2.1575863908246126e-10
+],
+[
+"aqueous",
+"toluene",
+1.18647476270989e-10
+],
+[
+"aqueous",
+"methanol",
+1.718307202571815e-09
+],
+[
+"aqueous",
+"ethanol",
+6.560659501493851e-10
+],
+[
+"aqueous",
+"acetone",
+5.067135729128096e-10
+],
+[
+"aqueous",
+"Na+",
+0.00039516258976635165
+],
+[
+"aqueous",
+"K+",
+0.0003951626377951235
+],
+[
+"aqueous",
+"Mg2+",
+8.392385111359133e-07
+],
+[
+"aqueous",
+"Cl-",
+0.0003951623170556708
+],
+[
+"aqueous",
+"HCO3-",
+0.00039683309968716344
+],
+[
+"aqueous",
+"CO3^2-",
+4.143920456425142e-09
+],
+[
+"organic_liquid",
+"benzene",
+1.2633777207101923e-10
+],
+[
+"organic_liquid",
+"toluene",
+8.527189597271288e-11
+],
+[
+"organic_liquid",
+"methanol",
+2.9162083394447946e-10
+],
+[
+"organic_liquid",
+"ethanol",
+2.224305046191296e-10
+],
+[
+"organic_liquid",
+"acetone",
+1.9570919466904118e-10
+],
+[
+"solid",
+"carbon",
+0.7589123221345481
+],
+[
+"solid",
+"Artinite",
+4.786054952371104e-10
+],
+[
+"solid",
+"Hydromagnesite",
+4.4632832226671255e-10
+],
+[
+"solid",
+"Brucite",
+1.4403879663142835e-09
+],
+[
+"solid",
+"Magnesite",
+0.0003943185473859197
+],
+[
+"solid",
+"Periclase",
+7.872649684788759e-10
+],
+[
+"solid",
+"Halite",
+4.4824922857370504e-10
+],
+[
+"solid",
+"Sylvite",
+4.3709769286778206e-10
+],
+[
+"solid",
+"Sodium-Oxide",
+8.219350597078161e-11
+],
+[
+"solid",
+"Potassium-Oxide",
+6.375488791427774e-11
+]
+],
+"iterations": 33,
+"starts": [
+{
+"start": "initial",
+"G": -3329237.790162984,
+"message": "Solve_Succeeded",
+"nit": 33
+}
+],
+"stationarity_major_RT": 0.003116262846478885,
+"polish_used": false,
+"seconds": 0.22567426500609145
+}
+}

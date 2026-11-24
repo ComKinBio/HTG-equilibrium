@@ -15,4 +15,6 @@ using Test
     include("test_registry.jl")
     include("test_standard_states.jl")
     include("test_phases.jl")
+    include("test_optimizer.jl")
+    include("test_equilibrium.jl")
 end
