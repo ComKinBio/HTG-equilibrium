@@ -4,8 +4,8 @@ The Julia science core of the HTG equilibrium app (Phase 2, milestone M2 of
 `docs/spec/julia_migration_plan.md`). It is ported from the Python package
 `src/htg` one module at a time, keeping the Python names so the two are easy to
 compare. So far: constants, formula parsing, water properties, HKF standard
-states of aqueous ions, and the SUPCRT92 failure-band check that the Julia GUI
-will use to warn about sweeps.
+states of aqueous ions, the SUPCRT92 failure-band check that the Julia GUI
+will use to warn about sweeps, and reading case files (units, feed arithmetic).
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -21,6 +21,13 @@ will use to warn about sweeps.
 | `test/test_water.jl` | Golden tests, band check, IAPWS-95 self-consistency | `tests/test_reference_thermo.py` (electrolyte part) |
 | `test/data/hkf_ions.toml` | HKF records of the 8 shipped ions, as the app's registry reads them | `registry.ion_hkf_table` |
 | `test/dump_pychnosz.py` | Writes the fixture above and, with `--grid`, a wide pychnosz grid (not committed) | – |
+| `src/pycompat.jl` | Python behaviour the port relies on: `ValueError` (abstract; the case/feed/unit errors subtype it), `pyrepr`, `pyfloat`, `pyround`, `pyformat_g`, `pyisclose` | – |
+| `src/toml_ordered.jl` | `parse_toml`, `read_toml`: TOML as nested `OrderedDict`s in file order | `tomllib` |
+| `src/units.jl` | Submodule `Units`: `to_file`, `from_file`, `format_number`, `display`, `field_label`, ... | `units.py` |
+| `src/case.jl` | `Salt`, `Feed`, `Case`, `load_case`, `case_from_dict`, `validate`, `temperatures`, `pressures`, `grid`, `chains`, `at`, `replace`, carbon bounds, legacy keys, `legacy_to_v2` | `case.py` (reading) |
+| `src/feed_v2.jl` | `feed_v2_to_model`, `feed_summary`, `feed_fractions`, `elemental_masses`, `ash_percent`, `molar_mass_function`, `species_elements_function`, `legacy_feed_to_v2` | `feed_v2.py` |
+| `test/test_units.jl`, `test/test_case.jl`, `test/test_feed.jl` | Ported Python tests; with `test/data/cases_python.json`, every case file and 119 variants against Python | `test_units.py`, `test_case_files.py`, `test_case_format.py` |
+| `test/dump_cases.py`, `test/python_cases.jl` | Write / compare `test/data/cases_python.json` (~0.5 MB, not committed) | – |
 
 **Matching Python's arithmetic.** Python 3.12's `sum()` of floats uses
 compensated summation; Julia's `sum` does not, so results can differ in the last
@@ -190,6 +197,138 @@ better than 1e-6 in pressure.
 The tests check the 240 bar bands against the spike's 0.05 °C scan (and the
 spike's bands at 225, 250, 275 and 300 bar), the statuses of a sample sweep,
 and that along 100–600 °C at 240 bar the point test fails only inside bands.
+
+## Case files (reading)
+
+`load_case(path)` reads a case file in format 2, an old (format 1) file, or a
+mixture, with the same rules and messages as Python's `htg.load_case`:
+
+```julia
+case = load_case("cases/manure_gas_min.toml")
+grid(case), chains(case), temperatures(case)        # sweep points
+point = at(case, 300.0)                             # one point (single pressure)
+other = replace(case; starts=3)                     # Python: case.replace(starts=3)
+dry_element_wt_percent(case.feed, nothing)          # elemental feed: dry wt% used by the model
+feed = resolved(case.feed, molar_mass_function(species_elements))   # species-amount feeds
+carbon_bound_messages(case, carbon_solids); effective_carbon_bounds(case.carbon_bounds, true)
+Units.display(240, "MPa")                           # "24"
+```
+
+The structs keep Python's field names and defaults (`CASE_FIELDS`); fields
+hold what the file gave (Int or Float64, `OrderedDict`s in file order) until
+the constructor normalises the ones the calculation reads, as `__post_init__`
+does. Old keys (`gas_carbon_fraction`, `gas_carbon_min_fraction`,
+`solid_carbon_fraction`, `phase_carbon_fractions`, `multistart`, `refine`, the
+old `[feed]` keys) are read and moved into the new ones on creation.
+
+**Comparison with Python.** `uv run python julia/HTGEquilibrium/test/dump_cases.py`
+writes `test/data/cases_python.json` (~0.5 MB, ignored by git; without it the
+comparisons are skipped with an info message). The tests rebuild the same dump
+in Julia and compare it field by field: dict key order, Int vs Float, strings
+and error messages exactly; floats bit for bit (1e-12 relative would be
+allowed, but is not needed). It covers
+- the 12 case files: 5 in `cases/`, the 6 old files in
+  `tests/data/legacy_cases`, the template. For each: all Case fields,
+  temperatures, pressures, grid, chains, `at`, carbon-bound messages, the feed
+  as model input (resolved with the registry's element data, which the JSON
+  carries for the species the cases name), `feed_fractions`, the feed summary,
+  `legacy_to_v2` and the case converted from it;
+- 119 variants of the template and old files (one setting or one mistake each,
+  66 of them load errors, messages compared);
+- 21 [feed] tables and 10 old feeds through the feed functions;
+- `format_number`, conversions, `display`, `repr`, `round`, `refine`.
+
+Result: **everything equal; 10519 floats compared, all bit for bit.**
+
+**Differences from Python** (deliberate; everything else behaves the same):
+- Errors: `CaseError` (a ValueError raised in case.py), `FeedError`,
+  `LegacyConversionError` and `Units.UnitError` subtype the abstract
+  `ValueError`, so `e isa ValueError` catches what `except ValueError` does.
+  Python TypeErrors (`Feed(**data)` with an unknown key, a missing Case field)
+  are `ArgumentError`s with Python's text; `replace` with an unknown field
+  (Python AttributeError) is an `ArgumentError`.
+- Malformed structure that Python reports through an incidental TypeError or
+  AttributeError (a section that is not a table, a phase list that is a
+  number, a `points` entry that is not a list) gives a readable `CaseError`
+  or `ArgumentError` instead; the text differs from Python's.
+- TOML syntax errors are `TOML.ParserError`s with the standard library's
+  text, not tomllib's.
+- `starts = nan` / `inf`: a `CaseError` with Python's text (Python raises
+  ValueError / OverflowError from `int()`).
+- A molar mass of zero gives `DivideError` (Python ZeroDivisionError).
+- `carbon_bound_messages` sums the fixed shares in `PHASES` order (Python
+  iterates a set; the sum is compared with an absolute tolerance of 1e-10).
+- `registry_elements(registry)` is `species_elements_function(table)`, given
+  the registry's {name => elements} table (the registry is ported separately).
+- `Units` is a submodule (`Units.display` etc., as `units.display` in Python);
+  its conversions broadcast over arrays. `replace(case; ...)` extends
+  `Base.replace`.
+- Writing (`to_toml`, `save`, `dump_case`, the GUI's `CaseDocument`) is not
+  ported yet; see below.
+
+**Bit-for-bit details.** Python `sum()` → `pysum`; `round(x, 8)` (applied to
+every temperature and pressure) → `pyround`, the correctly rounded decimal,
+which Julia's `round(x; digits=8)` is not always; `numpy.arange` of `refine`
+→ `_np_arange`, filled as NumPy fills it (`start + i*delta` with
+`delta = (start + step) - start`); `float(f"{x:.14g}")` and
+`Decimal(repr(x)) + 1` in the legacy feed conversion → `pyformat_g` and
+`_plus_one`. Julia's `TOML.parse` returns plain `Dict`s, so `parse_toml`
+takes the values from `TOML.parse` and the key order from a small scanner of
+the text. Julia's Printf `%g` chooses between fixed and exponent notation
+before rounding (`@sprintf("%.6g", 999999.5)` is `"1000000"`; C and Python
+give `"1e+06"`); `pyformat_g` follows C. (`formulas.jl` still uses
+`@sprintf("%g")` in `_g`; it differs from Python only for such values.)
+
+## Case files: writing (M3)
+
+Python writes case files in two ways:
+1. `Case.to_toml()` / `save` (`dump_case`): fresh text in a fixed layout, no
+   comments, only values that differ from the defaults. Used for the
+   `case.toml` copy in each results folder and by the GUI's differences view.
+   It builds the text itself (no TOML library), so it ports directly
+   (~80 lines; `pyrepr` already gives Python's float text). Natural to do with
+   `results.jl`.
+2. The GUI's `CaseDocument` (`gui/document.py`): the form edits a plain dict;
+   saving merges it into the original document with tomlkit, so comments and
+   the layout of unchanged values are kept, and old files are converted to
+   format 2 on the first save (old keys removed, new ones added).
+
+Julia has no tomlkit. **Option (b), a line-based updater for the known keys,**
+would work like this for this format:
+- *Index the text.* The scanner in `toml_ordered.jl` already walks every table
+  header and `key = value` statement. Extended to record, per key path, the
+  byte range of the value, of the whole statement (one or more lines, e.g.
+  the `[phases]` lists) and of its trailing comment, plus the extent of each
+  table, it indexes the original text.
+- *Diff.* Compare the original data (`parse_toml` of the text) with the edited
+  data (after `clean`, as in Python) path by path. Case files are shallow: top
+  level, `[conditions]`, `[feed]` (+ `[feed.species]`, `[feed.salts.X]`),
+  `[phases]`, `[aqueous]`, `[constraints]` (+ `.carbon`, `.minimum_amounts`),
+  `[initial_guess]` (+ `.amounts`), `[solver]` (+ `options`), `[sweep]`,
+  `[comparison]`.
+- *Patch.* Changed value: replace only its byte range, keeping key,
+  indentation and trailing comment (inline tables such as
+  `elements_wt_percent` are rewritten whole, as tomlkit does). Removed key:
+  delete its statement lines. New key: insert `key = value` after the last
+  statement of its table (top-level keys before the first table header). New
+  table: a `[section]` block after its parent (or in the order `dump_case`
+  uses). Removed table: delete its header and statements. Values are written
+  with the `dump_case` value writer; lists longer than six items wrapped as
+  tomlkit does. The legacy conversion is then just a diff (old keys removed,
+  new keys added, `format = 2` inserted before the first key).
+- *Check.* Parse the patched text and require `parse_toml(new) == data`. If a
+  file uses a construct the updater does not handle (dotted keys across
+  tables, unusual layout), fall back to the `dump_case` text and tell the user
+  that comments were not kept.
+- *Tests.* Against Python's `CaseDocument` on the shipped cases and a set of
+  edits: same parsed data, every comment line of the original kept (as
+  `test_documents_convert_old_files_and_keep_comments` checks); the text need
+  not be byte-identical to tomlkit's.
+
+Estimated size: ~300 lines plus tests. The alternatives are (a) a full
+round-trip TOML library (tomlkit-like: much larger, general TOML) and (c)
+always writing `dump_case` text (simplest, but users lose their comments).
+**Owner decision needed: (b) as above, or (a) / (c).**
 
 ## What remains for M2
 
