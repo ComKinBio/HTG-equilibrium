@@ -11,7 +11,8 @@ Contents:
   files      every case file in cases/ (recursively), the old (format 1)
              files in tests/data/legacy_cases and the template: the loaded
              Case, its grid, chains, feed numbers, carbon-bound messages,
-             feed summary, legacy_to_v2 and the case converted from it
+             feed summary, the text to_toml writes, legacy_to_v2 and the case
+             converted from it
   variants   the template (or an old file) with text replaced: one setting
              or one mistake each; the same dump, or the error
   feeds      feed_v2 functions called directly on [feed] tables
@@ -128,6 +129,10 @@ def case_dump(case):
     out['feed'] = numbers
     if case.feed_v2 is not None:
         out['feed_summary'] = enc(attempt(feed_summary, case.feed_v2, case.atomic_weights, species_elements))
+    text = attempt(case.to_toml)
+    if 'ok' in text:
+        text['ok'] = text['ok'].replace(str(ROOT), '<repo>')
+    out['to_toml'] = text
     return out
 
 

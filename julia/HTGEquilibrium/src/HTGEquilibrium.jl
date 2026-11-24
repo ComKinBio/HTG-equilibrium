@@ -25,7 +25,7 @@ export Salt, Feed, Case, CaseError, LegacyConversionError, load_case, case_from_
        temperatures, pressures, grid, chains, at, is_single_point, resolved, total_water_g_per_g_dry,
        dry_element_wt_percent, carbon_bound_messages, effective_carbon_bounds, check_carbon_bounds,
        legacy_carbon_bounds, legacy_to_v2, is_v2, fluid_phase_count, starts_from_multistart,
-       BOUND_KINDS, PHASE_LABELS, WATER_MODELS, water_model_of
+       BOUND_KINDS, PHASE_LABELS, WATER_MODELS, water_model_of, dump_case, to_toml
 export FeedError, feed_v2_to_model, feed_summary, feed_fractions, molar_mass_function,
        species_elements_function, registry_elements, elemental_masses, ash_percent, scaled_elements, legacy_feed_to_v2
 export Databases, DataTable, XMLNode, NASARecord, load_databases, normalize_name, nasa7_properties,

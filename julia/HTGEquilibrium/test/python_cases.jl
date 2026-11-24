@@ -179,6 +179,9 @@ function case_dump(case::Case)
     if case.feed_v2 !== nothing
         out["feed_summary"] = enc(attempt(feed_summary, case.feed_v2, case.atomic_weights, SPECIES_ELEMENTS))
     end
+    text = attempt(to_toml, case)
+    haskey(text, "ok") && (text["ok"] = replace(text["ok"], REPO_ROOT => "<repo>"))
+    out["to_toml"] = text
     return out
 end
 

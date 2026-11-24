@@ -1003,3 +1003,109 @@ function load_case(path::AbstractString)
     end
     return case
 end
+
+# ---------------------------------------------------------------- writing case files
+# A fresh file in a fixed layout, as Python's dump_case: comments and the layout
+# of the original file are not kept (owner, PR #8).
+
+"""The [feed] table to write: format 2 when possible, else the old keys."""
+function _feed_for_file(case::Case)
+    case.feed_v2 === nothing || return deepcopy(_Dict(case.feed_v2))
+    feed = _Dict(f => deepcopy(getfield(case.feed, Symbol(f))) for f in FEED_FIELDS if f != "salts")
+    feed["species_amounts"] === nothing || return _Dict("species" => feed["species_amounts"])
+    delete!(feed, "species_amounts")
+    written = try
+        legacy_feed_to_v2(feed)
+    catch e
+        e isa LegacyConversionError || rethrow()
+        # species moles (needs molar masses) or unmodelled mass: keep the old keys
+        defaults = Feed()
+        return _Dict(k => v for (k, v) in feed if v != getfield(defaults, Symbol(k)))
+    end
+    delete!(written, "salts")
+    return written
+end
+
+# Python: bare key when text without '_' and '-' is alphanumeric, else quoted.
+function _toml_key(text)
+    text = String(text)
+    t = replace(text, "_" => "", "-" => "")
+    return !isempty(t) && all(c -> isletter(c) || isnumeric(c), t) ? text : _toml_value(text)
+end
+
+_toml_value(value::Bool) = value ? "true" : "false"
+_toml_value(value::Real) = py_repr(value)
+_toml_value(value::AbstractString) = "\"" * replace(value, "\\" => "\\\\", "\"" => "\\\"") * "\""
+_toml_value(value::Union{AbstractVector,Tuple}) = "[" * join((_toml_value(v) for v in value), ", ") * "]"
+_toml_value(value::AbstractDict) =
+    "{ " * join(("$(_toml_key(string(k))) = $(_toml_value(v))" for (k, v) in value), ", ") * " }"
+_toml_value(value) = throw(ArgumentError("Cannot write $(py_repr(value)) to TOML"))
+
+"""
+    dump_case(case) -> String
+
+TOML text (format 2) for `case`: values that differ from the defaults, plus
+required ones (Python's `dump_case`). A fresh file: comments and the layout
+of the file the case came from are not kept. `water_model` is written only
+when it is not the default, so other files read as Python writes them.
+"""
+function dump_case(case::Case)
+    defaults = Dict(string(f) => d for (f, d) in CASE_FIELDS if d !== _REQUIRED && !(d isa Function))
+    lines = ["format = $FORMAT", "name = $(_toml_value(case.name))"]
+    py_truth(case.description) && push!(lines, "description = $(_toml_value(case.description))")
+    py_truth(case.atomic_weights) && push!(lines, "atomic_weights = $(_toml_value(case.atomic_weights))")
+
+    function section(title, items)
+        items = [(k, v) for (k, v) in items if v !== nothing]
+        isempty(items) && return
+        push!(lines, "\n[$title]")
+        append!(lines, ["$(_toml_key(k)) = $(_toml_value(v))" for (k, v) in items])
+    end
+
+    temperatures = case.temperature_C
+    if py_truth(case.refine) && case.points === nothing && temperatures !== nothing
+        merged = _sorted_set(py_round(py_float(t), 8) for t in refined_temperatures(_aslist(temperatures), case.refine))
+        temperatures = Any[isinteger(t) ? Int(t) : t for t in merged]
+    end
+    section("conditions", [("temperature_C", temperatures), ("pressure_bar", case.pressure_bar),
+                           ("points", case.points)])
+    feed = _feed_for_file(case)
+    species = pop!(feed, "species", nothing)
+    section("feed", collect(feed))
+    species === nothing || section("feed.species", collect(species))
+    for (salt_name, salt) in case.feed.salts
+        push!(lines, "\n[feed.salts.$(_toml_key(salt_name))]")
+        push!(lines, "mol_per_g_dry_feed = $(_toml_value(salt.mol_per_g_dry_feed))")
+        push!(lines, "elements = $(_toml_value(salt.elements))")
+    end
+    section("phases", [(p, case.phases[p]) for p in PHASES if haskey(case.phases, p)])
+    for (title, keys_) in SECTIONS
+        title == "conditions" && continue
+        if title == "comparison"
+            py_truth(case.comparison) && section(title, collect(case.comparison))
+            continue
+        end
+        items = Tuple{String,Any}[]
+        for (key, attr) in keys_
+            attr in ("refine", "carbon_bounds") && continue
+            value = getfield(case, Symbol(attr))
+            if attr in ("minimum_amounts", "initial_amounts") && py_truth(value)
+                value = _nested(value)
+            end
+            haskey(defaults, attr) && value == defaults[attr] && continue
+            (value === nothing || (value isa AbstractDict && isempty(value))) && continue
+            push!(items, (key, value))
+        end
+        section(title, items)
+        if title == "constraints" && py_truth(case.carbon_bounds)
+            section("constraints.carbon", collect(case.carbon_bounds))
+        end
+    end
+    return join(lines, "\n") * "\n"
+end
+
+"""`to_toml(case)`: `dump_case(case)` (Python: `case.to_toml()`)."""
+to_toml(case::Case) = dump_case(case)
+
+"""`save(case, path)`: writes `dump_case(case)` to `path` (Python: `case.save(path)`). Not exported."""
+save(case::Case, path::AbstractString) = (write(path, dump_case(case)); nothing)

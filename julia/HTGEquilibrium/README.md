@@ -26,7 +26,7 @@ case files (units, feed arithmetic).
 | `src/pycompat.jl` | Python behaviour the port relies on: `ValueError` (abstract; the case/feed/unit errors subtype it), `py_repr`/`py_str`, `py_float`/`py_tryfloat`/`py_int` (with Python's messages), `py_round`, `py_format_g` (C/Python `%g`), `py_isclose`, `py_truth`, `py_sorted`, `isna`, `casefold`, `py_slice`, `read_text`, `py_splitlines` | – |
 | `src/toml_ordered.jl` | `parse_toml`, `read_toml`: TOML as nested `OrderedDict`s in file order (as `tomllib`); used for case files, `species.toml` and the user species folder | `tomllib` |
 | `src/units.jl` | Submodule `Units`: `to_file`, `from_file`, `format_number`, `display`, `field_label`, ... | `units.py` |
-| `src/case.jl` | `Salt`, `Feed`, `Case`, `load_case`, `case_from_dict`, `validate`, `water_model_of`, `temperatures`, `pressures`, `grid`, `chains`, `at`, `replace`, carbon bounds, legacy keys, `legacy_to_v2` | `case.py` (reading) |
+| `src/case.jl` | `Salt`, `Feed`, `Case`, `load_case`, `case_from_dict`, `validate`, `water_model_of`, `temperatures`, `pressures`, `grid`, `chains`, `at`, `replace`, carbon bounds, legacy keys, `legacy_to_v2`; writing: `to_toml`, `dump_case`, `save` | `case.py` |
 | `src/feed_v2.jl` | `feed_v2_to_model`, `feed_summary`, `feed_fractions`, `elemental_masses`, `ash_percent`, `molar_mass_function`, `species_elements_function`, `registry_elements`, `legacy_feed_to_v2` | `feed_v2.py` |
 | `src/databases.jl` | `Databases`, `load_databases`, NASA-7 parser (`read_nasa_lines`, `parse_nasa_header_elements`, `nasa7_properties`), SAFT CSV tables (`DataTable`), `supcrt92.xml` (`XMLNode`), `normalize_name` | `databases.py` |
 | `src/saft.jl` | Parameter-set selection: `first_complete_epcsaft_set`, `first_complete_pcsaft_set`, `first_complete_ion_epcsaft_set`, `first_complete_hkf_set`, `normalize_ion_name`, `water_sigma` | `saft.py` |
@@ -212,7 +212,7 @@ The tests check the 240 bar bands against the spike's 0.05 °C scan (and the
 spike's bands at 225, 250, 275 and 300 bar), the statuses of a sample sweep,
 and that along 100–600 °C at 240 bar the point test fails only inside bands.
 
-## Case files (reading)
+## Case files: reading
 
 `load_case(path)` reads a case file in format 2, an old (format 1) file, or a
 mixture, with the same rules and messages as Python's `htg.load_case`:
@@ -254,7 +254,9 @@ Python and ~1e-14 in Julia). It covers
 - `format_number`, conversions, `display`, `repr`, `round`, `refine`.
 
 Result: **everything equal; 10519 floats compared, 4 not identical: largest
-relative deviation 1.8e-15, one fraction 1.4e-16 where Python has 0.0.**
+relative deviation 1.8e-15, one fraction 1.4e-16 where Python has 0.0. The
+text `to_toml` writes equals Python's exactly for all 76 cases that can be
+written (files, variants, converted old files; 5 more give the same error).**
 The Julia-only `water_model` field is left out of the comparison (Python has no
 such key; every Python case has the default).
 
@@ -287,8 +289,9 @@ such key; every Python case has the default).
 - `Units` is a submodule (`Units.display` etc., as `units.display` in Python);
   its conversions broadcast over arrays. `replace(case; ...)` extends
   `Base.replace`.
-- Writing (`to_toml`, `save`, `dump_case`, the GUI's `CaseDocument`) is not
-  ported yet; see below.
+- `save(case, path)` is not exported (`HTGEquilibrium.save`; the name is
+  common). The GUI's `CaseDocument` (tomlkit, keeps comments) is not ported;
+  see "Case files: writing".
 
 **Python behaviour kept on purpose.** `round(x, 8)` (applied to every
 temperature and pressure; equal values are then merged) → `py_round`, the
@@ -317,56 +320,30 @@ of ['SUPCRT92', 'IAPWS-95'], not 'IAPWS95'."). `water_model_of(case)` gives
 (`WATER_MODELS` maps the names). Python has no such key: it always uses
 SUPCRT92, and its `load_case` would refuse the key as unknown.
 
-## Case files: writing (M3)
+## Case files: writing
 
-Python writes case files in two ways:
-1. `Case.to_toml()` / `save` (`dump_case`): fresh text in a fixed layout, no
-   comments, only values that differ from the defaults. Used for the
-   `case.toml` copy in each results folder and by the GUI's differences view.
-   It builds the text itself (no TOML library), so it ports directly
-   (~80 lines; `py_repr` already gives Python's float text). Natural to do with
-   `results.jl`.
-2. The GUI's `CaseDocument` (`gui/document.py`): the form edits a plain dict;
-   saving merges it into the original document with tomlkit, so comments and
-   the layout of unchanged values are kept, and old files are converted to
-   format 2 on the first save (old keys removed, new ones added).
+**Decision (owner, PR #8): write a fresh file; comments are not kept.** Users
+will mostly edit cases in the GUI, not the files. Keeping comments or other
+context (e.g. in a separate file) may come later.
 
-Julia has no tomlkit. **Option (b), a line-based updater for the known keys,**
-would work like this for this format:
-- *Index the text.* The scanner in `toml_ordered.jl` already walks every table
-  header and `key = value` statement. Extended to record, per key path, the
-  byte range of the value, of the whole statement (one or more lines, e.g.
-  the `[phases]` lists) and of its trailing comment, plus the extent of each
-  table, it indexes the original text.
-- *Diff.* Compare the original data (`parse_toml` of the text) with the edited
-  data (after `clean`, as in Python) path by path. Case files are shallow: top
-  level, `[conditions]`, `[feed]` (+ `[feed.species]`, `[feed.salts.X]`),
-  `[phases]`, `[aqueous]`, `[constraints]` (+ `.carbon`, `.minimum_amounts`),
-  `[initial_guess]` (+ `.amounts`), `[solver]` (+ `options`), `[sweep]`,
-  `[comparison]`.
-- *Patch.* Changed value: replace only its byte range, keeping key,
-  indentation and trailing comment (inline tables such as
-  `elements_wt_percent` are rewritten whole, as tomlkit does). Removed key:
-  delete its statement lines. New key: insert `key = value` after the last
-  statement of its table (top-level keys before the first table header). New
-  table: a `[section]` block after its parent (or in the order `dump_case`
-  uses). Removed table: delete its header and statements. Values are written
-  with the `dump_case` value writer; lists longer than six items wrapped as
-  tomlkit does. The legacy conversion is then just a diff (old keys removed,
-  new keys added, `format = 2` inserted before the first key).
-- *Check.* Parse the patched text and require `parse_toml(new) == data`. If a
-  file uses a construct the updater does not handle (dotted keys across
-  tables, unusual layout), fall back to the `dump_case` text and tell the user
-  that comments were not kept.
-- *Tests.* Against Python's `CaseDocument` on the shipped cases and a set of
-  edits: same parsed data, every comment line of the original kept (as
-  `test_documents_convert_old_files_and_keep_comments` checks); the text need
-  not be byte-identical to tomlkit's.
+`to_toml(case)` / `dump_case(case)` give the text, `HTGEquilibrium.save(case,
+path)` writes it (Python: `case.to_toml()`, `dump_case`, `case.save`). As in
+Python: format 2, `format` and `name` first, then `description`,
+`atomic_weights`, `[conditions]`, `[feed]` (+ `[feed.species]`,
+`[feed.salts.X]`), `[phases]`, `[aqueous]`, `[constraints]`
+(+ `[constraints.carbon]`), `[initial_guess]`, `[solver]`, `[sweep]`,
+`[comparison]`; only values that differ from the defaults (plus the required
+ones); numbers as Python's `repr` (`1.0`, `1e-06`), Int stays Int; old (format
+1) settings written in the new form (`refine` merged into `temperature_C`, an
+old feed converted to format 2 where possible); `comparison.file` as an
+absolute path. `water_model` (Julia only) appears in `[aqueous]` only when it
+is not "SUPCRT92", so other files are what Python writes.
 
-Estimated size: ~300 lines plus tests. The alternatives are (a) a full
-round-trip TOML library (tomlkit-like: much larger, general TOML) and (c)
-always writing `dump_case` text (simplest, but users lose their comments).
-**Owner decision needed: (b) as above, or (a) / (c).**
+Tests: every file in `cases/` and the template round-trips (load, save, load
+gives an equal `Case`); old files give format 2 with the same model numbers;
+the written text has no comments, while the template it came from has many;
+with `test/data/cases_python.json`, the text equals Python's `to_toml` for
+every file, variant and converted old file.
 
 ## Data layer (databases, registry, standard states)
 
@@ -468,7 +445,7 @@ Done: constants, formulas, water, HKF, band check; the data layer
 (`databases.jl`, `saft.jl`, `registry.jl`, `user_species.jl` loading,
 `standard_states.jl`, `model.jl` data part; `catalogue.json` and the
 standard-state parts of `thermo.json`); case files and feed arithmetic
-(`units.jl`, `case.jl` reading, `feed_v2.jl`). `test/data/hkf_ions.toml`
+(`units.jl`, `case.jl` reading and writing, `feed_v2.jl`). `test/data/hkf_ions.toml`
 equals the registry's records (tested) and can go when `test_water.jl` is
 switched over. Still to do:
 - `phases.jl` (electrolyte phase with the water model selectable; validity
@@ -478,7 +455,6 @@ switched over. Still to do:
   the example cases in both versions.
 - Passing the case's water model (`water_model_of(case)`, see "Case files")
   to phases; results record it.
-- M3: writing case files (see "Case files: writing (M3)").
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)

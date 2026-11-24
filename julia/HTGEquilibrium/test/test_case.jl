@@ -1,5 +1,5 @@
 # Case files (Python: tests/test_case_files.py and the case part of
-# tests/test_case_format.py; writing and solving are not ported), the ordered
+# tests/test_case_format.py; solving is not ported), writing, the ordered
 # TOML reader, and - with test/data/cases_python.json - every case file and
 # variant against Python field by field.
 isdefined(@__MODULE__, :PY_CASES) || include("python_cases.jl")
@@ -231,6 +231,36 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
         @test message(() -> water_model_of("IAPWS95")) == want
         @test message(() -> validate(replace(default; water_model=nothing))) ==
               "water_model must be one of ['SUPCRT92', 'IAPWS-95'], not None."
+        # written only when not the default
+        @test !occursin("water_model", to_toml(default))
+        iapws = replace(default; water_model="IAPWS-95")
+        @test occursin("\n[aqueous]\n", to_toml(iapws)) && occursin("\nwater_model = \"IAPWS-95\"\n", to_toml(iapws))
+        @test case_from_dict(parse_toml(to_toml(iapws))) == iapws
+    end
+
+    @testset "writing: load, save, load gives the same case: $(stem(path))" for path in [CASE_FILES; TEMPLATE]
+        case = load_case(path)
+        written = joinpath(mktempdir(), basename(path))
+        HTGEquilibrium.save(case, written)
+        @test read(written, String) == to_toml(case) == dump_case(case)
+        @test load_case(written) == case
+    end
+
+    @testset "writing old files: format 2, same model numbers: $(stem(path))" for path in LEGACY_FILES
+        case = load_case(path)
+        again = case_from_dict(parse_toml(to_toml(case)); name=case.name)
+        @test parse_toml(to_toml(case))["format"] == 2
+        same_numbers(model_numbers(again), model_numbers(case))
+    end
+
+    @testset "writing: a fresh file, comments are not kept" begin
+        commented(text) = any(l -> startswith(lstrip(l), "#") || occursin(r"\s#", l), split(text, '\n'))
+        original = read(TEMPLATE, String)
+        @test commented(original)                         # the template is full of comments ...
+        written = to_toml(load_case(TEMPLATE))
+        @test !commented(written)                         # ... the written file has none
+        @test !any(commented(to_toml(load_case(p))) for p in CASE_FILES)
+        @test startswith(written, "format = 2\nname = \"my_case\"\n")
     end
 
     @testset "mixed feed keys are refused" begin
