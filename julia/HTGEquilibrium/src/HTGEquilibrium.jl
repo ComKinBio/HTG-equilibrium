@@ -6,21 +6,41 @@ so the two versions are easy to compare.
 module HTGEquilibrium
 
 using Clapeyron
+using CSV
+using EzXML
 using ForwardDiff
+using JSON
 using Libdl
 using OrderedCollections
 using Printf
+using TOML
 
 export FormulaError, parse_formula, split_charge, molar_mass, formula_summary, hill_formula,
        parse_element_list, is_plain_formula
 export WaterModel, SUPCRT92Water, IAPWS95Water, WaterProperties, water_properties, water_dict
 export HKFRecord, hkf_ion_g0, hkf_apparent_G
 export SUPCRT92Band, supcrt92_failed, supcrt92_failure_bands, supcrt92_band_check
+export Databases, DataTable, XMLNode, NASARecord, load_databases, normalize_name, nasa7_properties,
+       nasa7_coefficients, read_nasa_lines, read_nasa_database, parse_nasa_header_elements, parsefile_ordered
+export water_sigma, first_complete_epcsaft_set, first_complete_pcsaft_set, first_complete_ion_epcsaft_set,
+       first_complete_hkf_set, normalize_ion_name, read_hkf_candidate
+export Registry, CatalogueRow, NO_SAFT_REASON, discover!, all_molecular, nasa_name, saft_parameters,
+       resolve_parameters, available, formula_elements, molecular_weight
+export UserDatabase, load_user_database, resolve_user_dir, default_user_dir, apply_user_layer!, hide_species!
+export nasa_g0, supcrt_mineral_properties, solid_g0, hkf_records
+export Model, load_model, default_data_dir, species, mineral_inventory, product_candidates
 
 include("constants.jl")
+include("pycompat.jl")
 include("formulas.jl")
 include("water.jl")
 include("hkf.jl")
 include("supcrt92_bands.jl")
+include("databases.jl")
+include("saft.jl")
+include("registry.jl")
+include("user_species.jl")
+include("standard_states.jl")
+include("model.jl")
 
 end # module

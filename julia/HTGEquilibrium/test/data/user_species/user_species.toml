@@ -1,0 +1,88 @@
+# User species database (see docs/adding_species.md). Written by htg.
+
+[species.testanol]
+kind = "molecule"
+formula = "C9H12O3"
+thermo = "nasa"
+updated = "2026-11-24"
+model = "PC-SAFT"
+authors = "A. Author"
+year = "2024"
+doi = "10.1/x"
+nasa_record = "testanol"
+
+[species.testol]
+kind = "molecule"
+formula = "C5H12O2"
+thermo = "nasa"
+updated = "2026-11-24"
+model = "ePC-SAFT"
+nasa_record = "testol"
+
+[species.methane]
+kind = "molecule"
+formula = "CH4"
+thermo = "nasa_record"
+updated = "2026-11-24"
+model = "ePC-SAFT"
+authors = "Rozmus et al."
+year = "2013"
+doi = "10.1021/ie303527j"
+nasa_record_ref = "CH4"
+
+[species."Ag+"]
+kind = "ion"
+formula = "Ag+"
+thermo = "hkf_record"
+updated = "2026-11-24"
+charge = 1
+model = "ePC-SAFT"
+supcrt_record_ref = "Ag+"
+
+[species.Testite]
+kind = "solid"
+formula = "CaCO3"
+thermo = "maier_kelley"
+updated = "2026-11-24"
+
+[species.mychar]
+kind = "solid"
+formula = "C"
+thermo = "nasa"
+updated = "2026-11-24"
+nasa_record = "mychar"
+
+[species.halfdone]
+kind = "molecule"
+formula = "C2H6O"
+thermo = "nasa"
+updated = "2026-11-24"
+model = "PC-SAFT"
+nasa_record = "halfdone"
+
+[species.halfdone.nasa_draft]
+T_low = 300.0
+T_mid = 1000.0
+high = []
+low = []
+
+[nasa_names]
+testanol = "testanol"
+testol = "testol"
+methane = "CH4"
+halfdone = "halfdone"
+
+[solid.mychar]
+formula = "C"
+nasa = "mychar"
+
+[solid.mychar.elements]
+C = 1
+
+[removed]
+species = ["ethane"]
+
+[[binary_interaction]]
+components = ["CH4", "CO2"]
+kij = 0.065
+species = ["methane", "carbon dioxide"]
