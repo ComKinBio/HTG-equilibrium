@@ -32,7 +32,7 @@ const SUPCRT = SUPCRT92Water()
 @testset "HTGEquilibrium water/HKF" begin
 
 @testset "Fortran source is the original SUPCRT92 file" begin
-    @test bytes2hex(open(sha256, joinpath(@__DIR__, "..", "deps", "fortran", "H2O92D.f"))) == H2O92D_SHA256
+    @test bytes2hex(open(sha256, joinpath(@__DIR__, "..", "vendor", "supcrt92", "H2O92D.f"))) == H2O92D_SHA256
 end
 
 @testset "SUPCRT92 golden data (thermo.json)" begin

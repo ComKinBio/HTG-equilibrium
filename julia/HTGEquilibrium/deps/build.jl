@@ -3,7 +3,7 @@
 #   julia julia/HTGEquilibrium/deps/build.jl
 #
 # (`Pkg.build("HTGEquilibrium")` runs this file too.) It compiles
-# deps/fortran/H2O92D.f, which is the unmodified SUPCRT92 file, into
+# vendor/supcrt92/H2O92D.f, which is the unmodified SUPCRT92 file, into
 # deps/build/libh2o92.<so|dylib|dll>. The output is build output and is not
 # committed. Set FC to use a Fortran compiler other than `gfortran`.
 #
@@ -19,7 +19,7 @@
 
 using Libdl
 
-const SRC = joinpath(@__DIR__, "fortran", "H2O92D.f")
+const SRC = joinpath(@__DIR__, "..", "vendor", "supcrt92", "H2O92D.f")
 const OUTDIR = joinpath(@__DIR__, "build")
 const LIB = joinpath(OUTDIR, "libh2o92." * Libdl.dlext)
 

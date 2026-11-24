@@ -103,16 +103,17 @@ function hkf_apparent_G(r::HKFRecord, T, P, w::WaterProperties, wr::WaterPropert
 end
 
 """
-    hkf_ion_g0(model::WaterModel, records, T, P; reference) -> Vector{Float64}
+    hkf_ion_g0(model::WaterModel, records, T, P) -> Vector{Float64}
 
 Standard chemical potentials [J/mol] of aqueous species at T [K], P [Pa] on
 the app's reference (NASA Hf(298.15 K) - T S), as Python `hkf_ion_g0`: the
 apparent HKF G (cal/mol) times 4.184, minus the constant shift
-(Gf - Hf + 298.15 Sr) * 4.184. Water properties come from `model`;
-`reference` (water at 25 °C, 1 bar) defaults to the same model.
+(Gf - Hf + 298.15 Sr) * 4.184. All water properties, including the 25 °C,
+1 bar reference state, come from `model`: one water model is used throughout,
+never a mix.
 """
-function hkf_ion_g0(model::WaterModel, records::AbstractVector{HKFRecord}, T::Real, P::Real;
-                    reference::WaterProperties=water_properties(model, TR, PR_PA))
+function hkf_ion_g0(model::WaterModel, records::AbstractVector{HKFRecord}, T::Real, P::Real)
+    reference = water_properties(model, TR, PR_PA)
     T = Float64(T)
     P_bar = Float64(P) / 100000.0
     w = water_properties(model, T, P)

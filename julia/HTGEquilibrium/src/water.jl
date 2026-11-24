@@ -59,7 +59,7 @@ the Python `supcrt_water`).
 function water_properties end
 
 # ---------------------------------------------------------------------------
-# SUPCRT92: the original Fortran (deps/fortran/H2O92D.f)
+# SUPCRT92: the original Fortran (vendor/supcrt92/H2O92D.f)
 # ---------------------------------------------------------------------------
 
 """

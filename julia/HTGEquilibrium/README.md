@@ -10,7 +10,7 @@ the Julia GUI will use to warn about sweeps.
 | `src/water.jl` | Water models: `SUPCRT92Water()` (original Fortran) and `IAPWS95Water()` (Clapeyron). `water_properties(model, T, P)` returns the same 8 quantities as `supcrt_water`. | `standard_states.supcrt_water` |
 | `src/hkf.jl` | `HKFRecord`, g-function, revised HKF G, `hkf_ion_g0(model, records, T, P)` | `standard_states.hkf_ion_g0` |
 | `src/supcrt92_bands.jl` | `supcrt92_failed`, `supcrt92_failure_bands`, `supcrt92_band_check` | – (new) |
-| `deps/fortran/H2O92D.f` | SUPCRT92 water code, unmodified | compiled inside pychnosz |
+| `vendor/supcrt92/H2O92D.f` | SUPCRT92 water code, unmodified | compiled inside pychnosz |
 | `deps/build.jl` | Compiles `H2O92D.f` to `deps/build/libh2o92.so` | – |
 | `test/runtests.jl` | Golden tests, band check, IAPWS-95 self-consistency | `tests/test_reference_thermo.py` (electrolyte part) |
 | `test/data/hkf_ions.toml` | HKF records of the 8 shipped ions, as the app's registry reads them | `registry.ion_hkf_table` |
@@ -53,7 +53,7 @@ uv run python julia/HTGEquilibrium/test/dump_pychnosz.py --grid
 
 ### The Fortran library
 
-- **Source.** `deps/fortran/H2O92D.f` is `H2O92D.f.orig` from pychnosz 1.5.4
+- **Source.** `vendor/supcrt92/H2O92D.f` is `H2O92D.f.orig` from pychnosz 1.5.4
   (`pychnosz/data/extdata/src/`, as installed in the app's `.venv`). pychnosz's
   README there describes it as the SUPCRT92 file without modification
   (timestamp 15 Nov 1991; J. W. Johnson, LLNL). It is copied byte for byte
@@ -196,18 +196,19 @@ that uses it:
   results record it.
 - M5: cross-platform build of the Fortran library (JLL).
 
-## Decisions for the owner
+## Owner decisions (PR #4)
 
-1. **Fortran source in git.** `H2O92D.f` (106 kB, unmodified) is committed so
-   the build does not depend on pychnosz being installed. The alternative is to
-   fetch it from pychnosz/CHNOSZ at build time.
-2. **Band warning.** Defaults: "failed" means an implied density error above
-   1e-6; "near" means within 0.5 °C. Should the GUI only warn, or also offer to
-   move or drop the affected temperatures?
-3. **IAPWS-95 reference state.** With `IAPWS95Water`, HKF takes epsilon and Y
-   at 25 °C, 1 bar from IAPWS-95 too (consistent, but ~25 J/mol away from
-   SUPCRT92 at 600 °C, per the spike). Keeping SUPCRT92's 25 °C values instead
-   is a one-line change (`reference=` keyword).
+1. **Fortran source in git**, in its own folder, `vendor/supcrt92/`, with a
+   README saying where and when it was copied.
+2. **Band warning: warn only.** The defaults stay: "failed" means an implied
+   density error above 1e-6, "near" means within 0.5 °C. The GUI does not move
+   or drop temperatures.
+3. **One water model throughout.** HKF takes every water property, including
+   the 25 °C, 1 bar reference state, from the selected model; there is no
+   option to mix models.
 4. **Fortran `STOP`.** Two `STOP` statements in `power()` would end the whole
-   app. They were not reached on valid input with the lock. Keeping the
-   original file means accepting this; guarding it needs a patched copy.
+   app (never reached on valid input with the lock). A patched copy is
+   acceptable; tracked for later in issue #5
+   (https://github.com/ComKinBio/HTG-equilibrium/issues/5).
+5. **Outside SUPCRT92's range** `water_properties` returns NaN, as pychnosz
+   does. Fine for now.
