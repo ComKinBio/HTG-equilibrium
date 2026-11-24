@@ -11,7 +11,7 @@ using EzXML
 using ForwardDiff
 using JSON
 using Libdl
-using LinearAlgebra: ColumnNorm, diag, pinv, qr
+using LinearAlgebra: BLAS, ColumnNorm, diag, pinv, qr
 using OrderedCollections
 using Printf
 using TOML
@@ -44,7 +44,13 @@ export nasa_g0, supcrt_mineral_properties, solid_g0, hkf_records
 export Model, load_model, default_data_dir, species, mineral_inventory, product_candidates
 export EOSFailure, PhaseError, Phase, SolidPhase, FluidPhase, ElectrolytePhase, association_sites,
        build_pcsaft_model, gibbs, gibbs_and_mu, mu_at, lnphi, hessian, gibbs_full
-export Alternative, Result, n_results, notes, for_alternative
+export Alternative, Result, n_results, notes, for_alternative, species_table, phase_summary, SweepResult, results,
+       alternatives_table, read_choices, write_choices, apply_choices, CHOICES_FILE, ALTERNATIVE_COLUMNS,
+       RunTables, with_choices, flagged_points, load_saved
+export read_csv, to_csv, csv_text, concat, setcolumn!, insert_column!, take_rows, nrows
+export run_sweep, sweep, preflight, preflight_messages, check, point_text
+export WorkerPool, Run, solve_chain, default_workers, submit, cancel, set_workers, restart, status, shutdown,
+       sweep_result, live_tables, load_model_from_args
 export EquilibriumError, RuntimeError, GibbsProblem, OptimizeResult, fun_and_grad, hessian_blocks,
        check_against_model, kkt, linprog, starting_points, candidate_starts, result_label, group_solutions,
        tangent_plane_test, optimize, BACKENDS, SLSQP_EVALUATIONS_PER_ITERATION, POLISH_THRESHOLD_RT
@@ -62,6 +68,7 @@ include("units.jl")
 include("case.jl")
 include("feed_v2.jl")
 include("databases.jl")
+include("tables.jl")
 include("saft.jl")
 include("registry.jl")
 include("user_species.jl")
@@ -71,5 +78,7 @@ include("phases.jl")
 include("results.jl")
 include("optimizer.jl")
 include("equilibrium.jl")
+include("sweep.jl")
+include("queue.jl")
 
 end # module
