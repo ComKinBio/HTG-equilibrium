@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "d67e3c44539a436dfb77e3b8203de2aebda8b8a6"
+project_hash = "b8f220b082a995c5850bded52482ff74a3002558"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -295,7 +295,7 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
 
 [[deps.HTGEquilibrium]]
-deps = ["Clapeyron", "ForwardDiff", "Libdl", "OrderedCollections", "Printf"]
+deps = ["Clapeyron", "ForwardDiff", "Libdl", "OrderedCollections", "Printf", "TOML"]
 path = "."
 uuid = "95302caa-357f-46e3-ad1b-c14afab16e6e"
 version = "0.1.0"

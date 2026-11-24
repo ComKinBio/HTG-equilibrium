@@ -11,10 +11,12 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
 Clapeyron = "=0.6.30"
 ForwardDiff = "=1.5.0"
 OrderedCollections = "=2.0.3"
 Printf = "1"
+TOML = "1"
 julia = "~1.12.7"
