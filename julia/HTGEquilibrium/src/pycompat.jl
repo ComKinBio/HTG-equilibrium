@@ -1,34 +1,160 @@
-# Small pieces of Python behaviour the data layer depends on, so that the Julia
-# port reads the same files into the same values and error messages:
+# Small pieces of Python behaviour the port depends on, so that Julia reads the
+# same files into the same values, with the same error messages:
 #
-#   py_float, py_int      Python float(str) / int(str), with Python's messages
-#   py_repr               repr() of a float or str (shortest round trip, Python layout)
+#   ValueError            abstract type: Python ValueErrors of the case/feed/units port
+#   py_repr, py_str       repr() / str() (floats: shortest round trip in Python's layout)
+#   py_float, py_tryfloat Python float(x) (numbers, bools, strings in Python's grammar)
+#   py_int                Python int(x)
+#   py_round              round(x, n) of a float (correctly rounded decimal)
+#   py_format_g           f"{x:.{p}g}" (C's %g; Julia's Printf %g differs)
+#   py_isclose            math.isclose
+#   py_truth              truthiness (None, 0, "", empty containers are false)
+#   py_sorted             sorted() of strings
+#   isna                  pandas isna
 #   casefold              str.casefold()
 #   py_slice              s[a:b] on characters (0-based, clamped)
 #   read_text             open(path, encoding='utf-8', errors='ignore').read() (universal newlines)
 #   py_splitlines         str.splitlines(keepends)
-#   parsefile_ordered     tomllib.load: TOML with the file's key order (OrderedDict)
 #
-# Python ValueError/TypeError become ArgumentError with the same message,
-# KeyError becomes KeyError(message).
+# TOML in file order (Python's tomllib) is in toml_ordered.jl (`parse_toml`, `read_toml`).
 #
 # These reproduce Python's *behaviour* (what is read, which texts and errors
 # result). Arithmetic is plain Julia: results are compared with Python within
 # tolerances, not bit for bit.
+#
+# Error conventions: the case/feed/units port throws subtypes of `ValueError`
+# (CaseError, FeedError, LegacyConversionError, Units.UnitError) where Python
+# raises ValueError. The data layer (databases, registry, user species) throws
+# ArgumentError with Python's ValueError/TypeError text, KeyError(message) for
+# KeyError. Python TypeErrors are ArgumentErrors everywhere.
+
+"""
+Python's `ValueError` family. Error types that are ValueErrors in Python
+(`CaseError`, `FeedError`, `LegacyConversionError`, `Units.UnitError`)
+subtype it, so `e isa ValueError` catches what `except ValueError` catches
+in the case/feed code. (The data layer still uses ArgumentError; see README.)
+"""
+abstract type ValueError <: Exception end
+Base.showerror(io::IO, e::ValueError) = print(io, e.msg)
 
 isna(x) = x === missing || x === nothing || (x isa AbstractFloat && isnan(x))   # pd.isna
 
 casefold(s::AbstractString) = Base.Unicode.normalize(String(s); casefold=true, compose=false)
 
+# ---------------------------------------------------------------- repr, str
+"""
+    py_repr(x) -> String
+
+Python's `repr` for the values case files and databases hold: None, bools,
+ints, floats (shortest round-trip digits, Python's switch to exponent notation:
+`1e-05`, `1e+16`, `100.0`), strings (Python's quoting), lists/vectors, tuples
+and dicts.
+"""
+py_repr(::Nothing) = "None"
+py_repr(x::Bool) = x ? "True" : "False"
+py_repr(x::Integer) = string(x)
+py_repr(x::AbstractFloat) = _pyfloat_repr(Float64(x))
+py_repr(x::AbstractString) = _pystr_repr(String(x))
+py_repr(x::Symbol) = _pystr_repr(String(x))
+py_repr(x::AbstractVector) = "[" * join((py_repr(v) for v in x), ", ") * "]"
+py_repr(x::Tuple) = length(x) == 1 ? "(" * py_repr(x[1]) * ",)" : "(" * join((py_repr(v) for v in x), ", ") * ")"
+py_repr(x::AbstractDict) = "{" * join((py_repr(k) * ": " * py_repr(v) for (k, v) in x), ", ") * "}"
+py_repr(x) = repr(x)
+
+"""Python's `str()`: like `py_repr`, except that strings are not quoted (and pandas NaN is "nan")."""
+py_str(x::AbstractString) = String(x)
+py_str(::Missing) = "nan"
+py_str(x::Union{Nothing,Bool,Integer,AbstractFloat,AbstractVector,Tuple,AbstractDict}) = py_repr(x)
+py_str(x) = string(x)
+
+function _pyfloat_repr(x::Float64)
+    isnan(x) && return "nan"
+    isinf(x) && return x > 0 ? "inf" : "-inf"
+    x == 0 && return signbit(x) ? "-0.0" : "0.0"
+    m = match(r"^(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$", string(abs(x)))  # shortest digits
+    frac = something(m[2], "")
+    digits = m[1] * frac
+    exp10 = (m[3] === nothing ? 0 : parse(Int, m[3])) - length(frac)  # x = digits * 10^exp10
+    digits = lstrip(digits, '0')
+    stripped = rstrip(digits, '0')
+    exp10 += length(digits) - length(stripped)
+    digits = String(stripped)
+    decpt = length(digits) + exp10          # x = 0.digits * 10^decpt
+    n = length(digits)
+    text = if -4 < decpt <= 16
+        if decpt <= 0
+            "0." * "0"^(-decpt) * digits
+        elseif decpt >= n
+            digits * "0"^(decpt - n) * ".0"
+        else
+            digits[1:decpt] * "." * digits[decpt+1:end]
+        end
+    else
+        e = decpt - 1
+        (n > 1 ? digits[1:1] * "." * digits[2:end] : digits) * "e" * (e < 0 ? "-" : "+") * lpad(abs(e), 2, '0')
+    end
+    return signbit(x) ? "-" * text : text
+end
+
+function _pystr_repr(s::String)
+    quote_char = ('\'' in s && !('"' in s)) ? '"' : '\''
+    io = IOBuffer()
+    print(io, quote_char)
+    for c in s
+        if c == quote_char || c == '\\'
+            print(io, '\\', c)
+        elseif c == '\n'
+            print(io, "\\n")
+        elseif c == '\r'
+            print(io, "\\r")
+        elseif c == '\t'
+            print(io, "\\t")
+        elseif !isprint(c)
+            u = UInt32(c)
+            print(io, u <= 0xff ? "\\x" * string(u, base=16, pad=2) :
+                      u <= 0xffff ? "\\u" * string(u, base=16, pad=4) : "\\U" * string(u, base=16, pad=8))
+        else
+            print(io, c)
+        end
+    end
+    print(io, quote_char)
+    return String(take!(io))
+end
+
+# ---------------------------------------------------------------- format
+"""
+    py_format_g(value, p) -> String
+
+Python's `f"{value:.{p}g}"` (C's "%.<p>g"). Julia's Printf `%g` picks fixed or
+exponent notation before rounding (999999.5 with p = 6 gives "1000000"; C and
+Python give "1e+06"), so the exponent is taken from the rounded "%e" form, as the
+C standard specifies. Trailing zeros are removed.
+"""
+function py_format_g(value::Real, p::Integer)
+    value = Float64(value)
+    isfinite(value) || return isnan(value) ? "nan" : value > 0 ? "inf" : "-inf"
+    p = max(p, 1)
+    e = Printf.format(Printf.Format("%.$(p - 1)e"), value)
+    x = parse(Int, e[findlast('e', e)+1:end])
+    if -4 <= x < p
+        text = Printf.format(Printf.Format("%.$(p - 1 - x)f"), value)
+        return occursin('.', text) ? String(rstrip(rstrip(text, '0'), '.')) : text
+    end
+    mantissa, exponent = split(e, 'e')
+    mantissa = occursin('.', mantissa) ? rstrip(rstrip(mantissa, '0'), '.') : mantissa
+    return "$(mantissa)e$(exponent)"
+end
+
+# ---------------------------------------------------------------- float(), int(), round(), isclose()
 const _PY_FLOAT = r"^[+-]?(?:(?:\d(?:_?\d)*)(?:\.(?:\d(?:_?\d)*)?)?|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?$"
 const _PY_SPECIAL = r"^[+-]?(?:inf|infinity|nan)$"i
 
 """
     py_tryfloat(x) -> Float64 or nothing
 
-Python `float(x)` without the exception: numbers pass through, strings follow
-Python's grammar (surrounding whitespace, underscores between digits,
-inf/infinity/nan in any case). Anything else (missing, nothing) gives nothing.
+Python `float(x)` without the exception: numbers (and bools) pass through,
+strings follow Python's grammar (surrounding whitespace, underscores between
+digits, inf/infinity/nan in any case). Anything else gives nothing.
 """
 py_tryfloat(x::Real) = Float64(x)
 function py_tryfloat(x::AbstractString)
@@ -46,7 +172,7 @@ py_tryfloat(x) = nothing
 """
     py_float(x) -> Float64
 
-Python `float(x)`; raises ArgumentError with Python's ValueError/TypeError text.
+Python `float(x)`; throws ArgumentError with Python's ValueError/TypeError text.
 """
 function py_float(x)
     v = py_tryfloat(x)
@@ -57,13 +183,15 @@ end
 
 py_typename(::Nothing) = "NoneType"
 py_typename(::Missing) = "float"   # pandas NaN
+py_typename(::AbstractVector) = "list"
+py_typename(::AbstractDict) = "dict"
 py_typename(x) = string(typeof(x))
 
 """
     py_int(x) -> Int
 
-Python `int(x)` of a string (decimal digits, optional sign, underscores) or an
-integral number; ArgumentError with Python's message otherwise.
+Python `int(x)` of a string (decimal digits, optional sign, underscores) or a
+number (floats truncated); ArgumentError with Python's message otherwise.
 """
 function py_int(x::AbstractString)
     s = strip(x)
@@ -74,62 +202,41 @@ py_int(x::Integer) = Int(x)
 py_int(x::AbstractFloat) = isfinite(x) ? Int(trunc(x)) :
     throw(ArgumentError(isnan(x) ? "cannot convert float NaN to integer" : "cannot convert float infinity to integer"))
 py_int(::Nothing) = throw(ArgumentError("int() argument must be a string, a bytes-like object or a real number, not 'NoneType'"))
+py_int(x) = throw(ArgumentError("int() argument must be a string, a bytes-like object or a real number, not '$(py_typename(x))'"))
 
 """
-    py_repr(x)
+    py_round(x, n) -> Float64
 
-Python `repr` of a float (shortest round-trip digits, Python's layout: `1e-05`,
-`1e+16`, `100.0`) or a str (single quotes unless the text contains one and no
-double quote). `py_str` is `str()`: the same for floats, the text itself for strings.
+Python's `round(x, n)` for a float: the decimal value correctly rounded to `n`
+places (ties to even on the exact binary value), read back as a float.
 """
-function py_repr(x::AbstractFloat)
+function py_round(x::Real, n::Integer)
     x = Float64(x)
-    isnan(x) && return "nan"
-    isinf(x) && return x > 0 ? "inf" : "-inf"
-    x == 0 && return signbit(x) ? "-0.0" : "0.0"
-    s = string(x)                      # Julia: shortest round trip, e.g. "1.0e-5"
-    sign = startswith(s, '-') ? "-" : ""
-    s = lstrip(s, '-')
-    mant, ex = occursin('e', s) ? split(s, 'e') : (s, "0")
-    ip, fp = occursin('.', mant) ? split(mant, '.') : (mant, "")
-    digits = ip * fp
-    point = length(ip) + parse(Int, ex)          # position of the decimal point
-    lead = length(digits) - length(lstrip(digits, '0'))
-    digits = rstrip(lstrip(digits, '0'), '0')
-    point -= lead
-    n = length(digits)
-    exp10 = point - 1                            # scientific exponent
-    if -4 <= exp10 < 16
-        if point <= 0
-            body = "0." * "0"^(-point) * digits
-        elseif point >= n
-            body = digits * "0"^(point - n) * ".0"
-        else
-            body = digits[1:point] * "." * digits[point+1:end]
-        end
-    else
-        m = n == 1 ? digits : digits[1:1] * "." * digits[2:end]
-        body = m * "e" * (exp10 < 0 ? "-" : "+") * lpad(string(abs(exp10)), 2, '0')
-    end
-    return sign * body
+    isfinite(x) || return x
+    return parse(Float64, Printf.format(Printf.Format("%.$(n)f"), x))
 end
-function py_repr(s::AbstractString)
-    q = occursin('\'', s) && !occursin('"', s) ? '"' : '\''
-    body = replace(String(s), '\\' => "\\\\", '\n' => "\\n", '\r' => "\\r", '\t' => "\\t")
-    q == '\'' && (body = replace(body, '\'' => "\\'"))
-    return string(q, body, q)
+
+"""Python's `math.isclose(a, b; rel_tol=1e-9, abs_tol=0.0)`."""
+function py_isclose(a, b; rel_tol=1e-9, abs_tol=0.0)
+    a, b = Float64(a), Float64(b)
+    a == b && return true
+    (isinf(a) || isinf(b)) && return false
+    diff = abs(b - a)
+    return diff <= abs(rel_tol * b) || diff <= abs(rel_tol * a) || diff <= abs_tol
 end
-py_repr(::Nothing) = "None"
-py_repr(x::Integer) = string(x)
-py_repr(x::Bool) = x ? "True" : "False"
 
-py_str(x::AbstractString) = String(x)
-py_str(x::AbstractFloat) = py_repr(x)
-py_str(x::Integer) = string(x)
-py_str(::Nothing) = "None"
-py_str(::Missing) = "nan"
-py_str(x) = string(x)
+"""Python truthiness of a value (None, False, 0, "", empty containers are false)."""
+py_truth(::Nothing) = false
+py_truth(x::Bool) = x
+py_truth(x::Number) = !iszero(x)
+py_truth(x::AbstractString) = !isempty(x)
+py_truth(x::Union{AbstractVector,AbstractDict,Tuple,AbstractSet}) = !isempty(x)
+py_truth(x) = true
 
+"""`sorted(x)` of strings, as Python sorts them (by code point)."""
+py_sorted(x) = sort!(collect(x))
+
+# ---------------------------------------------------------------- strings and text files
 """
     py_slice(s, a, b)
 
@@ -185,180 +292,4 @@ function py_splitlines(text::AbstractString; keepends::Bool=false)
     rest = String(take!(buf))
     isempty(rest) || push!(out, rest)
     return out
-end
-
-# ---------------------------------------------------------------- TOML in file order
-# Julia's TOML stdlib returns Dicts, which lose the key order; Python's tomllib
-# keeps it, and the registry depends on it (species order). The values come
-# from the stdlib parser; this scanner only records where each key first
-# appears, and the tables are rebuilt as OrderedDicts in that order.
-
-"""
-    parsefile_ordered(path) / parse_ordered(text)
-
-TOML like `TOML.parsefile`, with every table an `OrderedDict{String,Any}` in
-the order of the file (as Python's `tomllib`).
-"""
-parsefile_ordered(path::AbstractString) = parse_ordered(read(path, String))
-function parse_ordered(text::AbstractString)
-    data = TOML.parse(text)
-    order = _toml_key_order(text)
-    return _ordered(data, order, String[])
-end
-
-function _ordered(d::AbstractDict, order, path)
-    keys_ = collect(keys(d))
-    position(k) = get(order, vcat(path, k), typemax(Int))
-    sort!(keys_; by=k -> (position(k), k))
-    out = OrderedDict{String,Any}()
-    for k in keys_
-        out[k] = _ordered(d[k], order, vcat(path, k))
-    end
-    return out
-end
-_ordered(v::AbstractVector, order, path) = Any[_ordered(x, order, path) for x in v]
-_ordered(v, order, path) = v
-
-function _toml_key_order(text::AbstractString)
-    s = collect(text)
-    n = length(s)
-    order = Dict{Vector{String},Int}()
-    counter = Ref(0)
-    note(path) = for k in 1:length(path)
-        p = path[1:k]
-        haskey(order, p) || (order[p] = (counter[] += 1))
-    end
-    i = Ref(1)
-    peek(k=0) = i[] + k <= n ? s[i[]+k] : '\0'
-    function skip_ws(newlines::Bool)
-        while i[] <= n
-            c = s[i[]]
-            if c == ' ' || c == '\t' || (newlines && (c == '\n' || c == '\r'))
-                i[] += 1
-            elseif c == '#'
-                while i[] <= n && s[i[]] != '\n'
-                    i[] += 1
-                end
-            else
-                break
-            end
-        end
-    end
-    function read_string()           # at a quote; returns the (unescaped enough) text
-        q = s[i[]]
-        if peek(1) == q && peek(2) == q   # multi-line
-            i[] += 3
-            start = i[]
-            while i[] <= n && !(s[i[]] == q && peek(1) == q && peek(2) == q)
-                q == '"' && s[i[]] == '\\' && (i[] += 1)
-                i[] += 1
-            end
-            str = String(s[start:min(i[]-1, n)])
-            i[] += 3
-            while peek() == q   # up to two extra quotes belong to the string
-                i[] += 1
-            end
-            return str
-        end
-        i[] += 1
-        buf = IOBuffer()
-        while i[] <= n && s[i[]] != q
-            if q == '"' && s[i[]] == '\\'
-                i[] += 1
-                e = peek()
-                if e == 'u' || e == 'U'
-                    len = e == 'u' ? 4 : 8
-                    print(buf, Char(parse(UInt32, String(s[i[]+1:i[]+len]); base=16)))
-                    i[] += len
-                else
-                    print(buf, get(Dict('n' => '\n', 't' => '\t', 'r' => '\r', 'b' => '\b',
-                                        'f' => '\f', '"' => '"', '\\' => '\\', 'e' => '\e'), e, e))
-                end
-            else
-                print(buf, s[i[]])
-            end
-            i[] += 1
-        end
-        i[] += 1
-        return String(take!(buf))
-    end
-    function read_key()
-        parts = String[]
-        while true
-            skip_ws(false)
-            c = peek()
-            if c == '"' || c == '\''
-                push!(parts, read_string())
-            else
-                start = i[]
-                while i[] <= n && (isletter(s[i[]]) || isdigit(s[i[]]) || s[i[]] in ('_', '-'))
-                    i[] += 1
-                end
-                push!(parts, String(s[start:i[]-1]))
-            end
-            skip_ws(false)
-            peek() == '.' || break
-            i[] += 1
-        end
-        return parts
-    end
-    function skip_value(path)
-        skip_ws(false)
-        c = peek()
-        if c == '"' || c == '\''
-            read_string()
-        elseif c == '['
-            i[] += 1
-            while true
-                skip_ws(true)
-                peek() == ']' && (i[] += 1; break)
-                i[] > n && break
-                skip_value(path)
-                skip_ws(true)
-                peek() == ',' && (i[] += 1)
-            end
-        elseif c == '{'
-            i[] += 1
-            while true
-                skip_ws(false)
-                peek() == '}' && (i[] += 1; break)
-                i[] > n && break
-                key = read_key()
-                note(vcat(path, key))
-                skip_ws(false)
-                peek() == '=' && (i[] += 1)
-                skip_value(vcat(path, key))
-                skip_ws(false)
-                peek() == ',' && (i[] += 1)
-            end
-        else
-            while i[] <= n && !(s[i[]] in (',', ']', '}', '\n', '\r', '#'))
-                i[] += 1
-            end
-        end
-    end
-    table = String[]
-    while true
-        skip_ws(true)
-        i[] > n && break
-        if peek() == '['
-            double = peek(1) == '['
-            i[] += double ? 2 : 1
-            table = read_key()
-            note(table)
-            skip_ws(false)
-            i[] += double ? 2 : 1
-        else
-            key = read_key()
-            if all(isempty, key) && peek() != '='   # not a key (cannot happen in valid TOML)
-                i[] += 1
-                continue
-            end
-            note(vcat(table, key))
-            skip_ws(false)
-            peek() == '=' && (i[] += 1)
-            skip_value(vcat(table, key))
-        end
-    end
-    return order
 end

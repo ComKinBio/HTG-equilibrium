@@ -119,7 +119,7 @@ function load_user_database(directory)
         db.supcrt = collect(Any, get(data, "species", Any[]))
     end
     if isfile(user_path(db, "species"))
-        db.config = _normalize_config!(parsefile_ordered(user_path(db, "species")))
+        db.config = _normalize_config!(read_toml(user_path(db, "species")))
     end
     return db
 end

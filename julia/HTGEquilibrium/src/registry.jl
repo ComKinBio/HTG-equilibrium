@@ -83,7 +83,7 @@ CatalogueRow(; Species, Formula, Phase, Ready, Reason, NASA) =
     Registry(config)
 
 All species known to the model, from a parsed species.toml (`config`, an
-OrderedDict as from `parsefile_ordered`):
+OrderedDict as from `read_toml`):
 
     molecular, organic  fluid molecules {name => {formula, nasa, elements}}
     solid               pure solids {name => {formula, nasa | supcrt_mineral, elements, ...}}
@@ -159,7 +159,7 @@ end
 
 """Registry from a species.toml file; `nasa_names` replaces its [nasa_names] table."""
 function registry_from_file(path; nasa_names=nothing)
-    config = parsefile_ordered(path)
+    config = read_toml(path)
     nasa_names === nothing || (config["nasa_names"] = OrderedDict{String,Any}(nasa_names))
     return Registry(config)
 end

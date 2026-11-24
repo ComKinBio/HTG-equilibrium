@@ -20,8 +20,16 @@ export FormulaError, parse_formula, split_charge, molar_mass, formula_summary, h
 export WaterModel, SUPCRT92Water, IAPWS95Water, WaterProperties, water_properties, water_dict
 export HKFRecord, hkf_ion_g0, hkf_apparent_G
 export SUPCRT92Band, supcrt92_failed, supcrt92_failure_bands, supcrt92_band_check
+export ValueError, py_repr, parse_toml, read_toml, Units
+export Salt, Feed, Case, CaseError, LegacyConversionError, load_case, case_from_dict, validate,
+       temperatures, pressures, grid, chains, at, is_single_point, resolved, total_water_g_per_g_dry,
+       dry_element_wt_percent, carbon_bound_messages, effective_carbon_bounds, check_carbon_bounds,
+       legacy_carbon_bounds, legacy_to_v2, is_v2, fluid_phase_count, starts_from_multistart,
+       BOUND_KINDS, PHASE_LABELS, WATER_MODELS, water_model_of, dump_case, to_toml
+export FeedError, feed_v2_to_model, feed_summary, feed_fractions, molar_mass_function,
+       species_elements_function, registry_elements, elemental_masses, ash_percent, scaled_elements, legacy_feed_to_v2
 export Databases, DataTable, XMLNode, NASARecord, load_databases, normalize_name, nasa7_properties,
-       nasa7_coefficients, read_nasa_lines, read_nasa_database, parse_nasa_header_elements, parsefile_ordered
+       nasa7_coefficients, read_nasa_lines, read_nasa_database, parse_nasa_header_elements
 export water_sigma, first_complete_epcsaft_set, first_complete_pcsaft_set, first_complete_ion_epcsaft_set,
        first_complete_hkf_set, normalize_ion_name, read_hkf_candidate
 export Registry, CatalogueRow, NO_SAFT_REASON, discover!, all_molecular, nasa_name, saft_parameters,
@@ -32,10 +40,14 @@ export Model, load_model, default_data_dir, species, mineral_inventory, product_
 
 include("constants.jl")
 include("pycompat.jl")
+include("toml_ordered.jl")
 include("formulas.jl")
 include("water.jl")
 include("hkf.jl")
 include("supcrt92_bands.jl")
+include("units.jl")
+include("case.jl")
+include("feed_v2.jl")
 include("databases.jl")
 include("saft.jl")
 include("registry.jl")

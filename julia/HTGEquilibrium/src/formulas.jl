@@ -20,7 +20,7 @@ const _STATE_SUFFIX = r"\((aq|g|s|l|cr)\)$"i
 const _HYDRATE_SPLIT = r"[*·•]"
 const _TOKEN = r"([A-Z][a-z]?|\(|\)|\[|\]|\d+(?:\.\d+)?)"
 
-_g(x::Real) = @sprintf("%g", x)   # Python f"{x:g}"
+_g(x::Real) = py_format_g(x, 6)   # Python f"{x:g}" (Julia's @sprintf("%g") differs, see py_format_g)
 
 """
     split_charge(text, charge=nothing) -> (neutral part, charge or nothing)
@@ -136,7 +136,7 @@ end
 "True for formulas of element symbols and integer counts only (\"C2H6O\", not \"Ca(OH)2\")."
 is_plain_formula(text) = occursin(r"^(?:[A-Z][a-z]?\d*)+$", strip(string(text)))
 
-molar_mass(elements) = pysum(ATOMIC_WEIGHTS[e] * n for (e, n) in elements)
+molar_mass(elements) = sum(ATOMIC_WEIGHTS[e] * n for (e, n) in elements; init=0.0)
 
 elements_text(elements) = join(("$e $(_g(n))" for (e, n) in elements), " · ")
 

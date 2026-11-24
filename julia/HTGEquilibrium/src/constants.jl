@@ -30,22 +30,3 @@ const ATOMIC_WEIGHTS = Dict{String,Float64}(
 )
 
 const PHASES = ("gas", "aqueous", "organic_liquid", "solid")
-
-"""
-    pysum(xs) -> Float64
-
-Python's built-in `sum()` of floats, bit for bit. Since Python 3.12 it uses
-Neumaier compensated summation, so a plain Julia `sum` or left fold can differ in
-the last bit. Use it wherever the Python code calls `sum()` on floats and the
-result is compared with Python. (NumPy's `sum` is pairwise and is not this.)
-"""
-function pysum(xs)
-    s, c = 0.0, 0.0
-    for x in xs
-        x = Float64(x)
-        t = s + x
-        c += abs(s) >= abs(x) ? (s - t) + x : (x - t) + s
-        s = t
-    end
-    return (c != 0 && isfinite(c)) ? s + c : s
-end

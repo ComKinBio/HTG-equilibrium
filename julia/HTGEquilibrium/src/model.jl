@@ -49,7 +49,7 @@ function load_model(data_dir=nothing; species_file=nothing, nasa_names=nothing, 
                     user_data=nothing)
     data_dir = data_dir === nothing ? default_data_dir() : String(data_dir)
     databases = load_databases(data_dir)
-    config = parsefile_ordered(species_file === nothing ? joinpath(data_dir, "species.toml") : String(species_file))
+    config = read_toml(species_file === nothing ? joinpath(data_dir, "species.toml") : String(species_file))
     nasa_names === nothing || (config["nasa_names"] = OrderedDict{String,Any}(nasa_names))
     user_db, user_info = nothing, OrderedDict{String,Any}()
     if user_data !== nothing

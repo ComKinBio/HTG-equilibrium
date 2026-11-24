@@ -1,2 +1,3 @@
 deps/build/
 test/data/pychnosz_grid.json
+test/data/cases_python.json

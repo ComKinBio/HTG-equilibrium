@@ -7,7 +7,7 @@ module TestDatabases   # own namespace: the test files share Main
 
 using Main.DataTestSetup
 using HTGEquilibrium
-using HTGEquilibrium: py_float, py_int, py_repr, py_splitlines, parse_ordered, cell, nrows, findtext,
+using HTGEquilibrium: py_float, py_int, py_repr, py_splitlines, parse_toml, cell, nrows, findtext,
                       findpath, finddescendant, iterxml, getattribute, nasa_float, casefold
 using HTGEquilibrium: OrderedDict   # OrderedCollections is not a test dependency
 using TOML
@@ -53,15 +53,15 @@ end
     m = 3
     n = 4
     """
-    d = parse_ordered(text)
+    d = parse_toml(text)
     @test d == TOML.parse(text)
     @test collect(keys(d)) == ["top", "b", "a", "arr"]
     @test collect(keys(d["b"])) == ["z", "a"]
     @test collect(keys(d["b"]["z"])) == ["y", "x x", "w"]
     @test collect(keys(d["b"]["z"]["w"])) == ["v", "u"]
     @test collect(keys(d["a"]["q.q"])) == ["k2", "k1"]
-    @test [collect(keys(x)) for x in d["arr"]] == [["n", "m"], ["n", "m"]]   # first appearance
-    config = parsefile_ordered(joinpath(FROZEN, "species.toml"))
+    @test [collect(keys(x)) for x in d["arr"]] == [["n", "m"], ["m", "n"]]   # per table, as tomllib
+    config = read_toml(joinpath(FROZEN, "species.toml"))
     @test collect(keys(config)) == ["nasa_names", "molecular", "organic", "solid", "ion", "aqueous_reference",
                                     "binary_interaction"]
     @test collect(keys(config["molecular"]))[1:3] == ["water", "hydrogen", "carbon dioxide"]
