@@ -8,8 +8,10 @@ states of aqueous ions, the SUPCRT92 failure-band check that the Julia GUI
 will use to warn about sweeps, the data layer (databases, species
 registry, user species folder, standard states, model loading), reading
 case files (units, feed arithmetic), the phase models (G, mu, ln phi and
-Hessians of the solid, fluid and electrolyte phases) and the solver (setup of
-one equilibrium point, IPOPT/SLSQP with multistart, the result data).
+Hessians of the solid, fluid and electrolyte phases), the solver (setup of
+one equilibrium point, IPOPT/SLSQP with multistart, the result data), the
+result tables and CSV files, sweeps, the preflight check and the worker pool
+on threads.
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -51,6 +53,14 @@ one equilibrium point, IPOPT/SLSQP with multistart, the result data).
 | `test/test_optimizer.jl` | Carbon rows, cut-off rule, grouping, starts, multistart with a stand-in problem, LP, backends, errors | `tests/test_backend.py` (optimizer part) |
 | `test/test_equilibrium.jl`, `test/solves_setup.jl` | `solves.json` (setup, solves, failures, polish safeguard), solving checks, Result data, threads; `case_from_legacy` | `tests/test_reference_solves.py`, `tests/reference/convert.py`, `tests/test_backend.py` (solving part) |
 | `test/dump_solves.py`, `test/data/solves_python_ipopt.json` | The Python app's IPOPT solution of every `solves.json` point (32 kB, committed) | – |
+| `src/tables.jl` | Result tables as `DataTable`s (pandas-like: `DataTable(rows)`, `concat`, `setcolumn!`, `insert_column!`, `select`, `take_rows`), `csv_text`/`to_csv` (pandas `to_csv(index=False)`), `read_csv` (pandas `read_csv`) | pandas |
+| `src/results.jl` (tables) | `species_table`, `phase_summary`, `summary` (of `Result` and `SweepResult`), `SweepResult` (`results`, `alternatives_table`, `save`), `read_choices`, `write_choices`, `apply_choices`; `RunTables`, `with_choices`, `flagged_points`, `load_saved` | `results.py` (rest), `gui/runs.py` (data part) |
+| `src/sweep.jl` | `run_sweep`, `sweep` (`Model.sweep`), `preflight`, `check` (`Model.check`), `preflight_messages`, `point_text` | `sweep.py`, `Model.sweep`, `Model.check` |
+| `src/queue.jl` | `solve_chain`, `default_workers`, `Run`, `WorkerPool` (threads: `submit`, `cancel`, `set_workers`, `restart`, `status`, `shutdown`, `on_point`/`on_done`), `sweep_result`, `live_tables`, `load_model_from_args` | `runner.py` |
+| `test/test_results.jl`, `test/dump_results.py`, `test/data/python_results/` | Tables and files against a run saved by the Python app (38 kB, committed): the same CSV files and choices.toml, Python's files read as pandas reads them, round trips | `results.py`, `gui/runs.py`, `tests/test_multiple_results.py` (choices) |
+| `test/test_sweep.jl` | Grids and chains, preflight messages, warm starts, failed points, solution checks, threads | `tests/test_grid.py`, `sweep.py` |
+| `test/test_queue.jl` | The pool with a stand-in chain solver (scheduling, cancel, errors, status, restart, callbacks), real solves | `tests/test_runner.py` |
+| `test/compare_cases.jl` | Manual: runs `cases/*.toml` in both versions and compares the saved results | – |
 
 **Python is the reference, not bit for bit** (owner, PR #7: "8e-14 is
 considered close"). Arithmetic is plain Julia (`sum`, `^`); floats are compared
@@ -86,7 +96,8 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 7 minutes (5323 tests, 4 threads); `test_phases.jl` and the
+The tests take about 7 minutes (5494 tests, 4 threads; the result, sweep and
+queue tests add about 15 s, as the solver is already compiled); `test_phases.jl` and the
 solves are most of it, almost all compilation of Clapeyron (PC-SAFT and
 ePC-SAFT, then again for the Duals of the exact Hessian, for each new set of
 association sites) and Ipopt. `Pkg.test()` does not pass `-t` on to the test
@@ -94,12 +105,23 @@ process; set `JULIA_NUM_THREADS` for the threaded tests.
 
 By default the solver tests solve a representative subset of the reference
 points (11 of 21, see `DEFAULT_SOLVES` in `test_equilibrium.jl`); set
-`HTG_FULL_TESTS=1` to solve all of them (about 7 minutes, 5540 tests; the extra solves are
+`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 5711 tests; the extra solves are
 fast once compiled):
 
 ```
 HTG_FULL_TESTS=1 JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test()'
 ```
+
+The example cases in both versions (manual, a few minutes; outputs go to a
+temporary folder and are not committed; see "Result tables, sweeps and the
+worker pool"):
+
+```
+JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium julia/HTGEquilibrium/test/compare_cases.jl [--out DIR]
+```
+
+The Python fixture of the result tests (`test/data/python_results/`, committed)
+is written by `uv run python julia/HTGEquilibrium/test/dump_results.py`.
 
 Optional wider comparison with pychnosz (785 points: 300–600 °C × 200–300 bar,
 100–390 °C at 240 bar, and 360–420 °C every 0.5 °C at five pressures). The
@@ -472,7 +494,8 @@ ready, with the reason).
   the stdlib parser; each table of an array of tables in its own order, as tomllib).
 - Gas product candidates (above); their Reason is the plain error text.
 - Not ported (later steps): `species_catalogue.py` (Species tab table, M4),
-  editing/importing user species (M4), `Model.sweep/check` (`Model.solve` is `solve`).
+  editing/importing user species (M4). (`Model.solve`, `Model.sweep` and
+  `Model.check` are `solve`, `sweep` and `check`.)
 
 **For the phases step.** `resolve_parameters` gives the parameter sets
 (`m`, `sigma`, `epsilon`, `epsilonAB`, `kappaAB`, `association_scheme`, `Mw`)
@@ -739,6 +762,151 @@ else is shared. The tests set `BLAS.set_num_threads(1)`; the app should too
 - `EquilibriumError <: ValueError` for Python's plain ValueErrors,
   `RuntimeError` for Python's RuntimeErrors.
 
+## Result tables, sweeps and the worker pool (`tables.jl`, `results.jl`, `sweep.jl`, `queue.jl`)
+
+```julia
+model = load_model()
+case = load_case("cases/manure_gas_min.toml")
+check(model, case)                                   # Model.check: preflight table (no EOS)
+sw = sweep(model, case)                              # Model.sweep; progress lines as Python prints them
+sw = sweep(model, case; workers=4)                   # chains on 4 threads (julia -t 4)
+summary(sw); species_table(sw); phase_summary(sw); alternatives_table(sw)   # DataTables
+HTGEquilibrium.save(sw, "out/manure_gas_min")        # summary.csv, species.csv, phases.csv, alternatives.csv, case.toml
+
+pool = WorkerPool(4; model)                          # or model_args=Dict("data_dir" => ...)
+run = submit(pool, case, "out/manure_gas_min")       # saved there when the run finishes
+wait(run); run.status, run.done_points, run.failed_points
+status(pool); cancel(pool, run); set_workers(pool, 2); restart(pool, load_model())
+shutdown(pool)
+
+tables = load_saved("out/manure_gas_min")            # a saved run of either version, choices applied
+write_choices("out/manure_gas_min", Dict((400.0, 240.0) => "B"))
+```
+
+**Tables and CSV files.** The tables are the data layer's `DataTable`, with
+one Julia type per pandas dtype (Float64 with NaN for float64, Int for int64,
+Bool for bool, String/`missing` for text). `DataTable(rows)` infers the types
+from a list of dicts as `pd.DataFrame(rows)` does: columns in order of first
+appearance, a missing key is NaN, an int column with a missing value becomes
+float (so `iterations` is written `29.0` when a sweep has a failed point, as
+pandas writes it), a bool column with a missing value becomes object. No new
+package was needed: `csv_text`/`to_csv` is a small writer that reproduces
+`DataFrame.to_csv(index=False)` (pandas 3.1.1): floats as Python's repr
+(`300.0`, `1e-06`, `1.2345678901234568e+17`), NaN and missing as empty
+fields, bools as `True`/`False`, text quoted only when it holds a comma, a
+quote or a line break (`csv.QUOTE_MINIMAL`; a row that is one empty field is
+`""`), `\n` line ends. `read_csv` reads with CSV.jl (as text) and applies
+pandas' type inference (default NA strings; int, float, bool or text).
+
+**Compatibility of saved runs (M3).** Same file names, columns, column order,
+row order and number formatting as Python:
+
+- test/data/python_results (Python's `SweepResult.save` and `write_choices`
+  of hand-made Results with ions, an empty phase, a failed point whose message
+  has a comma, quotes and a line break, a removed aqueous phase with a dropped
+  bound, a missing `descent_RT`, points with 2 and 3 results): Julia builds the
+  same Results and writes the **same bytes** for summary.csv, species.csv,
+  phases.csv, alternatives.csv, case.toml and choices.toml.
+- Python's files read in Julia (`load_saved`, choices applied, and the tables
+  as saved) give Python's columns, dtypes and values (python_read.json); Julia's
+  files read back to the tables Julia wrote, and writing them again gives the
+  same bytes.
+- Every CSV of the 5 example runs written by Python (below), read by
+  `read_csv` and written by `csv_text`, gives the original file byte for byte.
+
+**Example cases in both versions** (`test/compare_cases.jl`, manual; see its
+header for the rules). Python: `uv run htg run CASE --out DIR --no-plots
+--no-user-species`; Julia: all five cases submitted to one `WorkerPool` on 4
+threads, which saves each run when it finishes. Result (2026-11-24):
+
+| case | points | match | notes |
+|---|---|---|---|
+| cellulose_matlab | 8 | 8 | worst G 1.9e-7 of the tolerance (rel 1e-9); amounts 9e-10 of it |
+| manure_configurable (continuation) | 31 | 31 | worst G 1.9e-6 of the tolerance |
+| manure_gas_min | 16 | 16 | worst G 1.6e-6 of the tolerance |
+| manure_ions_minerals | 16 | 16 | worst G 0.34 of the tolerance (3.4e-10 relative); amounts 4.4 % of it |
+| yakaboylu2013_fig7_8 | 16 | 16 | 389.6 °C fails in both with the same message (SUPCRT aqueous validity) |
+
+All 87 points agree; no point has a lower G in either version; the
+failure message is the same text. File names, columns and rows are equal;
+case.toml is equal except that Python still writes `fd_ftol`/`fd_eps` (the
+dropped solver's keys) for cellulose_matlab and yakaboylu2013_fig7_8.
+IPOPT iteration counts differ at 23 of the 87 points (exact Hessian; usually
+by 1–2, at most 20 at manure_ions_minerals 340 °C: 54 vs 34), which is
+reported, not compared. Time: Python 60–84 s per case (387 s in total; each
+run starts its own Julia, about 40 s of that); Julia 170 s for all five
+together on 4 threads, including about 2 minutes of compilation.
+
+**Sweeps.** `run_sweep(model, case; progress=println, workers=1)` and
+`sweep` (`Model.sweep`) solve the chains with `solve_chain`, which starts each
+point of a chain from the previous solution when the phase selection is the
+same (`"solution at 300 °C, 240 bar"`), else from a fresh LP (`"feasible LP
+(phase selection changed)"`); failed points are recorded as their message.
+With `workers > 1` and more than one chain the chains are solved on a
+`WorkerPool` sharing the model. `preflight`/`check` (`Model.check`) and
+`preflight_messages` check every point without the equation of state, with
+Python's messages.
+
+Tests (`test_sweep.jl`, `test_queue.jl`): the warm-start chain through the
+aqueous cut-off (progress lines as Python's; warm starts reach the same minimum
+as cold starts, G within 1e-9); every sweep solution passes checks that need no
+reference (element balances, amounts >= 0, electroneutral aqueous phase, carbon
+shares and phase G add up); **threads**: a sweep on 4 workers equals the serial
+sweep exactly (amounts, G, iterations) for 4 continuation chains of 2 points
+and for 8 independent points (3 temperatures with `HTG_FULL_TESTS`); the pool's
+scheduling (FIFO, one chain per worker, cancel, internal errors, status,
+`set_workers`, `restart`, callbacks, warm-up, shutdown) with a stand-in chain
+solver, as `tests/test_runner.py`; real solves on 2 workers equal `solve`.
+
+**Worker pool.** One Julia process; each worker is a task on a thread
+(`Threads.@spawn :default`), taking chains from one FIFO queue; `workers`
+limits the number of chains solved at once (start Julia with enough threads).
+User-facing behaviour as Python's `WorkerPool`: `Run` (`id`, `case`,
+`output_dir`, `total`, `status` queued/running/cancelling/done/cancelled,
+`outcomes`, `log`, times, `run.name`, `run.done_points`, `run.failed_points`,
+`run.finished_running`, `wait(run, timeout)`, `sweep_result(run)`),
+`submit(pool, case, output_dir)`, `cancel` (queued pieces dropped, running
+chains finish), `set_workers`, `status` (per worker: id, state, message, case,
+point being solved; queued pieces; target), `shutdown`, `on_point(run, T, P,
+outcome, start)` and `on_done(run)`, `default_workers()`. When a run finishes
+it is saved to its `output_dir` (if it has one and any point has an outcome),
+then `on_done` is called, as in Python. `BLAS.set_num_threads(1)` is set when
+the pool starts and in `run_sweep`.
+
+**Differences from Python:**
+
+- Threads instead of processes (M1). The model is loaded once and shared; no
+  per-worker Julia start-up. `warm_up` solves the template once in one worker
+  (compiled code is shared by all threads).
+- `restart(pool, model_args)` (or `restart(pool, model)`) loads the new model
+  and uses it for runs submitted from then on, at once; runs already submitted
+  finish with their own model (`run.model`). Python made later runs wait for
+  new worker processes. Both never mix data within a run. Returns true when no
+  run was unfinished.
+- A worker cannot crash the way a process can: an error escaping
+  `solve_chain` (other than a `SolveError`) fails the rest of that chain with
+  "internal error: ..." (Python: the same for an exception in the worker; a
+  dead process gave "worker process stopped unexpectedly"). A crash of Julia
+  itself (e.g. Fortran `STOP`) would end the whole app (issue #5).
+- `on_point`/`on_done` are called from a worker thread (under the pool's lock,
+  one at a time); Python called them from its dispatcher thread.
+- `shutdown` lets each worker finish the point it is solving (Python waited 5 s,
+  then terminated the processes); the rest of its chain is not solved.
+- `default_workers()` is min(Julia threads, CPU threads − 1, free memory /
+  0.25 GB) (Python: processes of 1.5 GB each).
+- The progress line of a parallel sweep says "Solving N points with W workers
+  (threads; T available)" (Python: "... in W worker processes (each starts
+  Julia; ...)").
+- Python methods are functions (`summary(sweep)`, `species_table(r)`,
+  `submit(pool, case)`, `HTGEquilibrium.save(sweep, dir)`); `summary` extends
+  `Base.summary`.
+- Not yet written: the user species run record (`user_species_used.toml` and
+  the note at the end of case.toml, `user_species.run_record`), which needs
+  the user species editing port (M4). Runs made with a user species folder
+  therefore lack it in Julia.
+- The water-density check of `preflight` uses the case's water model (Python:
+  SUPCRT92 always), as the electrolyte phase does.
+
 ## What remains for M2
 
 Done: constants, formulas, water, HKF, band check; the data layer
@@ -747,21 +915,35 @@ Done: constants, formulas, water, HKF, band check; the data layer
 standard-state parts of `thermo.json`); case files and feed arithmetic
 (`units.jl`, `case.jl` reading and writing, `feed_v2.jl`); the phase models
 (`phases.jl`); the solver (`optimizer.jl`, `equilibrium.jl`, the data part of
-`results.jl`, `Model.solve`; `solves.json` is tested). `test/data/hkf_ions.toml`
-equals the registry's records (tested) and can go when `test_water.jl` is
-switched over. Still to do:
-- `results.jl` tables: the result tables, `choices`, CSV writing
-  (`results.py` after the data classes).
-- `sweep.jl` (`SweepResult`, sweeps over T and P with threads), `queue.jl`,
-  `cli.jl`; `Model.check`/preflight.
-- Setting `BLAS.set_num_threads(1)` in the app (sweep or CLI) when solving on
-  several threads.
-- Running the example cases (`cases/`) in both versions.
-- Tests that do not depend on the old Python code (owner, PR #10): checks of
-  the solution itself (element balances, KKT/stationarity, tangent-plane
-  stability of absent phases) and comparisons with independent literature
-  data, so that the Python references (`solves.json`, the Python dumps) can be
-  retired.
+`results.jl`, `Model.solve`; `solves.json` is tested); the result tables, CSV
+files and choices (`tables.jl`, `results.jl`), sweeps and the preflight check
+(`sweep.jl`), the worker pool on threads (`queue.jl`; BLAS on one thread); the
+example cases run in both versions (`test/compare_cases.jl`: all 87 points
+agree). `test/data/hkf_ions.toml` equals the registry's records (tested) and
+can go when `test_water.jl` is switched over. Still to do:
+- `cli.jl`: `htg run` (cases → `WorkerPool` or `sweep`, `save`, the printed
+  tables; `--workers` now means threads, so the process must be started with
+  enough threads, or the CLI restarts itself with `-t`), `htg check` (`check`,
+  printed as pandas `to_string`), `htg species` (`species`), `htg new` (the
+  template with the name replaced), `htg plot` (needs the plotting port, M3/M4).
+  The printed tables (pandas `to_string`) need a small text formatter.
+- The user species run record of a saved run (`user_species_used.toml`, the
+  note in case.toml; `user_species.run_record`), with the user species port (M4).
+- Interim step (Python GUI calling the Julia core): the GUI uses `WorkerPool`
+  (`submit`, `cancel`, `status`, `set_workers`, `restart`, `runs`, `Run`
+  fields), `live_tables`/`load_saved` (`RunTables` with pandas DataFrames) and
+  `Model.check`. Through juliacall: convert `DataTable`s to DataFrames (or let
+  the GUI read the saved CSVs, which are identical), and do not call Python
+  from the pool's worker threads (`on_point`/`on_done` run there): poll
+  `status(pool)` and the `Run` fields from the GUI's timer instead, or pass
+  callbacks that only push to a `Channel` that Python drains. Start Julia with
+  threads (`PYTHON_JULIACALL_THREADS`, `PYTHON_JULIACALL_HANDLE_SIGNALS=yes`).
+- Tests that do not depend on the old Python code (owner, PR #10): the sweep
+  tests check element balances, signs, charge and carbon shares of every
+  solution; still to add: KKT/stationarity and tangent-plane stability of
+  absent phases as pass/fail checks, and comparisons with independent
+  literature data, so that the Python references (`solves.json`, the Python
+  dumps) can be retired.
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)
