@@ -11,9 +11,14 @@ using EzXML
 using ForwardDiff
 using JSON
 using Libdl
+using LinearAlgebra: ColumnNorm, diag, pinv, qr
 using OrderedCollections
 using Printf
 using TOML
+import HiGHS
+import Ipopt
+import NLopt
+import Random
 
 export FormulaError, parse_formula, split_charge, molar_mass, formula_summary, hill_formula,
        parse_element_list, is_plain_formula
@@ -39,6 +44,12 @@ export nasa_g0, supcrt_mineral_properties, solid_g0, hkf_records
 export Model, load_model, default_data_dir, species, mineral_inventory, product_candidates
 export EOSFailure, PhaseError, Phase, SolidPhase, FluidPhase, ElectrolytePhase, association_sites,
        build_pcsaft_model, gibbs, gibbs_and_mu, mu_at, lnphi, hessian, gibbs_full
+export Alternative, Result, n_results, notes, for_alternative
+export EquilibriumError, RuntimeError, GibbsProblem, OptimizeResult, fun_and_grad, hessian_blocks,
+       check_against_model, kkt, linprog, starting_points, candidate_starts, result_label, group_solutions,
+       tangent_plane_test, optimize, BACKENDS, UNAVAILABLE_SOLVERS, POLISH_THRESHOLD_RT
+export SolveError, Stage, Setup, setup, solve, species_to_wt_percent, apply_phase_rules, carbon_bound_rows,
+       carbon_bound_violation
 
 include("constants.jl")
 include("pycompat.jl")
@@ -57,5 +68,8 @@ include("user_species.jl")
 include("standard_states.jl")
 include("model.jl")
 include("phases.jl")
+include("results.jl")
+include("optimizer.jl")
+include("equilibrium.jl")
 
 end # module
