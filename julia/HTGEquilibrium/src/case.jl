@@ -25,7 +25,17 @@ struct LegacyConversionError <: ValueError
     msg::String
 end
 
-const SOLVERS = ("ipopt", "slsqp", "trust-constr", "slsqp-fd")
+const SOLVERS = ("ipopt", "slsqp")
+# Solvers and [solver] keys of the Python app that were dropped (owner, PR #10). Old
+# cases that use them still load: the solver becomes "ipopt", the keys are ignored,
+# and `case.legacy_notes` says so (for the app to show); writing the case writes neither.
+const LEGACY_SOLVERS = ("slsqp-fd", "trust-constr")
+const LEGACY_SOLVER_KEYS = ("fd_ftol", "fd_eps")
+legacy_solver_note(solver) =
+    "The solver $(py_repr(solver)) is no longer available; this case now uses 'ipopt' (the default)."
+legacy_solver_keys_note(keys) =
+    "[solver] $(join(keys, " and ")) $(length(keys) == 1 ? "was a setting" : "were settings") of the " *
+    "removed solver 'slsqp-fd'; ignored."
 const INITIALIZATIONS = ("auto", "liquid", "vapor", "lp")
 
 const _Dict = OrderedDict{String,Any}
@@ -212,7 +222,7 @@ const CASE_FIELDS = (
     :initial_gas_water_fraction => 1e-6,  # cap on starting gas water for liquid starts
     :initial_amounts => nothing,          # {(phase, species) => mol/mol C}, replaces the LP start
     # Solver
-    :solver => "ipopt",                   # "ipopt", "slsqp", "trust-constr" or "slsqp-fd"
+    :solver => "ipopt",                   # "ipopt" or "slsqp" (old "slsqp-fd", "trust-constr": "ipopt")
     :starts => 1,                         # starting points per point in total
     :distinct_composition_tol => 1e-4,    # results differ above this |delta amount| [mol/mol C]
     :distinct_gibbs_tol => 1.0,           # ... or above this |delta G| [J/mol C]
@@ -220,7 +230,6 @@ const CASE_FIELDS = (
     :stability_test => nothing,           # tangent-plane test of absent phases; default: starts > 1
     :max_iterations => 5000,
     :energy_scale => nothing,             # objective scale [J/mol C]; default max(1e4, |G_start|)
-    :fd_ftol => 1e-9, :fd_eps => 1e-7,    # "slsqp-fd" only
     :solver_options => () -> _Dict(),     # backend-specific, e.g. ipopt_options
     :multistart => nothing,               # old (format 1): moved into starts on creation
     # Sweeps
@@ -231,6 +240,9 @@ const CASE_FIELDS = (
     :comparison => nothing,
     # The feed as written in a format-2 case file; `feed` is derived from it.
     :feed_v2 => nothing,
+    # Julia only: what was changed when an old case was read (dropped solver settings);
+    # for the app to show. Not written to case files; not compared by ==.
+    :legacy_notes => () -> String[],
 )
 
 """
@@ -274,8 +286,6 @@ mutable struct Case
     stability_test::Any
     max_iterations::Any
     energy_scale::Any
-    fd_ftol::Any
-    fd_eps::Any
     solver_options::Any
     multistart::Any
     continuation::Any
@@ -283,6 +293,7 @@ mutable struct Case
     points::Any
     comparison::Any
     feed_v2::Any
+    legacy_notes::Vector{String}
     Case(::Val{:fields}, values::Vector{Any}) = new(values...)
 end
 @assert fieldnames(Case) == Tuple(first.(CASE_FIELDS))
@@ -301,7 +312,7 @@ end
 Case(temperature_C, pressure_bar, feed, phases; kwargs...) =
     Case(; temperature_C, pressure_bar, feed, phases, kwargs...)
 
-Base.:(==)(a::Case, b::Case) = all(getfield(a, f) == getfield(b, f) for f in fieldnames(Case))
+Base.:(==)(a::Case, b::Case) = all(getfield(a, f) == getfield(b, f) for f in fieldnames(Case) if f != :legacy_notes)
 
 # list(x) of Python for the containers a case holds.
 _pylist(x::Union{AbstractVector,Tuple}) = all(v -> v isa String, x) && !isempty(x) ? String[x...] : Any[x...]
@@ -338,9 +349,14 @@ function _point_entry(p)
     throw(CaseError("Each entry of points must be [temperature_C, pressure_bar], not $(py_repr(p))."))
 end
 
-"""Old carbon settings -> carbon_bounds; multistart -> starts (the one place
-where format-1 settings are translated; the calculation reads only the new ones)."""
+"""Old carbon settings -> carbon_bounds; multistart -> starts; a dropped solver ->
+"ipopt" with a note (the one place where old settings are translated; the
+calculation reads only the new ones)."""
 function _move_legacy_settings!(case::Case)
+    if case.solver isa AbstractString && case.solver in LEGACY_SOLVERS
+        push!(case.legacy_notes, legacy_solver_note(case.solver))
+        case.solver = "ipopt"
+    end
     legacy = OrderedDict{Symbol,Any}(Symbol(k) => getfield(case, Symbol(k)) for k in LEGACY_CARBON_KEYS)
     if any(v !== nothing && !(v isa AbstractDict && isempty(v)) for v in values(legacy))
         bounds, case.solid_carbon_target = legacy_carbon_bounds(; legacy..., solid_carbon_target=case.solid_carbon_target)
@@ -898,8 +914,7 @@ const SECTIONS = OrderedDict(
                             "distinct_composition_tol" => "distinct_composition_tol",
                             "distinct_gibbs_tol" => "distinct_gibbs_tol", "seed" => "seed",
                             "stability_test" => "stability_test", "max_iterations" => "max_iterations",
-                            "energy_scale" => "energy_scale", "fd_ftol" => "fd_ftol", "fd_eps" => "fd_eps",
-                            "options" => "solver_options", "multistart" => "multistart"),
+                            "energy_scale" => "energy_scale", "options" => "solver_options", "multistart" => "multistart"),
     "sweep" => OrderedDict("continuation" => "continuation", "refine" => "refine"),
     "comparison" => OrderedDict("file" => "file", "quantity" => "quantity", "label" => "label"),
 )
@@ -945,6 +960,7 @@ function case_from_dict(data; name=nothing)
                         "(and old files without format)."))
     end
     kwargs = OrderedDict{Symbol,Any}()
+    notes = String[]
     for key in TOP_LEVEL
         haskey(data, key) && (kwargs[Symbol(key)] = pop!(data, key))
     end
@@ -963,6 +979,13 @@ function case_from_dict(data; name=nothing)
                 kwargs[:comparison] = values
             end
             continue
+        end
+        if section == "solver"
+            dropped = [k for k in LEGACY_SOLVER_KEYS if haskey(values, k)]
+            if !isempty(dropped)
+                foreach(k -> delete!(values, k), dropped)
+                push!(notes, legacy_solver_keys_note(dropped))
+            end
         end
         unknown = setdiff(keys(values), keys(keys_))
         isempty(unknown) ||
@@ -985,7 +1008,9 @@ function case_from_dict(data; name=nothing)
     if py_truth(name) && !haskey(kwargs, :name)
         kwargs[:name] = name
     end
-    return validate(Case(; kwargs...))
+    case = Case(; kwargs...)
+    append!(case.legacy_notes, notes)
+    return validate(case)
 end
 
 """

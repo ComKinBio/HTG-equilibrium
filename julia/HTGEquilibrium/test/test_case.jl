@@ -238,6 +238,45 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
         @test case_from_dict(parse_toml(to_toml(iapws))) == iapws
     end
 
+    @testset "dropped solvers slsqp-fd and trust-constr: read as ipopt (owner, PR #10)" begin
+        @test HTGEquilibrium.SOLVERS == ("ipopt", "slsqp")
+        @test !hasfield(Case, :fd_ftol) && !hasfield(Case, :fd_eps)
+        data = read_toml(TEMPLATE)
+        @test isempty(case_from_dict(data).legacy_notes)
+        for solver in ("slsqp-fd", "trust-constr")
+            data["solver"]["method"] = solver
+            case = case_from_dict(data)
+            @test case.solver == "ipopt"
+            @test case.legacy_notes == ["The solver '$solver' is no longer available; this case now uses 'ipopt' (the default)."]
+            @test !occursin("method", to_toml(case))   # written as the default, ipopt
+            @test case == case_from_dict(parse_toml(to_toml(case)))
+            @test isempty(case_from_dict(parse_toml(to_toml(case))).legacy_notes)
+            # in code as well; a second replace keeps a single note
+            @test replace(replace(case_from_dict(read_toml(TEMPLATE)); solver), starts=2).legacy_notes ==
+                  case.legacy_notes
+        end
+        data["solver"]["method"] = "newton"
+        @test message(() -> case_from_dict(data)) == "solver must be one of ('ipopt', 'slsqp'), not 'newton'."
+        # the [solver] keys of slsqp-fd: ignored with a note
+        data["solver"]["method"] = "slsqp-fd"
+        data["solver"]["fd_ftol"] = 1e-11
+        case = case_from_dict(data)
+        @test case.legacy_notes == ["The solver 'slsqp-fd' is no longer available; this case now uses 'ipopt' (the default).",
+                                    "[solver] fd_ftol was a setting of the removed solver 'slsqp-fd'; ignored."]
+        # the two example cases that still carry them (with method = "ipopt"), and their old copies
+        for path in (joinpath(CASES_DIR, "yakaboylu2013_fig7_8.toml"), joinpath(LEGACY_DIR, "yakaboylu2013_fig7_8.toml"))
+            case = load_case(path)
+            @test case.solver == "ipopt" && case.max_iterations == 10000
+            @test case.legacy_notes == ["[solver] fd_ftol and fd_eps were settings of the removed solver 'slsqp-fd'; ignored."]
+            @test !occursin("fd_", to_toml(case))
+        end
+        for path in (joinpath(CASES_DIR, "cellulose_matlab.toml"), joinpath(LEGACY_DIR, "cellulose_matlab.toml"))
+            @test load_case(path).legacy_notes == ["[solver] fd_ftol was a setting of the removed solver 'slsqp-fd'; ignored."]
+        end
+        @test all(isempty(load_case(f).legacy_notes) for f in CASE_FILES if !(stem(f) in ("yakaboylu2013_fig7_8", "cellulose_matlab")))
+        @test_throws ArgumentError Case(; temperature_C=300, pressure_bar=240, feed=Feed(), phases=D(), fd_ftol=1e-9)
+    end
+
     @testset "writing: load, save, load gives the same case: $(stem(path))" for path in [CASE_FILES; TEMPLATE]
         case = load_case(path)
         written = joinpath(mktempdir(), basename(path))
@@ -317,14 +356,14 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
     if PY_CASES !== nothing
         @testset "against Python: $(length(PY_CASES["files"])) case files" begin
             for want in PY_CASES["files"]
-                @test_same file_dump(want["path"]) want want["path"]
+                @test_same file_dump(want["path"]) without_dropped_solvers(want) want["path"]
             end
         end
         @testset "against Python: $(length(PY_CASES["variants"])) variants" begin
             for want in PY_CASES["variants"]
                 text = variant_text(want["base"], [(old, new) for (old, new) in want["replace"]])
                 got = text_dump(text, "variant")
-                @test_same got strip_keys(want, "label", "base", "replace") want["label"]
+                @test_same got without_dropped_solvers(strip_keys(want, "label", "base", "replace")) want["label"]
             end
         end
         @info "Case/feed floats compared with Python (rtol $FLOAT_RTOL, atol $FLOAT_ATOL): $(FLOATS.compared); " *

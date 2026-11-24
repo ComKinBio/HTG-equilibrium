@@ -7,8 +7,9 @@ compare. So far: constants, formula parsing, water properties, HKF standard
 states of aqueous ions, the SUPCRT92 failure-band check that the Julia GUI
 will use to warn about sweeps, the data layer (databases, species
 registry, user species folder, standard states, model loading), reading
-case files (units, feed arithmetic) and the phase models (G, mu, ln phi and
-Hessians of the solid, fluid and electrolyte phases).
+case files (units, feed arithmetic), the phase models (G, mu, ln phi and
+Hessians of the solid, fluid and electrolyte phases) and the solver (setup of
+one equilibrium point, IPOPT/SLSQP with multistart, the result data).
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -44,6 +45,12 @@ Hessians of the solid, fluid and electrolyte phases).
 | `src/phases.jl` | `EOSFailure`, `PhaseError`, `association_sites`, `build_pcsaft_model`, `SolidPhase`, `FluidPhase`, `ElectrolytePhase` (water model selectable), `gibbs`, `gibbs_and_mu`, `mu_at`, `lnphi`, `hessian` (exact, ForwardDiff), `phi`, `gibbs_full`, `expand` | `phases.py` |
 | `test/test_phases.jl` | `thermo.json`: fluid G and ln phi, electrolyte `lnphi_infinity`, G and ln phi; mu = dG/dn, homogeneity, Hessians against central differences, water found by name, water model, errors, threads | `tests/test_reference_thermo.py` (phase part), `tests/test_phases.py` |
 | `test/data/user_species/`, `test/data/user_species_python.json` | A user species folder written by the Python app and what Python loads from it; written by `test/dump_user_species.py` | – |
+| `src/results.jl` | `Alternative`, `Result` (same fields; plus `water_model`), `n_results`, `notes`, `for_alternative` | `results.py` (data part) |
+| `src/optimizer.jl` | `GibbsProblem` (`expand`, `gibbs_and_mu`, `fun_and_grad`, `hessian_blocks`, `check_against_model`, `kkt`), `linprog` (HiGHS), `_ipopt` (Ipopt.jl), `_slsqp` (NLopt), `starting_points`, `candidate_starts`, `result_label`, `group_solutions`, `tangent_plane_test`, `_polish`, `optimize` | `optimizer.py` |
+| `src/equilibrium.jl` | `SolveError`, `species_to_wt_percent`, `apply_phase_rules`, `Stage`, `Setup`, `setup`, `carbon_bound_rows`, `carbon_bound_violation`, `_optimize`, `solve` (also `Model.solve`) | `equilibrium.py`, `Model.solve` |
+| `test/test_optimizer.jl` | Carbon rows, cut-off rule, grouping, starts, multistart with a stand-in problem, LP, backends, errors | `tests/test_backend.py` (optimizer part) |
+| `test/test_equilibrium.jl`, `test/solves_setup.jl` | `solves.json` (setup, solves, failures, polish safeguard), solving checks, Result data, threads; `case_from_legacy` | `tests/test_reference_solves.py`, `tests/reference/convert.py`, `tests/test_backend.py` (solving part) |
+| `test/dump_solves.py`, `test/data/solves_python_ipopt.json` | The Python app's IPOPT solution of every `solves.json` point (32 kB, committed) | – |
 
 **Python is the reference, not bit for bit** (owner, PR #7: "8e-14 is
 considered close"). Arithmetic is plain Julia (`sum`, `^`); floats are compared
@@ -79,10 +86,20 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 5 minutes; `test_phases.jl` is ~3.5 of them, almost all
-compilation of Clapeyron (PC-SAFT and ePC-SAFT, then again for the Duals of
-the exact Hessian). `Pkg.test()` does not pass `-t` on to the test process; set
-`JULIA_NUM_THREADS` for the threaded tests.
+The tests take about 7 minutes (5323 tests, 4 threads); `test_phases.jl` and the
+solves are most of it, almost all compilation of Clapeyron (PC-SAFT and
+ePC-SAFT, then again for the Duals of the exact Hessian, for each new set of
+association sites) and Ipopt. `Pkg.test()` does not pass `-t` on to the test
+process; set `JULIA_NUM_THREADS` for the threaded tests.
+
+By default the solver tests solve a representative subset of the reference
+points (11 of 21, see `DEFAULT_SOLVES` in `test_equilibrium.jl`); set
+`HTG_FULL_TESTS=1` to solve all of them (about 7 minutes, 5540 tests; the extra solves are
+fast once compiled):
+
+```
+HTG_FULL_TESTS=1 JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test()'
+```
 
 Optional wider comparison with pychnosz (785 points: 300–600 °C × 200–300 bar,
 100–390 °C at 240 bar, and 360–420 °C every 0.5 °C at five pressures). The
@@ -243,6 +260,23 @@ does. Old keys (`gas_carbon_fraction`, `gas_carbon_min_fraction`,
 `solid_carbon_fraction`, `phase_carbon_fractions`, `multistart`, `refine`, the
 old `[feed]` keys) are read and moved into the new ones on creation.
 
+**Dropped solvers** (owner, PR #10). The Python solvers `"slsqp-fd"` and
+`"trust-constr"` and the `[solver]` keys `fd_ftol` and `fd_eps` (settings of
+`slsqp-fd`) are gone: `SOLVERS` is `("ipopt", "slsqp")` and `Case` has no
+`fd_ftol`/`fd_eps` fields. Old cases still open: a dropped solver is read as
+`"ipopt"` (also `Case(...; solver="slsqp-fd")` and `replace`), the two keys are
+ignored, and the Julia-only field `case.legacy_notes` says what was changed, for
+the app to show, e.g. "The solver 'slsqp-fd' is no longer available; this case
+now uses 'ipopt' (the default)." and "[solver] fd_ftol and fd_eps were settings
+of the removed solver 'slsqp-fd'; ignored." Writing such a case writes
+`ipopt` (the default, so no `method` line) and no fd keys. `legacy_notes` is
+not written and not compared by `==`. Files concerned: no case file names
+either solver; `cases/yakaboylu2013_fig7_8.toml` (`fd_ftol`, `fd_eps`) and
+`cases/cellulose_matlab.toml` (`fd_ftol`), and their old copies in
+`tests/data/legacy_cases/`, carry the keys next to `method = "ipopt"`; the
+template (`src/htg/templates/case_template.toml`) and its old copy list the
+two solvers in a comment only.
+
 **Comparison with Python.** `uv run python julia/HTGEquilibrium/test/dump_cases.py`
 writes `test/data/cases_python.json` (~0.6 MB, ignored by git; without it the
 comparisons are skipped with an info message). The tests rebuild the same dump
@@ -266,7 +300,13 @@ relative deviation 1.8e-15, one fraction 1.4e-16 where Python has 0.0. The
 text `to_toml` writes equals Python's exactly for all 76 cases that can be
 written (files, variants, converted old files; 5 more give the same error).**
 The Julia-only `water_model` field is left out of the comparison (Python has no
-such key; every Python case has the default).
+such key; every Python case has the default), and so is `legacy_notes`. The
+Python app still has the dropped solvers (above), so its dump (`dump_cases.py`,
+unchanged) is mapped on the Julia side before the comparison
+(`without_dropped_solvers` in `test/python_cases.jl`): Case fields without
+`fd_ftol`/`fd_eps` (a dropped solver would become `"ipopt"`), `to_toml` texts
+without their `fd_` lines, and the messages that list the solvers or the
+allowed `[solver]` keys without the dropped ones.
 
 **Differences from Python** (deliberate; everything else behaves the same):
 - Errors: `CaseError` (a ValueError raised in case.py), `FeedError`,
@@ -432,7 +472,7 @@ ready, with the reason).
   the stdlib parser; each table of an array of tables in its own order, as tomllib).
 - Gas product candidates (above); their Reason is the plain error text.
 - Not ported (later steps): `species_catalogue.py` (Species tab table, M4),
-  editing/importing user species (M4), `Model.solve/sweep/check`.
+  editing/importing user species (M4), `Model.sweep/check` (`Model.solve` is `solve`).
 
 **For the phases step.** `resolve_parameters` gives the parameter sets
 (`m`, `sigma`, `epsilon`, `epsilonAB`, `kappaAB`, `association_scheme`, `Mw`)
@@ -613,6 +653,92 @@ T, P, root)`. Catch `EOSFailure` where Python catches it and `ValueError`
 (the abstract type) where Python catches `ValueError`; note that the data
 layer still throws `ArgumentError` for Python ValueErrors.
 
+## Solver (`results.jl`, `optimizer.jl`, `equilibrium.jl`)
+
+```julia
+model = load_model()                   # the app's data/ folder
+r = solve(model, case)                 # Model.solve: one point, or a list point by (T, P)
+r = solve(model, case, 450.0, 250.0)   # one point of a sweep case
+r.gibbs_J_per_mol_C, r.amounts, r.optimizer["starts"], r.water_model
+s = setup(model, case)                 # the Setup (problem, feed, bounds) without solving
+```
+
+Everything Python's `equilibrium.solve` does is there: the phase rules
+(cut-off, disabled aqueous phase), the feed (elements or species, water,
+salts), carbon bounds, the starting points (LP, phase, random, user amounts),
+IPOPT with SLSQP as the fallback, multistart and grouping into alternatives,
+the polish step and its safeguard, the tangent-plane test, the G check against
+the phase models, and the KKT diagnostics. Failures are `SolveError`s whose
+message starts with the stage, as in Python (`"feed: ValueError: ..."`;
+Python's exception names are kept in the message).
+
+**Dependencies** (exact compat):
+
+| Package | Version | Why |
+|---|---|---|
+| Ipopt.jl / Ipopt_jll | 1.16.0 / 300.1400.1902 | IPOPT (C API), the default solver |
+| MUMPS_seq_jll, SPRAL_jll, OpenBLAS32_jll | 500.900.100, 2025.9.18, 0.3.34 | IPOPT's linear solvers, as in `src/htg/juliapkg.json` |
+| NLopt.jl | 1.2.1 | SLSQP (`LD_SLSQP`), also for the tangent-plane test and the polish |
+| HiGHS.jl / HiGHS_jll | 1.20.1 / 1.12.0 | The LP starting points; 1.12.0 is the HiGHS in SciPy 1.18.1, which gives the same LP vertices as Python (HiGHS 1.16 picks other vertices of degenerate LPs) |
+
+**Against `solves.json`** (tolerances of `test_reference_solves.py`):
+
+- Setup of all 21 points (initial amounts, feed atoms, C per g, phase G): the
+  deviation is 0 except phase G (at most 1.5e-15 relative).
+- Points solved with IPOPT in the reference: G within 1e-15, compositions
+  within 1e-12 (worst 1.8e-10 of the tolerance). SLSQP (`slsqp_exact`): G
+  within 1.6e-13, compositions within 1.3 % of the tolerance.
+- Points solved with the original finite-difference SLSQP (`slsqp-fd`, dropped)
+  are solved with IPOPT. The stored reference of these points came from a bad
+  optimizer and is **a rough guide only** (owner, PR #10): the G must not be
+  higher (worst +9e-11 relative). Four points have a lower minimum than the reference
+  (`LOWER_THAN_FD`): cellulose_400C (-2.2e-6 relative), full_text_250C
+  (-2.6e-9), full_text_gas_min_300C (-6.9e-9), configurable_300C (-1.1e-9).
+  For these the compositions are compared with the Python app's own IPOPT
+  solution (`test/data/solves_python_ipopt.json`, written by
+  `test/dump_solves.py`), which they match (G within 1e-15, amounts within
+  1e-10). IMPROVED (full_text_250C_ipopt) and FD_STOPS_EARLY (fig78_380C)
+  are kept as in Python.
+- Expected failures give the same stage and message; the polish safeguard
+  still triggers (stationarity 12 RT, polish used, G within 3e-9 J).
+- IPOPT iterations: mostly identical to Python; with the exact Hessian a few
+  differ by one or two (fig78_450C_all_solids 23 vs 21,
+  cellulose_species_feed_450C 24 vs 25, configurable_300C_ipopt 34 vs 33).
+
+**Threads:** `solve` may be called from several threads (tested: 24 solves, 36 with `HTG_FULL_TESTS`, on
+4 threads equal the serial results). The HiGHS calls are under a lock; nothing
+else is shared. The tests set `BLAS.set_num_threads(1)`; the app should too
+(threads per solve, not inside the linear algebra).
+
+**Differences from Python:**
+
+- **`trust-constr` and `slsqp-fd` are dropped** (owner, PR #10). A case that
+  names either is read as `ipopt` with a note (see "Case files: reading");
+  `optimize` knows only "ipopt" and "slsqp" ("Unknown optimizer 'slsqp-fd';
+  choose from ['ipopt', 'slsqp']").
+- SLSQP is NLopt's `LD_SLSQP`, not SciPy's: the same algorithm, other
+  iteration counts and messages ("Optimization terminated successfully" /
+  "Iteration limit reached" are mapped; others are NLopt's).
+- **`max_iterations` for SLSQP** (owner, PR #10): SciPy counted iterations,
+  NLopt counts function evaluations (each iteration takes one or more). SLSQP
+  stops after `SLSQP_EVALUATIONS_PER_ITERATION * max_iterations` = 10 ×
+  `max_iterations` evaluations: 50000 with the default 5000, and a value set in
+  the case scales the same way (so it still limits roughly the iterations, as
+  in Python). The tangent-plane test (SciPy: 200 iterations) gets 2000
+  evaluations. For IPOPT `max_iterations` is IPOPT's `max_iter`, as before.
+  `Result.iterations` and the `nit` of a start count NLopt's evaluations.
+- Random starts use a seeded `Xoshiro`, not NumPy's stream; the starts differ,
+  the seed still makes a run repeatable.
+- The IPOPT Hessian is exact (`hessian_blocks`, owner PR #9); Python passed a
+  finite-difference Hessian to IPOPT. The IPOPT options are Python's
+  (`_JULIA_IPOPT` plus the case's `ipopt_options`).
+- Indices are 1-based (`Setup` positions, `group_solutions` members).
+- `Result` has a `water_model` field (the case's water model).
+- An error other than `EOSFailure` inside an IPOPT callback stops IPOPT and is
+  rethrown after the solve (Ipopt.jl does not catch exceptions in callbacks).
+- `EquilibriumError <: ValueError` for Python's plain ValueErrors,
+  `RuntimeError` for Python's RuntimeErrors.
+
 ## What remains for M2
 
 Done: constants, formulas, water, HKF, band check; the data layer
@@ -620,16 +746,22 @@ Done: constants, formulas, water, HKF, band check; the data layer
 `standard_states.jl`, `model.jl` data part; `catalogue.json` and the
 standard-state parts of `thermo.json`); case files and feed arithmetic
 (`units.jl`, `case.jl` reading and writing, `feed_v2.jl`); the phase models
-(`phases.jl`, the electrolyte phase taking the case's water model; all of
-`thermo.json` is now tested). `test/data/hkf_ions.toml`
+(`phases.jl`); the solver (`optimizer.jl`, `equilibrium.jl`, the data part of
+`results.jl`, `Model.solve`; `solves.json` is tested). `test/data/hkf_ions.toml`
 equals the registry's records (tested) and can go when `test_water.jl` is
 switched over. Still to do:
-- `optimizer.jl` (next; see "For the optimizer and equilibrium steps" under
-  "Phase models"; it uses the exact `hessian`, so iteration counts will differ
-  from Python's), `equilibrium.jl`, `results.jl`, `sweep.jl`, `queue.jl`,
-  `cli.jl`; `solves.json` tests; running the example cases in both versions.
-- `equilibrium.jl` passes `water_model_of(case)` to `ElectrolytePhase`;
-  results record the water model.
+- `results.jl` tables: the result tables, `choices`, CSV writing
+  (`results.py` after the data classes).
+- `sweep.jl` (`SweepResult`, sweeps over T and P with threads), `queue.jl`,
+  `cli.jl`; `Model.check`/preflight.
+- Setting `BLAS.set_num_threads(1)` in the app (sweep or CLI) when solving on
+  several threads.
+- Running the example cases (`cases/`) in both versions.
+- Tests that do not depend on the old Python code (owner, PR #10): checks of
+  the solution itself (element balances, KKT/stationarity, tangent-plane
+  stability of absent phases) and comparisons with independent literature
+  data, so that the Python references (`solves.json`, the Python dumps) can be
+  retired.
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)
@@ -668,3 +800,21 @@ switched over. Still to do:
    dependent on the ordering of species." Every emptiness check of the
    electrolyte phase uses the water amount (tested with water not listed first,
    and with water not selected).
+
+## Owner decisions (PR #10)
+
+1. **Dropped solvers:** "Yes, drop them for good." `trust-constr` and
+   `slsqp-fd` are removed (with `fd_ftol`, `fd_eps`); old cases that name them
+   load as `ipopt` with a note in `case.legacy_notes` and are written as
+   `ipopt` (see "Case files: reading").
+2. **Reference points of `slsqp-fd`:** "Yes, the stored reference used a bad
+   optimizer. So those should be treated as a rough guide. In the future, we
+   should think about making testing a bit more independent of the old python
+   code." They are solved with IPOPT; a lower G is accepted when it matches the
+   Python app's IPOPT solution (`LOWER_THAN_FD`). Independent tests are listed
+   under "What remains for M2".
+3. **HiGHS_jll 1.12.0:** "Yes, that's fine." Pinned to SciPy's HiGHS so the
+   LP starts equal Python's.
+4. **SLSQP limit:** "Multiply the default by 10." SLSQP may use
+   10 × `max_iterations` function evaluations (50000 by default; see "Solver",
+   differences).

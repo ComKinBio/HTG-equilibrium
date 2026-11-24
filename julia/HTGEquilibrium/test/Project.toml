@@ -2,6 +2,7 @@
 Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
 HTGEquilibrium = "95302caa-357f-46e3-ad1b-c14afab16e6e"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
