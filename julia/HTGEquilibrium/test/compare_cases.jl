@@ -240,4 +240,7 @@ function main(args)
     return all_ok
 end
 
-main(ARGS) || exit(1)
+# Run as a script only (test_cli.jl includes this file for `compare_case`)
+if abspath(PROGRAM_FILE) == @__FILE__
+    main(ARGS) || exit(1)
+end

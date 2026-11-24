@@ -1,0 +1,38 @@
+format = 2
+name = "cli_run_small"
+description = "Swine manure at 240 bar; Yakaboylu et al. (2013) Figures 7-8."
+
+[conditions]
+temperature_C = [300, 389.6, 450]
+pressure_bar = 240.0
+
+[feed]
+total_kg = 4.999935304
+solids = { value = 1.0, unit = "kg" }
+ash = { value = 8.44688764, unit = "%" }
+elements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon"]
+
+[aqueous]
+cutoff_C = 390.0
+
+[initial_guess]
+initialization = "liquid"
+
+[solver]
+max_iterations = 10000
+fd_ftol = 1e-11
+fd_eps = 1e-08
+
+[sweep]
+continuation = false
+
+[comparison]
+file = "comparison.csv"
+quantity = "mol_per_kg_dry_feed"
+label = "Yakaboylu et al. (2013)"

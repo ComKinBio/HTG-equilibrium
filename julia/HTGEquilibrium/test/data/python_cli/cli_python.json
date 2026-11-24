@@ -1,0 +1,962 @@
+{
+ "tables": [
+  {
+   "columns": {
+    "T_C": [
+     300.0,
+     250.5,
+     1000.0
+    ],
+    "P_bar": [
+     240.0,
+     240.0,
+     1.0
+    ],
+    "n": [
+     1,
+     22,
+     -3
+    ],
+    "ok": [
+     true,
+     false,
+     true
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "int64",
+    "bool"
+   ],
+   "text": "   T_C  P_bar  n    ok\n 300.0  240.0  1  True\n 250.5  240.0 22 False\n1000.0    1.0 -3  True"
+  },
+  {
+   "columns": {
+    "small": [
+     1.5,
+     "__nan__",
+     1e-07
+    ],
+    "big": [
+     -481234.567891234,
+     -3328077.1,
+     12.0
+    ],
+    "mixed": [
+     10000000.0,
+     2.0,
+     0.30000000000000004
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": "       small           big      mixed\n1.500000e+00 -4.812346e+05 10000000.0\n         NaN -3.328077e+06        2.0\n1.000000e-07  1.200000e+01        0.3"
+  },
+  {
+   "columns": {
+    "large_short": [
+     1234567.0,
+     1.0,
+     "__nan__"
+    ],
+    "large_long": [
+     123456789.123,
+     1.0,
+     2.0
+    ],
+    "edge": [
+     1e-06,
+     1.0,
+     -2.5e-06
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": " large_short   large_long      edge\n   1234567.0 1.234568e+08  0.000001\n         1.0 1.000000e+00  1.000000\n         NaN 2.000000e+00 -0.000003"
+  },
+  {
+   "columns": {
+    "zeros": [
+     0.0,
+     -0.0,
+     5.0
+    ],
+    "inf": [
+     "__inf__",
+     1.0,
+     -1.25
+    ],
+    "neg": [
+     -1.0,
+     -0.5,
+     -100.125
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": " zeros   inf      neg\n   0.0   inf   -1.000\n  -0.0  1.00   -0.500\n   5.0 -1.25 -100.125"
+  },
+  {
+   "columns": {
+    "bool_none": [
+     true,
+     null,
+     false
+    ],
+    "str_none": [
+     "a",
+     null,
+     "long text\nwith newline\tand tab"
+    ],
+    "all_none": [
+     null,
+     null,
+     null
+    ]
+   },
+   "dtypes": [
+    "object",
+    "str",
+    "object"
+   ],
+   "text": "bool_none                         str_none all_none\n     True                                a     None\n     None                              NaN     None\n    False long text\\nwith newline\\tand tab     None"
+  },
+  {
+   "columns": {
+    "object": [
+     "x",
+     1,
+     2.5
+    ],
+    "object2": [
+     true,
+     "y",
+     -1.5
+    ],
+    "unicode": [
+     "°C",
+     "Ä",
+     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ],
+    "with space": [
+     "",
+     "",
+     ""
+    ]
+   },
+   "dtypes": [
+    "object",
+    "object",
+    "str",
+    "str"
+   ],
+   "text": "object object2                        unicode with space\n     x    True                             °C           \n     1       y                              Ä           \n   2.5    -1.5 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx           "
+  },
+  {
+   "columns": {
+    "gibbs_J_per_mol_C": [
+     -3328077.123456,
+     "__nan__",
+     -3457880.5
+    ],
+    "aqueous_removed": [
+     false,
+     "__nan__",
+     true
+    ],
+    "error": [
+     "",
+     "FAILED: x, \"quoted\"",
+     ""
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "object",
+    "str"
+   ],
+   "text": " gibbs_J_per_mol_C aqueous_removed               error\n     -3.328077e+06           False                    \n               NaN             NaN FAILED: x, \"quoted\"\n     -3.457880e+06            True                    "
+  },
+  {
+   "columns": {},
+   "dtypes": [
+    "object",
+    "object",
+    "object"
+   ],
+   "text": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []"
+  }
+ ],
+ "commands": [
+  {
+   "argv": [],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: the following arguments are required: command\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\n\nHydrothermal gasification equilibrium.\n\npositional arguments:\n  {run,check,species,new,plot,gui}\n    run                 solve case files and write tables and plots\n    check               fast checks of a case file (no equation of state)\n    species             list species that can be used in case files\n    new                 write a commented case-file template\n    plot                re-plot saved results\n    gui                 open the app in its own window\n\noptions:\n  -h, --help            show this help message and exit\n  --data DATA           database folder (default: the repository data/ folder)\n"
+  },
+  {
+   "argv": [
+    "--help"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\n\nHydrothermal gasification equilibrium.\n\npositional arguments:\n  {run,check,species,new,plot,gui}\n    run                 solve case files and write tables and plots\n    check               fast checks of a case file (no equation of state)\n    species             list species that can be used in case files\n    new                 write a commented case-file template\n    plot                re-plot saved results\n    gui                 open the app in its own window\n\noptions:\n  -h, --help            show this help message and exit\n  --data DATA           database folder (default: the repository data/ folder)\n"
+  },
+  {
+   "argv": [
+    "foo"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: argument command: invalid choice: 'foo' (choose from run, check, species, new, plot, gui)\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\n\npositional arguments:\n  case\n\noptions:\n  -h, --help         show this help message and exit\n  --out OUT          output folder (one case), or parent folder (several\n                     cases); default: results/<case name>\n  --workers WORKERS  worker processes; independent points and continuation\n                     chains of all cases are shared between them\n  --no-plots\n  --user-data DIR    folder of your own species database (default:\n                     $HTG_USER_DATA, else the htg-equilibrium user data\n                     folder)\n  --no-user-species  use the shipped databases only, without your own species\n"
+  },
+  {
+   "argv": [
+    "check",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg check [-h] [--user-data DIR] [--no-user-species] case\n\npositional arguments:\n  case\n\noptions:\n  -h, --help         show this help message and exit\n  --user-data DIR    folder of your own species database (default:\n                     $HTG_USER_DATA, else the htg-equilibrium user data\n                     folder)\n  --no-user-species  use the shipped databases only, without your own species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\n\noptions:\n  -h, --help         show this help message and exit\n  --all              include species with incomplete data\n  --phase PHASE      e.g. molecular, organic, solid, ion\n  --search SEARCH    part of a name or formula\n  --user-data DIR    folder of your own species database (default:\n                     $HTG_USER_DATA, else the htg-equilibrium user data\n                     folder)\n  --no-user-species  use the shipped databases only, without your own species\n"
+  },
+  {
+   "argv": [
+    "new",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "usage: htg new [-h] case\n\npositional arguments:\n  case\n\noptions:\n  -h, --help  show this help message and exit\n"
+  },
+  {
+   "argv": [
+    "--data"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: argument --data: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "--x",
+    "species"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: --x\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--x"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: --x\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "extra"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: extra\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--phase"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --phase: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "--phase",
+    "ion"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --search: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--all=1"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --all: ignored explicit argument '1'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "x.toml",
+    "--workers",
+    "abc"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: argument --workers: invalid int value: 'abc'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "x.toml",
+    "--workers"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: argument --workers: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "--workers=2"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "a.toml",
+    "--no-plots",
+    "b.toml"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b.toml\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check"
+   ],
+   "code": 2,
+   "stderr": "usage: htg check [-h] [--user-data DIR] [--no-user-species] case\nhtg check: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "a",
+    "b"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new"
+   ],
+   "code": 2,
+   "stderr": "usage: htg new [-h] case\nhtg new: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "a",
+    "b"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "gui",
+    "--port",
+    "x"
+   ],
+   "code": 2,
+   "stderr": "usage: htg gui [-h] [--browser] [--workers WORKERS] [--port PORT]\n               [--host HOST] [--results RESULTS] [--cases CASES]\n               [--no-browser] [--user-data DIR] [--no-user-species]\nhtg gui: error: argument --port: invalid int value: 'x'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "plot"
+   ],
+   "code": 2,
+   "stderr": "usage: htg plot [-h] results\nhtg plot: error: the following arguments are required: results\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--no-user",
+    "--user-data"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --user-data: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--",
+    "--all"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: -- --all\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "--",
+    "-h"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: '-h'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "./cases/../missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'cases/../missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "--data",
+    "/nonexistent",
+    "species",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: nasa database not found: /nonexistent/Thermdat_WasteMech.txt\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "cases/manure_gas_min.toml",
+    "cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Case names must differ (they name the output folders): ['manure_gas_min', 'manure_gas_min']\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "cases/manure_gas_min.toml"
+   ],
+   "code": 1,
+   "stderr": "cases/manure_gas_min.toml already exists; choose another name.\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "no_such_folder/x.toml"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'no_such_folder/x.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/bad_syntax.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Expected ']' at the end of a table declaration (at line 46, column 8)\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/bad_value.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Invalid pressure_bar: -5.0\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "cases/cellulose_matlab.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n375.0  275.0  ready            False      \n400.0  275.0  ready            False      \n425.0  275.0  ready            False      \n450.0  275.0  ready            False      \n475.0  275.0  ready            False      \n500.0  275.0  ready            False      \n525.0  275.0  ready            False      \n550.0  275.0  ready            False      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_configurable.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n305.0  240.0  ready            False      \n310.0  240.0  ready            False      \n315.0  240.0  ready            False      \n320.0  240.0  ready            False      \n325.0  240.0  ready            False      \n330.0  240.0  ready            False      \n335.0  240.0  ready            False      \n340.0  240.0  ready            False      \n345.0  240.0  ready            False      \n350.0  240.0  ready            False      \n355.0  240.0  ready            False      \n360.0  240.0  ready            False      \n365.0  240.0  ready            False      \n370.0  240.0  ready            False      \n375.0  240.0  ready            False      \n380.0  240.0  ready            False      \n385.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n395.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n340.0  240.0  ready            False      \n360.0  240.0  ready            False      \n380.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_ions_minerals.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n340.0  240.0  ready            False      \n360.0  240.0  ready            False      \n380.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/yakaboylu2013_fig7_8.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n100.0  240.0   ready            False                                                                                                                                         \n150.0  240.0   ready            False                                                                                                                                         \n200.0  240.0   ready            False                                                                                                                                         \n250.0  240.0   ready            False                                                                                                                                         \n300.0  240.0   ready            False                                                                                                                                         \n340.0  240.0   ready            False                                                                                                                                         \n360.0  240.0   ready            False                                                                                                                                         \n380.0  240.0   ready            False                                                                                                                                         \n389.6  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 181 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n390.0  240.0   ready             True                                                                                                                                         \n400.0  240.0   ready             True                                                                                                                                         \n420.0  240.0   ready             True                                                                                                                                         \n460.0  240.0   ready             True                                                                                                                                         \n500.0  240.0   ready             True                                                                                                                                         \n540.0  240.0   ready             True                                                                                                                                         \n580.0  240.0   ready             True                                                                                                                                         \nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/case_template.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.0  240.0  ready            False      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n450.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/cellulose_matlab.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n375.0  275.0  ready            False      \n400.0  275.0  ready            False      \n425.0  275.0  ready            False      \n450.0  275.0  ready            False      \n475.0  275.0  ready            False      \n500.0  275.0  ready            False      \n525.0  275.0  ready            False      \n550.0  275.0  ready            False      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_configurable.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n305.0  240.0  ready            False      \n310.0  240.0  ready            False      \n315.0  240.0  ready            False      \n320.0  240.0  ready            False      \n325.0  240.0  ready            False      \n330.0  240.0  ready            False      \n335.0  240.0  ready            False      \n340.0  240.0  ready            False      \n345.0  240.0  ready            False      \n350.0  240.0  ready            False      \n355.0  240.0  ready            False      \n360.0  240.0  ready            False      \n365.0  240.0  ready            False      \n370.0  240.0  ready            False      \n375.0  240.0  ready            False      \n380.0  240.0  ready            False      \n385.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n395.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n340.0  240.0  ready            False      \n360.0  240.0  ready            False      \n380.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_ions_minerals.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n340.0  240.0  ready            False      \n360.0  240.0  ready            False      \n380.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/yakaboylu2013_fig7_8.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n100.0  240.0   ready            False                                                                                                                                         \n150.0  240.0   ready            False                                                                                                                                         \n200.0  240.0   ready            False                                                                                                                                         \n250.0  240.0   ready            False                                                                                                                                         \n300.0  240.0   ready            False                                                                                                                                         \n340.0  240.0   ready            False                                                                                                                                         \n360.0  240.0   ready            False                                                                                                                                         \n380.0  240.0   ready            False                                                                                                                                         \n389.6  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 181 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n390.0  240.0   ready             True                                                                                                                                         \n400.0  240.0   ready             True                                                                                                                                         \n420.0  240.0   ready             True                                                                                                                                         \n460.0  240.0   ready             True                                                                                                                                         \n500.0  240.0   ready             True                                                                                                                                         \n540.0  240.0   ready             True                                                                                                                                         \n580.0  240.0   ready             True                                                                                                                                         \nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "src/htg/templates/case_template.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.0  240.0  ready            False      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n450.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_unknown.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "  T_C  P_bar  status  aqueous_removed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        error\n300.0  240.0 invalid            False ValueError: gas: 'unobtainium' is not registered. Available species: water, hydrogen, carbon dioxide, carbon monoxide, methane, methanol, ammonia, hydrogen sulfide, nitrogen, ethane, propane, ethylene, propylene, cyclopentene, benzene, toluene, argon, sulfur dioxide, chlorine, methyl methanoate, ethyl methanoate, co, h2, o2, h2s, h₂, ethanol, acetone, h₂s, nh₃, C11H12O4, PC3H4, N2O, C-C2H3N, CH3CHNH, NOCL, C6H5, NC4H8, C4H6, SO, PYRLNE, C4H5, C4H4, C4H3, C4H2, MOIST, SH, C2H5, C2H3, C2H2, CH2CHCH2, CH3CO, CH3CN, C6H5OH, NC3H7OH, COS, CH3OO, S2, C4H4CN, CH2CHC_O, PYRLYL, CH2NH2, H2NCO, CLCO, C2H4CHO, CH2CHCN, SO3, PYRROLE, CH3NO, BNC4H4CO, IC3H7OH, C2H5OO, C4H6O2, CH3NH, CHCHCN, AC3H4, HNCO, CH3OOH, HNCN, RMTBE, C8H10O3, C4H4O, C10H8, NH2, CH2CHNH, HNO2, CN, CL, C4H3O, CH, MTBE, HSS, CH3COOH, HSO, OH, C2H5CHO, CH3CO3, C5H5N, C2-QOOH, CH3CNH, HOSO, C5H5NO, GLIET, NO, N2H3, IC4H8, N2H2, IC4H7, NH, CH2CHNH2, CH2CH2NH2, H2CN, C5H4N, CH3NCH2, CH3O, CLO, C3H4O3, C3H4CH3, C3H4O2, C9H10O2, CH2C3H5, C2H2NCO, NC3H7, C3H3, C3H2, CH2S, CH2O, CH2NO2, H2O2, CH2CO, H2NO, CH2CN, IC5H10, H2NN, C4H4NO2, C6H8O4, C2H, C6H5O, NCO, NCN, CH2OH, CH3CO3H, C6H6O3, HCO3H, ALLYLCN, CH2CHO, CHCHCH3, HCO, HCN, HCL, CH2NO, CH3OCH3, CH3OCH2, CH2NH, CVA, HOCL, NO2, C6H10O5, C2H4OH, C2H5OOH, S, NNH, CYC5H6, CYC5H5, O, N, CH2NCH2, H, HO2, CH2CNH2, HNO, C, C2H2O2, HNC, HONO, HCCO, CHCNH2, CH3COCH2, C5H4NO2, CH3CHO, CH3CHN, CH3, C3H5CN, CH2, C5H8O4, AC3H4CN, HCO3, CHCCN, HCNO, CH3CHOH, C5H4O2, C5H4NO, HCNH, C2H3CHO, HE, IC3H7, PROTC, PROTO, GNH3NO, PROTOH, PROTCC, NH3S, HCNS, CHARN, TARN, CELL, GMSW, XYHW, XYGR, LIGC, LIGH, LIGO, TGL, TANN, TANNH, ASH, CELLA, HCE1, HCE2, LIGCC, LIGOH, LIG, ITANN, CHAR, CHARO, COH2S, CO2S, COSTIFFS, CH3OHS, CH4S, C2H4S, C6H5OHS, CH2OS, C2H6S, LVGS\n350.0  240.0 invalid            False ValueError: gas: 'unobtainium' is not registered. Available species: water, hydrogen, carbon dioxide, carbon monoxide, methane, methanol, ammonia, hydrogen sulfide, nitrogen, ethane, propane, ethylene, propylene, cyclopentene, benzene, toluene, argon, sulfur dioxide, chlorine, methyl methanoate, ethyl methanoate, co, h2, o2, h2s, h₂, ethanol, acetone, h₂s, nh₃, C11H12O4, PC3H4, N2O, C-C2H3N, CH3CHNH, NOCL, C6H5, NC4H8, C4H6, SO, PYRLNE, C4H5, C4H4, C4H3, C4H2, MOIST, SH, C2H5, C2H3, C2H2, CH2CHCH2, CH3CO, CH3CN, C6H5OH, NC3H7OH, COS, CH3OO, S2, C4H4CN, CH2CHC_O, PYRLYL, CH2NH2, H2NCO, CLCO, C2H4CHO, CH2CHCN, SO3, PYRROLE, CH3NO, BNC4H4CO, IC3H7OH, C2H5OO, C4H6O2, CH3NH, CHCHCN, AC3H4, HNCO, CH3OOH, HNCN, RMTBE, C8H10O3, C4H4O, C10H8, NH2, CH2CHNH, HNO2, CN, CL, C4H3O, CH, MTBE, HSS, CH3COOH, HSO, OH, C2H5CHO, CH3CO3, C5H5N, C2-QOOH, CH3CNH, HOSO, C5H5NO, GLIET, NO, N2H3, IC4H8, N2H2, IC4H7, NH, CH2CHNH2, CH2CH2NH2, H2CN, C5H4N, CH3NCH2, CH3O, CLO, C3H4O3, C3H4CH3, C3H4O2, C9H10O2, CH2C3H5, C2H2NCO, NC3H7, C3H3, C3H2, CH2S, CH2O, CH2NO2, H2O2, CH2CO, H2NO, CH2CN, IC5H10, H2NN, C4H4NO2, C6H8O4, C2H, C6H5O, NCO, NCN, CH2OH, CH3CO3H, C6H6O3, HCO3H, ALLYLCN, CH2CHO, CHCHCH3, HCO, HCN, HCL, CH2NO, CH3OCH3, CH3OCH2, CH2NH, CVA, HOCL, NO2, C6H10O5, C2H4OH, C2H5OOH, S, NNH, CYC5H6, CYC5H5, O, N, CH2NCH2, H, HO2, CH2CNH2, HNO, C, C2H2O2, HNC, HONO, HCCO, CHCNH2, CH3COCH2, C5H4NO2, CH3CHO, CH3CHN, CH3, C3H5CN, CH2, C5H8O4, AC3H4CN, HCO3, CHCCN, HCNO, CH3CHOH, C5H4O2, C5H4NO, HCNH, C2H3CHO, HE, IC3H7, PROTC, PROTO, GNH3NO, PROTOH, PROTCC, NH3S, HCNS, CHARN, TARN, CELL, GMSW, XYHW, XYGR, LIGC, LIGH, LIGO, TGL, TANN, TANNH, ASH, CELLA, HCE1, HCE2, LIGCC, LIGOH, LIG, ITANN, CHAR, CHARO, COH2S, CO2S, COSTIFFS, CH3OHS, CH4S, C2H4S, C6H5OHS, CH2OS, C2H6S, LVGS\n390.0  240.0 invalid             True ValueError: gas: 'unobtainium' is not registered. Available species: water, hydrogen, carbon dioxide, carbon monoxide, methane, methanol, ammonia, hydrogen sulfide, nitrogen, ethane, propane, ethylene, propylene, cyclopentene, benzene, toluene, argon, sulfur dioxide, chlorine, methyl methanoate, ethyl methanoate, co, h2, o2, h2s, h₂, ethanol, acetone, h₂s, nh₃, C11H12O4, PC3H4, N2O, C-C2H3N, CH3CHNH, NOCL, C6H5, NC4H8, C4H6, SO, PYRLNE, C4H5, C4H4, C4H3, C4H2, MOIST, SH, C2H5, C2H3, C2H2, CH2CHCH2, CH3CO, CH3CN, C6H5OH, NC3H7OH, COS, CH3OO, S2, C4H4CN, CH2CHC_O, PYRLYL, CH2NH2, H2NCO, CLCO, C2H4CHO, CH2CHCN, SO3, PYRROLE, CH3NO, BNC4H4CO, IC3H7OH, C2H5OO, C4H6O2, CH3NH, CHCHCN, AC3H4, HNCO, CH3OOH, HNCN, RMTBE, C8H10O3, C4H4O, C10H8, NH2, CH2CHNH, HNO2, CN, CL, C4H3O, CH, MTBE, HSS, CH3COOH, HSO, OH, C2H5CHO, CH3CO3, C5H5N, C2-QOOH, CH3CNH, HOSO, C5H5NO, GLIET, NO, N2H3, IC4H8, N2H2, IC4H7, NH, CH2CHNH2, CH2CH2NH2, H2CN, C5H4N, CH3NCH2, CH3O, CLO, C3H4O3, C3H4CH3, C3H4O2, C9H10O2, CH2C3H5, C2H2NCO, NC3H7, C3H3, C3H2, CH2S, CH2O, CH2NO2, H2O2, CH2CO, H2NO, CH2CN, IC5H10, H2NN, C4H4NO2, C6H8O4, C2H, C6H5O, NCO, NCN, CH2OH, CH3CO3H, C6H6O3, HCO3H, ALLYLCN, CH2CHO, CHCHCH3, HCO, HCN, HCL, CH2NO, CH3OCH3, CH3OCH2, CH2NH, CVA, HOCL, NO2, C6H10O5, C2H4OH, C2H5OOH, S, NNH, CYC5H6, CYC5H5, O, N, CH2NCH2, H, HO2, CH2CNH2, HNO, C, C2H2O2, HNC, HONO, HCCO, CHCNH2, CH3COCH2, C5H4NO2, CH3CHO, CH3CHN, CH3, C3H5CN, CH2, C5H8O4, AC3H4CN, HCO3, CHCCN, HCNO, CH3CHOH, C5H4O2, C5H4NO, HCNH, C2H3CHO, HE, IC3H7, PROTC, PROTO, GNH3NO, PROTOH, PROTCC, NH3S, HCNS, CHARN, TARN, CELL, GMSW, XYHW, XYGR, LIGC, LIGH, LIGO, TGL, TANN, TANNH, ASH, CELLA, HCE1, HCE2, LIGCC, LIGOH, LIG, ITANN, CHAR, CHARO, COH2S, CO2S, COSTIFFS, CH3OHS, CH4S, C2H4S, C6H5OHS, CH2OS, C2H6S, LVGS\n400.0  240.0 invalid             True ValueError: gas: 'unobtainium' is not registered. Available species: water, hydrogen, carbon dioxide, carbon monoxide, methane, methanol, ammonia, hydrogen sulfide, nitrogen, ethane, propane, ethylene, propylene, cyclopentene, benzene, toluene, argon, sulfur dioxide, chlorine, methyl methanoate, ethyl methanoate, co, h2, o2, h2s, h₂, ethanol, acetone, h₂s, nh₃, C11H12O4, PC3H4, N2O, C-C2H3N, CH3CHNH, NOCL, C6H5, NC4H8, C4H6, SO, PYRLNE, C4H5, C4H4, C4H3, C4H2, MOIST, SH, C2H5, C2H3, C2H2, CH2CHCH2, CH3CO, CH3CN, C6H5OH, NC3H7OH, COS, CH3OO, S2, C4H4CN, CH2CHC_O, PYRLYL, CH2NH2, H2NCO, CLCO, C2H4CHO, CH2CHCN, SO3, PYRROLE, CH3NO, BNC4H4CO, IC3H7OH, C2H5OO, C4H6O2, CH3NH, CHCHCN, AC3H4, HNCO, CH3OOH, HNCN, RMTBE, C8H10O3, C4H4O, C10H8, NH2, CH2CHNH, HNO2, CN, CL, C4H3O, CH, MTBE, HSS, CH3COOH, HSO, OH, C2H5CHO, CH3CO3, C5H5N, C2-QOOH, CH3CNH, HOSO, C5H5NO, GLIET, NO, N2H3, IC4H8, N2H2, IC4H7, NH, CH2CHNH2, CH2CH2NH2, H2CN, C5H4N, CH3NCH2, CH3O, CLO, C3H4O3, C3H4CH3, C3H4O2, C9H10O2, CH2C3H5, C2H2NCO, NC3H7, C3H3, C3H2, CH2S, CH2O, CH2NO2, H2O2, CH2CO, H2NO, CH2CN, IC5H10, H2NN, C4H4NO2, C6H8O4, C2H, C6H5O, NCO, NCN, CH2OH, CH3CO3H, C6H6O3, HCO3H, ALLYLCN, CH2CHO, CHCHCH3, HCO, HCN, HCL, CH2NO, CH3OCH3, CH3OCH2, CH2NH, CVA, HOCL, NO2, C6H10O5, C2H4OH, C2H5OOH, S, NNH, CYC5H6, CYC5H5, O, N, CH2NCH2, H, HO2, CH2CNH2, HNO, C, C2H2O2, HNC, HONO, HCCO, CHCNH2, CH3COCH2, C5H4NO2, CH3CHO, CH3CHN, CH3, C3H5CN, CH2, C5H8O4, AC3H4CN, HCO3, CHCCN, HCNO, CH3CHOH, C5H4O2, C5H4NO, HCNH, C2H3CHO, HE, IC3H7, PROTC, PROTO, GNH3NO, PROTOH, PROTCC, NH3S, HCNS, CHARN, TARN, CELL, GMSW, XYHW, XYGR, LIGC, LIGH, LIGO, TGL, TANN, TANNH, ASH, CELLA, HCE1, HCE2, LIGCC, LIGOH, LIG, ITANN, CHAR, CHARO, COH2S, CO2S, COSTIFFS, CH3OHS, CH4S, C2H4S, C6H5OHS, CH2OS, C2H6S, LVGS\n450.0  240.0 invalid             True ValueError: gas: 'unobtainium' is not registered. Available species: water, hydrogen, carbon dioxide, carbon monoxide, methane, methanol, ammonia, hydrogen sulfide, nitrogen, ethane, propane, ethylene, propylene, cyclopentene, benzene, toluene, argon, sulfur dioxide, chlorine, methyl methanoate, ethyl methanoate, co, h2, o2, h2s, h₂, ethanol, acetone, h₂s, nh₃, C11H12O4, PC3H4, N2O, C-C2H3N, CH3CHNH, NOCL, C6H5, NC4H8, C4H6, SO, PYRLNE, C4H5, C4H4, C4H3, C4H2, MOIST, SH, C2H5, C2H3, C2H2, CH2CHCH2, CH3CO, CH3CN, C6H5OH, NC3H7OH, COS, CH3OO, S2, C4H4CN, CH2CHC_O, PYRLYL, CH2NH2, H2NCO, CLCO, C2H4CHO, CH2CHCN, SO3, PYRROLE, CH3NO, BNC4H4CO, IC3H7OH, C2H5OO, C4H6O2, CH3NH, CHCHCN, AC3H4, HNCO, CH3OOH, HNCN, RMTBE, C8H10O3, C4H4O, C10H8, NH2, CH2CHNH, HNO2, CN, CL, C4H3O, CH, MTBE, HSS, CH3COOH, HSO, OH, C2H5CHO, CH3CO3, C5H5N, C2-QOOH, CH3CNH, HOSO, C5H5NO, GLIET, NO, N2H3, IC4H8, N2H2, IC4H7, NH, CH2CHNH2, CH2CH2NH2, H2CN, C5H4N, CH3NCH2, CH3O, CLO, C3H4O3, C3H4CH3, C3H4O2, C9H10O2, CH2C3H5, C2H2NCO, NC3H7, C3H3, C3H2, CH2S, CH2O, CH2NO2, H2O2, CH2CO, H2NO, CH2CN, IC5H10, H2NN, C4H4NO2, C6H8O4, C2H, C6H5O, NCO, NCN, CH2OH, CH3CO3H, C6H6O3, HCO3H, ALLYLCN, CH2CHO, CHCHCH3, HCO, HCN, HCL, CH2NO, CH3OCH3, CH3OCH2, CH2NH, CVA, HOCL, NO2, C6H10O5, C2H4OH, C2H5OOH, S, NNH, CYC5H6, CYC5H5, O, N, CH2NCH2, H, HO2, CH2CNH2, HNO, C, C2H2O2, HNC, HONO, HCCO, CHCNH2, CH3COCH2, C5H4NO2, CH3CHO, CH3CHN, CH3, C3H5CN, CH2, C5H8O4, AC3H4CN, HCO3, CHCCN, HCNO, CH3CHOH, C5H4O2, C5H4NO, HCNH, C2H3CHO, HE, IC3H7, PROTC, PROTO, GNH3NO, PROTOH, PROTCC, NH3S, HCNS, CHARN, TARN, CELL, GMSW, XYHW, XYGR, LIGC, LIGH, LIGO, TGL, TANN, TANNH, ASH, CELLA, HCE1, HCE2, LIGCC, LIGOH, LIG, ITANN, CHAR, CHARO, COH2S, CO2S, COSTIFFS, CH3OHS, CH4S, C2H4S, C6H5OHS, CH2OS, C2H6S, LVGS\nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_no_cutoff.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n300.0  240.0   ready            False                                                                                                                                         \n350.0  240.0   ready            False                                                                                                                                         \n400.0  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 149 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n450.0  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 102 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_hot.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "   T_C  P_bar status  aqueous_removed error\n 300.0  240.0  ready            False      \n 390.0  240.0  ready             True      \n3500.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_mineral.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "   T_C  P_bar  status  aqueous_removed                                                              error\n 300.0  240.0   ready            False                                                                   \n 390.0  240.0   ready             True                                                                   \n1200.0  240.0 invalid             True ValueError: Halite: T=1473.15 K outside supported [298.15, 1073] K\nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_points.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.5  250.0  ready            False      \n400.0    1.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "            Species                      Formula       Phase\n            methane                          CH4   molecular\n             ethane                         C2H6   molecular\n            propane                         C3H8   molecular\n           ethylene                         C2H4   molecular\n          propylene                         C3H6   molecular\n       cyclopentene                         C5H8   molecular\n            benzene                         C6H6   molecular\n            toluene                         C7H8   molecular\n    carbon monoxide                           CO   molecular\n           nitrogen                           N2   molecular\n              argon                           Ar   molecular\n     carbon dioxide                          CO2   molecular\n     sulfur dioxide                          SO2   molecular\n           chlorine                          Cl2   molecular\n  methyl methanoate                       C2H4O2   molecular\n   ethyl methanoate                       C3H6O2   molecular\n                 co                           CO   molecular\n                 h2                           H2   molecular\n                 o2                           O2   molecular\n                h2s                          H2S   molecular\n                 h₂                           H2   molecular\n           methanol                        CH3OH   molecular\n            ethanol                       C2H5OH   molecular\n            acetone                        C3H6O   molecular\n                h₂s                          H2S   molecular\n                nh₃                          NH3   molecular\n              water                          H2O   molecular\n                H2S                          H2S       solid\n              MOIST                        MOIST       solid\n                COS                          COS       solid\n              PROTC                        PROTC       solid\n              PROTO                        PROTO       solid\n             GNH3NO                       GNH3NO       solid\n             PROTOH                       PROTOH       solid\n             PROTCC                       PROTCC       solid\n               NH3S                         NH3S       solid\n               HCNS                         HCNS       solid\n              CHARN                        CHARN       solid\n               CELL                         CELL       solid\n               GMSW                         GMSW       solid\n               XYHW                         XYHW       solid\n               XYGR                         XYGR       solid\n               LIGC                         LIGC       solid\n               LIGH                         LIGH       solid\n               LIGO                         LIGO       solid\n                TGL                          TGL       solid\n               TANN                         TANN       solid\n              TANNH                        TANNH       solid\n                ASH                          ASH       solid\n              CELLA                        CELLA       solid\n               HCE1                         HCE1       solid\n               HCE2                         HCE2       solid\n              LIGCC                        LIGCC       solid\n              LIGOH                        LIGOH       solid\n                LIG                          LIG       solid\n              ITANN                        ITANN       solid\n               CHAR                         CHAR       solid\n              CHARO                        CHARO       solid\n              COH2S                        COH2S       solid\n               CO2S                         CO2S       solid\n           COSTIFFS                     COSTIFFS       solid\n             CH3OHS                       CH3OHS       solid\n               CH4S                         CH4S       solid\n              C2H4S                        C2H4S       solid\n            C6H5OHS                      C6H5OHS       solid\n              CH2OS                        CH2OS       solid\n              C2H6S                        C2H6S       solid\n               LVGS                         LVGS       solid\n             carbon                            C       solid\n          cellulose                      C6H10O5       solid\n            Lignin1                     C22H28O9       solid\n                Na+                          Na+ aqueous ion\n                 K+                           K+ aqueous ion\n                Cs+                          Cs+ aqueous ion\n                Cl-                          Cl- aqueous ion\n              HCO3-                        HCO3- aqueous ion\n             CO3^2-                       CO3^2- aqueous ion\n                Li+                          Li+ aqueous ion\n               Mg2+                         Mg2+ aqueous ion\n         Akermanite                   Ca2MgSi2O7       solid\n         Alabandite                          MnS       solid\n         Albite,low                  Na(AlSi3)O8       solid\n            Alunite              KAl3(OH)6(SO4)2       solid\n   Amorphous-Silica                    SiO2*NH2O       solid\n           Analcime                NaAlSi2O6*H2O       solid\nAnalcime,dehydrated                    NaAlSi2O6       solid\n         Andalusite                      Al2SiO5       solid\n          Andradite                 Ca3Fe2Si3O12       solid\n          Anglesite                        PbSO4       solid\n          Anhydrite                        CaSO4       solid\n             Annite          KFe3(AlSi3)O10(OH)2       solid\n          Anorthite                 Ca(Al2Si2)O8       solid\n          Aragonite                        CaCO3       solid\n           Artinite           Mg2(OH)2(CO3)*3H2O       solid\n            Azurite               Cu3(OH)2(CO3)2       solid\n             Barite                        BaSO4       solid\n          Berndtite                         SnS2       solid\n           Boehmite                      AlO(OH)       solid\n            Brucite                      Mg(OH)2       solid\n     Ca-Al-Pyroxene                 CaAl(AlSi)O6       solid\n            Calcite                        CaCO3       solid\n        Cassiterite                         SnO2       solid\n          Celestite                        SrSO4       solid\n          Cerussite                        PbCO3       solid\n         Chalcedony                         SiO2       solid\n      Chlorargyrite                         AgCl       solid\n         Chrysotile                Mg3Si2O5(OH)4       solid\n           Cinnabar                          HgS       solid\n    Clinochlore,14A         Mg5Al(AlSi3)O10(OH)8       solid\n       Clinozoisite             Ca2Al3Si3O12(OH)       solid\n             Copper                           Cu       solid\n         Cordierite             Mg2Al3(AlSi5)O18       solid\n Cordierite,hydrous         Mg2Al3(AlSi5)O18*H2O       solid\n           Corundum                        Al2O3       solid\n          Covellite                          CuS       solid\n Cristobalite,alpha                         SiO2       solid\n  Cristobalite,beta                         SiO2       solid\n            Cuprite                         Cu2O       solid\n       Daphnite,14A         Fe5Al(AlSi3)O10(OH)8       solid\n           Diaspore                      AlO(OH)       solid\n           Diopside                  CaMg(SiO3)2       solid\n           Dolomite                   CaMg(CO3)2       solid\n       Dolomite,dis                   CaMg(CO3)2       solid\n       Dolomite,ord                   CaMg(CO3)2       solid\n            Epidote           Ca2FeAl2Si3O12(OH)       solid\n        Epidote,ord           Ca2FeAl2Si3O12(OH)       solid\n           Fayalite                      Fe2SiO4       solid\n     Ferropargasite Na(Ca2Fe4Al)(Al2Si6)O22(OH)2       solid\n     Ferrotremolite          (Ca2Fe5)Si8O22(OH)2       solid\n      Ferrous-Oxide                          FeO       solid\n           Fluorite                         CaF2       solid\n         Forsterite                      Mg2SiO4       solid\n             Galena                          PbS       solid\n          Gehlenite                 Ca2(Al2Si)O7       solid\n           Gibbsite                      Al(OH)3       solid\n               Gold                           Au       solid\n           Graphite                            C       solid\n         Greenalite                Fe3Si2O5(OH)4       solid\n          Grossular                 Ca3Al2Si3O12       solid\n             Halite                         NaCl       solid\n       Hedenbergite                  CaFe(SiO3)2       solid\n            Huntite                  CaMg3(CO3)4       solid\n     Hydromagnesite          Mg5(OH)2(CO3)4*4H2O       solid\n            Jadeite                  NaAl(SiO3)2       solid\n         K-Feldspar                   K(AlSi3)O8       solid\n          Kaolinite                Al2Si2O5(OH)4       solid\n            Kyanite                      Al2SiO5       solid\n            Laurite                         RuS2       solid\n         Laumontite           Ca(Al2Si4)O12*4H2O       solid\n               Lime                          CaO       solid\n          Magnesite                        MgCO3       solid\n          Malachite                Cu2(OH)2(CO3)       solid\n        Manganosite                          MnO       solid\n          Merwinite                 Ca3Mg(SiO4)2       solid\n       Metacinnabar                          HgS       solid\n Microcline,maximum                   K(AlSi3)O8       solid\n       Monticellite                     CaMgSiO4       solid\n          Muscovite          KAl2(AlSi3)O10(OH)2       solid\n          Nepheline                   Na(AlSi)O4       solid\n          Palladium                           Pd       solid\n         Paragonite         NaAl2(AlSi3)O10(OH)2       solid\n          Pargasite Na(Ca2Mg4Al)(Al2Si6)O22(OH)2       solid\n          Periclase                          MgO       solid\n         Phlogopite          KMg3(AlSi3)O10(OH)2       solid\n           Platinum                           Pt       solid\n    Potassium-Oxide                          K2O       solid\n             Pyrite                         FeS2       solid\n       Pyrophyllite               Al2Si4O10(OH)2       solid\n            Pd(OH)2                      Pd(OH)2       solid\n               Pd4S                         Pd4S       solid\n                PdO                          PdO       solid\n                PdS                   Vysotskite       solid\n                PtS                    Cooperite       solid\n               PtS2                         PtS2       solid\n            Rhodium                           Rh       solid\n      Rhodochrosite                        MnCO3       solid\n         Romarchite                          SnO       solid\n          Ruthenium                           Ru       solid\n             Rutile                         TiO2       solid\n              Rh2O3                        Rh2O3       solid\n               RuO2                    Ru(1)O(2)       solid\n      Sanidine,high                   K(AlSi3)O8       solid\n          Sepiolite    Mg4Si6O15(OH)2(H2O)2*4H2O       solid\n           Siderite                        FeCO3       solid\n        Sillimanite                      Al2SiO5       solid\n             Silver                           Ag       solid\n        Smithsonite                        ZnCO3       solid\n       Sodium-Oxide                         Na2O       solid\n         Sphalerite                          ZnS       solid\n             Spinel                      MgAl2O4       solid\n       Strontianite                        SrCO3       solid\n            Sylvite                          KCl       solid\n               Talc               Mg3Si4O10(OH)2       solid\n           Tenorite                          CuO       solid\n           Titanite                     CaTiSiO5       solid\n          Tremolite          (Ca2Mg5)Si8O22(OH)2       solid\n          Uraninite                          UO2       solid\n               PdS2                         PdS2       solid\n          Wairakite           Ca(Al2Si4)O12*2H2O       solid\n       Wollastonite                       CaSiO3       solid\n           Wurtzite                          ZnS       solid\n            Zincite                          ZnO       solid\n            Zoisite             Ca2Al3Si3O12(OH)       solid\n           Litharge                          PbO       solid\n204 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "1aa1bd089aba6254b5f8ad568ae70016951a24bf76bc6433b130bf6b1f22c4b8",
+   "stdout_lines": 1902,
+   "stdout_head": "               Species                      Formula          Phase  Ready                                                                                                                               Reason\n               methane                          CH4      molecular   True                                                                                                                                ready\n                ethane                         C2H6      molecular   True                                                                                                                                ready\n               propane                         C3H8      molecular   True                                                                                                                                ready\n                butane                        C4H10      molecular  False                                                                                                       NASA mapping missing/ambiguous\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "ion",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula       Phase\n    Na+     Na+ aqueous ion\n     K+      K+ aqueous ion\n    Cs+     Cs+ aqueous ion\n    Cl-     Cl- aqueous ion\n  HCO3-   HCO3- aqueous ion\n CO3^2-  CO3^2- aqueous ion\n    Li+     Li+ aqueous ion\n   Mg2+    Mg2+ aqueous ion\n8 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "solid",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "            Species                      Formula Phase\n                H2S                          H2S solid\n              MOIST                        MOIST solid\n                COS                          COS solid\n              PROTC                        PROTC solid\n              PROTO                        PROTO solid\n             GNH3NO                       GNH3NO solid\n             PROTOH                       PROTOH solid\n             PROTCC                       PROTCC solid\n               NH3S                         NH3S solid\n               HCNS                         HCNS solid\n              CHARN                        CHARN solid\n               CELL                         CELL solid\n               GMSW                         GMSW solid\n               XYHW                         XYHW solid\n               XYGR                         XYGR solid\n               LIGC                         LIGC solid\n               LIGH                         LIGH solid\n               LIGO                         LIGO solid\n                TGL                          TGL solid\n               TANN                         TANN solid\n              TANNH                        TANNH solid\n                ASH                          ASH solid\n              CELLA                        CELLA solid\n               HCE1                         HCE1 solid\n               HCE2                         HCE2 solid\n              LIGCC                        LIGCC solid\n              LIGOH                        LIGOH solid\n                LIG                          LIG solid\n              ITANN                        ITANN solid\n               CHAR                         CHAR solid\n              CHARO                        CHARO solid\n              COH2S                        COH2S solid\n               CO2S                         CO2S solid\n           COSTIFFS                     COSTIFFS solid\n             CH3OHS                       CH3OHS solid\n               CH4S                         CH4S solid\n              C2H4S                        C2H4S solid\n            C6H5OHS                      C6H5OHS solid\n              CH2OS                        CH2OS solid\n              C2H6S                        C2H6S solid\n               LVGS                         LVGS solid\n             carbon                            C solid\n          cellulose                      C6H10O5 solid\n            Lignin1                     C22H28O9 solid\n         Akermanite                   Ca2MgSi2O7 solid\n         Alabandite                          MnS solid\n         Albite,low                  Na(AlSi3)O8 solid\n            Alunite              KAl3(OH)6(SO4)2 solid\n   Amorphous-Silica                    SiO2*NH2O solid\n           Analcime                NaAlSi2O6*H2O solid\nAnalcime,dehydrated                    NaAlSi2O6 solid\n         Andalusite                      Al2SiO5 solid\n          Andradite                 Ca3Fe2Si3O12 solid\n          Anglesite                        PbSO4 solid\n          Anhydrite                        CaSO4 solid\n             Annite          KFe3(AlSi3)O10(OH)2 solid\n          Anorthite                 Ca(Al2Si2)O8 solid\n          Aragonite                        CaCO3 solid\n           Artinite           Mg2(OH)2(CO3)*3H2O solid\n            Azurite               Cu3(OH)2(CO3)2 solid\n             Barite                        BaSO4 solid\n          Berndtite                         SnS2 solid\n           Boehmite                      AlO(OH) solid\n            Brucite                      Mg(OH)2 solid\n     Ca-Al-Pyroxene                 CaAl(AlSi)O6 solid\n            Calcite                        CaCO3 solid\n        Cassiterite                         SnO2 solid\n          Celestite                        SrSO4 solid\n          Cerussite                        PbCO3 solid\n         Chalcedony                         SiO2 solid\n      Chlorargyrite                         AgCl solid\n         Chrysotile                Mg3Si2O5(OH)4 solid\n           Cinnabar                          HgS solid\n    Clinochlore,14A         Mg5Al(AlSi3)O10(OH)8 solid\n       Clinozoisite             Ca2Al3Si3O12(OH) solid\n             Copper                           Cu solid\n         Cordierite             Mg2Al3(AlSi5)O18 solid\n Cordierite,hydrous         Mg2Al3(AlSi5)O18*H2O solid\n           Corundum                        Al2O3 solid\n          Covellite                          CuS solid\n Cristobalite,alpha                         SiO2 solid\n  Cristobalite,beta                         SiO2 solid\n            Cuprite                         Cu2O solid\n       Daphnite,14A         Fe5Al(AlSi3)O10(OH)8 solid\n           Diaspore                      AlO(OH) solid\n           Diopside                  CaMg(SiO3)2 solid\n           Dolomite                   CaMg(CO3)2 solid\n       Dolomite,dis                   CaMg(CO3)2 solid\n       Dolomite,ord                   CaMg(CO3)2 solid\n            Epidote           Ca2FeAl2Si3O12(OH) solid\n        Epidote,ord           Ca2FeAl2Si3O12(OH) solid\n           Fayalite                      Fe2SiO4 solid\n     Ferropargasite Na(Ca2Fe4Al)(Al2Si6)O22(OH)2 solid\n     Ferrotremolite          (Ca2Fe5)Si8O22(OH)2 solid\n      Ferrous-Oxide                          FeO solid\n           Fluorite                         CaF2 solid\n         Forsterite                      Mg2SiO4 solid\n             Galena                          PbS solid\n          Gehlenite                 Ca2(Al2Si)O7 solid\n           Gibbsite                      Al(OH)3 solid\n               Gold                           Au solid\n           Graphite                            C solid\n         Greenalite                Fe3Si2O5(OH)4 solid\n          Grossular                 Ca3Al2Si3O12 solid\n             Halite                         NaCl solid\n       Hedenbergite                  CaFe(SiO3)2 solid\n            Huntite                  CaMg3(CO3)4 solid\n     Hydromagnesite          Mg5(OH)2(CO3)4*4H2O solid\n            Jadeite                  NaAl(SiO3)2 solid\n         K-Feldspar                   K(AlSi3)O8 solid\n          Kaolinite                Al2Si2O5(OH)4 solid\n            Kyanite                      Al2SiO5 solid\n            Laurite                         RuS2 solid\n         Laumontite           Ca(Al2Si4)O12*4H2O solid\n               Lime                          CaO solid\n          Magnesite                        MgCO3 solid\n          Malachite                Cu2(OH)2(CO3) solid\n        Manganosite                          MnO solid\n          Merwinite                 Ca3Mg(SiO4)2 solid\n       Metacinnabar                          HgS solid\n Microcline,maximum                   K(AlSi3)O8 solid\n       Monticellite                     CaMgSiO4 solid\n          Muscovite          KAl2(AlSi3)O10(OH)2 solid\n          Nepheline                   Na(AlSi)O4 solid\n          Palladium                           Pd solid\n         Paragonite         NaAl2(AlSi3)O10(OH)2 solid\n          Pargasite Na(Ca2Mg4Al)(Al2Si6)O22(OH)2 solid\n          Periclase                          MgO solid\n         Phlogopite          KMg3(AlSi3)O10(OH)2 solid\n           Platinum                           Pt solid\n    Potassium-Oxide                          K2O solid\n             Pyrite                         FeS2 solid\n       Pyrophyllite               Al2Si4O10(OH)2 solid\n            Pd(OH)2                      Pd(OH)2 solid\n               Pd4S                         Pd4S solid\n                PdO                          PdO solid\n                PdS                   Vysotskite solid\n                PtS                    Cooperite solid\n               PtS2                         PtS2 solid\n            Rhodium                           Rh solid\n      Rhodochrosite                        MnCO3 solid\n         Romarchite                          SnO solid\n          Ruthenium                           Ru solid\n             Rutile                         TiO2 solid\n              Rh2O3                        Rh2O3 solid\n               RuO2                    Ru(1)O(2) solid\n      Sanidine,high                   K(AlSi3)O8 solid\n          Sepiolite    Mg4Si6O15(OH)2(H2O)2*4H2O solid\n           Siderite                        FeCO3 solid\n        Sillimanite                      Al2SiO5 solid\n             Silver                           Ag solid\n        Smithsonite                        ZnCO3 solid\n       Sodium-Oxide                         Na2O solid\n         Sphalerite                          ZnS solid\n             Spinel                      MgAl2O4 solid\n       Strontianite                        SrCO3 solid\n            Sylvite                          KCl solid\n               Talc               Mg3Si4O10(OH)2 solid\n           Tenorite                          CuO solid\n           Titanite                     CaTiSiO5 solid\n          Tremolite          (Ca2Mg5)Si8O22(OH)2 solid\n          Uraninite                          UO2 solid\n               PdS2                         PdS2 solid\n          Wairakite           Ca(Al2Si4)O12*2H2O solid\n       Wollastonite                       CaSiO3 solid\n           Wurtzite                          ZnS solid\n            Zincite                          ZnO solid\n            Zoisite             Ca2Al3Si3O12(OH) solid\n           Litharge                          PbO solid\n169 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "molecular",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "19f92340e6a7f12a5b98ad7eca5116b80a8c1a823e4817d22423c1f14b1fa62a",
+   "stdout_lines": 302,
+   "stdout_head": "               Species      Formula     Phase  Ready                                                                                                                               Reason\n               methane          CH4 molecular   True                                                                                                                                ready\n                ethane         C2H6 molecular   True                                                                                                                                ready\n               propane         C3H8 molecular   True                                                                                                                                ready\n                butane        C4H10 molecular  False                                                                                                       NASA mapping missing/ambiguous\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "SUPCRT",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "77b14083e6331c6c2e09417e2b19c301d345c19a7b322a6a6c7109043e0e41ab",
+   "stdout_lines": 1351,
+   "stdout_head": "               Species               Formula          Phase  Ready                                                            Reason\n                 Ar(g)                    Ar SUPCRT Gaseous  False SUPCRT reference present; matching EOS/reference adapter required\n                CH4(g)                   CH4 SUPCRT Gaseous  False SUPCRT reference present; matching EOS/reference adapter required\n              C6H6O(g)                 C6H6O SUPCRT Gaseous  False SUPCRT reference present; matching EOS/reference adapter required\n           o-Cresol(g)                 C7H8O SUPCRT Gaseous  False SUPCRT reference present; matching EOS/reference adapter required\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "meth",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "          Species Formula     Phase\n          methane     CH4 molecular\nmethyl methanoate  C2H4O2 molecular\n ethyl methanoate  C3H6O2 molecular\n         methanol   CH3OH molecular\n4 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "CO2",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "3bd6cbfd4cca9a782e12d8a78e6b0d2d2bb721a1b1633821718fc857226c92ee",
+   "stdout_lines": 193,
+   "stdout_head": "        Species               Formula          Phase  Ready                                                                                                                               Reason\n carbon dioxide                   CO2      molecular   True                                                                                                                                ready\n           CO2S                  CO2S      molecular  False NASA available; no resolved SAFT mapping. Add SAFT parameters, or a [nasa_names] entry in species.toml (see docs/adding_species.md).\n           CO2S                  CO2S          solid   True                                                                                                                           NASA solid\n         CO2(g)                   CO2 SUPCRT Gaseous  False                                                                    SUPCRT reference present; matching EOS/reference adapter required\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "zzz",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "zzz",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase, Ready, Reason]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "organic",
+    "--search",
+    "ene",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--ph",
+    "^(?:ion|solid)$",
+    "--sea",
+    "Na",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "            Species                      Formula Phase\n         Albite,low                  Na(AlSi3)O8 solid\n           Analcime                NaAlSi2O6*H2O solid\nAnalcime,dehydrated                    NaAlSi2O6 solid\n           Cinnabar                          HgS solid\n     Ferropargasite Na(Ca2Fe4Al)(Al2Si6)O22(OH)2 solid\n             Galena                          PbS solid\n         Greenalite                Fe3Si2O5(OH)4 solid\n             Halite                         NaCl solid\n            Jadeite                  NaAl(SiO3)2 solid\n       Metacinnabar                          HgS solid\n          Nepheline                   Na(AlSi)O4 solid\n         Paragonite         NaAl2(AlSi3)O10(OH)2 solid\n          Pargasite Na(Ca2Mg4Al)(Al2Si6)O22(OH)2 solid\n       Sodium-Oxide                         Na2O solid\n14 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase=aq",
+    "--search=H",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula       Phase\n  HCO3-   HCO3- aqueous ion\n1 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "            Species                      Formula       Phase\n           testanol                      C9H12O3   molecular\n            propane                         C3H8   molecular\n           ethylene                         C2H4   molecular\n          propylene                         C3H6   molecular\n       cyclopentene                         C5H8   molecular\n            benzene                         C6H6   molecular\n            toluene                         C7H8   molecular\n    carbon monoxide                           CO   molecular\n           nitrogen                           N2   molecular\n              argon                           Ar   molecular\n     carbon dioxide                          CO2   molecular\n     sulfur dioxide                          SO2   molecular\n           chlorine                          Cl2   molecular\n  methyl methanoate                       C2H4O2   molecular\n   ethyl methanoate                       C3H6O2   molecular\n                 co                           CO   molecular\n                 h2                           H2   molecular\n                 o2                           O2   molecular\n                h2s                          H2S   molecular\n                 h₂                           H2   molecular\n           methanol                        CH3OH   molecular\n            ethanol                       C2H5OH   molecular\n            acetone                        C3H6O   molecular\n                h₂s                          H2S   molecular\n                nh₃                          NH3   molecular\n             testol                      C5H12O2   molecular\n            methane                          CH4   molecular\n              water                          H2O   molecular\n                H2S                          H2S       solid\n              MOIST                        MOIST       solid\n                COS                          COS       solid\n              PROTC                        PROTC       solid\n              PROTO                        PROTO       solid\n             GNH3NO                       GNH3NO       solid\n             PROTOH                       PROTOH       solid\n             PROTCC                       PROTCC       solid\n               NH3S                         NH3S       solid\n               HCNS                         HCNS       solid\n              CHARN                        CHARN       solid\n               CELL                         CELL       solid\n               GMSW                         GMSW       solid\n               XYHW                         XYHW       solid\n               XYGR                         XYGR       solid\n               LIGC                         LIGC       solid\n               LIGH                         LIGH       solid\n               LIGO                         LIGO       solid\n                TGL                          TGL       solid\n               TANN                         TANN       solid\n              TANNH                        TANNH       solid\n                ASH                          ASH       solid\n              CELLA                        CELLA       solid\n               HCE1                         HCE1       solid\n               HCE2                         HCE2       solid\n              LIGCC                        LIGCC       solid\n              LIGOH                        LIGOH       solid\n                LIG                          LIG       solid\n              ITANN                        ITANN       solid\n               CHAR                         CHAR       solid\n              CHARO                        CHARO       solid\n              COH2S                        COH2S       solid\n               CO2S                         CO2S       solid\n           COSTIFFS                     COSTIFFS       solid\n             CH3OHS                       CH3OHS       solid\n               CH4S                         CH4S       solid\n              C2H4S                        C2H4S       solid\n            C6H5OHS                      C6H5OHS       solid\n              CH2OS                        CH2OS       solid\n              C2H6S                        C2H6S       solid\n               LVGS                         LVGS       solid\n             mychar                       mychar       solid\n             carbon                            C       solid\n          cellulose                      C6H10O5       solid\n            Lignin1                     C22H28O9       solid\n                Ag+                          Ag+ aqueous ion\n                Na+                          Na+ aqueous ion\n                 K+                           K+ aqueous ion\n                Cs+                          Cs+ aqueous ion\n                Cl-                          Cl- aqueous ion\n              HCO3-                        HCO3- aqueous ion\n             CO3^2-                       CO3^2- aqueous ion\n                Li+                          Li+ aqueous ion\n               Mg2+                         Mg2+ aqueous ion\n            Testite                        CaCO3       solid\n         Akermanite                   Ca2MgSi2O7       solid\n         Alabandite                          MnS       solid\n         Albite,low                  Na(AlSi3)O8       solid\n            Alunite              KAl3(OH)6(SO4)2       solid\n   Amorphous-Silica                    SiO2*NH2O       solid\n           Analcime                NaAlSi2O6*H2O       solid\nAnalcime,dehydrated                    NaAlSi2O6       solid\n         Andalusite                      Al2SiO5       solid\n          Andradite                 Ca3Fe2Si3O12       solid\n          Anglesite                        PbSO4       solid\n          Anhydrite                        CaSO4       solid\n             Annite          KFe3(AlSi3)O10(OH)2       solid\n          Anorthite                 Ca(Al2Si2)O8       solid\n          Aragonite                        CaCO3       solid\n           Artinite           Mg2(OH)2(CO3)*3H2O       solid\n            Azurite               Cu3(OH)2(CO3)2       solid\n             Barite                        BaSO4       solid\n          Berndtite                         SnS2       solid\n           Boehmite                      AlO(OH)       solid\n            Brucite                      Mg(OH)2       solid\n     Ca-Al-Pyroxene                 CaAl(AlSi)O6       solid\n            Calcite                        CaCO3       solid\n        Cassiterite                         SnO2       solid\n          Celestite                        SrSO4       solid\n          Cerussite                        PbCO3       solid\n         Chalcedony                         SiO2       solid\n      Chlorargyrite                         AgCl       solid\n         Chrysotile                Mg3Si2O5(OH)4       solid\n           Cinnabar                          HgS       solid\n    Clinochlore,14A         Mg5Al(AlSi3)O10(OH)8       solid\n       Clinozoisite             Ca2Al3Si3O12(OH)       solid\n             Copper                           Cu       solid\n         Cordierite             Mg2Al3(AlSi5)O18       solid\n Cordierite,hydrous         Mg2Al3(AlSi5)O18*H2O       solid\n           Corundum                        Al2O3       solid\n          Covellite                          CuS       solid\n Cristobalite,alpha                         SiO2       solid\n  Cristobalite,beta                         SiO2       solid\n            Cuprite                         Cu2O       solid\n       Daphnite,14A         Fe5Al(AlSi3)O10(OH)8       solid\n           Diaspore                      AlO(OH)       solid\n           Diopside                  CaMg(SiO3)2       solid\n           Dolomite                   CaMg(CO3)2       solid\n       Dolomite,dis                   CaMg(CO3)2       solid\n       Dolomite,ord                   CaMg(CO3)2       solid\n            Epidote           Ca2FeAl2Si3O12(OH)       solid\n        Epidote,ord           Ca2FeAl2Si3O12(OH)       solid\n           Fayalite                      Fe2SiO4       solid\n     Ferropargasite Na(Ca2Fe4Al)(Al2Si6)O22(OH)2       solid\n     Ferrotremolite          (Ca2Fe5)Si8O22(OH)2       solid\n      Ferrous-Oxide                          FeO       solid\n           Fluorite                         CaF2       solid\n         Forsterite                      Mg2SiO4       solid\n             Galena                          PbS       solid\n          Gehlenite                 Ca2(Al2Si)O7       solid\n           Gibbsite                      Al(OH)3       solid\n               Gold                           Au       solid\n           Graphite                            C       solid\n         Greenalite                Fe3Si2O5(OH)4       solid\n          Grossular                 Ca3Al2Si3O12       solid\n             Halite                         NaCl       solid\n       Hedenbergite                  CaFe(SiO3)2       solid\n            Huntite                  CaMg3(CO3)4       solid\n     Hydromagnesite          Mg5(OH)2(CO3)4*4H2O       solid\n            Jadeite                  NaAl(SiO3)2       solid\n         K-Feldspar                   K(AlSi3)O8       solid\n          Kaolinite                Al2Si2O5(OH)4       solid\n            Kyanite                      Al2SiO5       solid\n            Laurite                         RuS2       solid\n         Laumontite           Ca(Al2Si4)O12*4H2O       solid\n               Lime                          CaO       solid\n          Magnesite                        MgCO3       solid\n          Malachite                Cu2(OH)2(CO3)       solid\n        Manganosite                          MnO       solid\n          Merwinite                 Ca3Mg(SiO4)2       solid\n       Metacinnabar                          HgS       solid\n Microcline,maximum                   K(AlSi3)O8       solid\n       Monticellite                     CaMgSiO4       solid\n          Muscovite          KAl2(AlSi3)O10(OH)2       solid\n          Nepheline                   Na(AlSi)O4       solid\n          Palladium                           Pd       solid\n         Paragonite         NaAl2(AlSi3)O10(OH)2       solid\n          Pargasite Na(Ca2Mg4Al)(Al2Si6)O22(OH)2       solid\n          Periclase                          MgO       solid\n         Phlogopite          KMg3(AlSi3)O10(OH)2       solid\n           Platinum                           Pt       solid\n    Potassium-Oxide                          K2O       solid\n             Pyrite                         FeS2       solid\n       Pyrophyllite               Al2Si4O10(OH)2       solid\n            Pd(OH)2                      Pd(OH)2       solid\n               Pd4S                         Pd4S       solid\n                PdO                          PdO       solid\n                PdS                   Vysotskite       solid\n                PtS                    Cooperite       solid\n               PtS2                         PtS2       solid\n            Rhodium                           Rh       solid\n      Rhodochrosite                        MnCO3       solid\n         Romarchite                          SnO       solid\n          Ruthenium                           Ru       solid\n             Rutile                         TiO2       solid\n              Rh2O3                        Rh2O3       solid\n               RuO2                    Ru(1)O(2)       solid\n      Sanidine,high                   K(AlSi3)O8       solid\n          Sepiolite    Mg4Si6O15(OH)2(H2O)2*4H2O       solid\n           Siderite                        FeCO3       solid\n        Sillimanite                      Al2SiO5       solid\n             Silver                           Ag       solid\n        Smithsonite                        ZnCO3       solid\n       Sodium-Oxide                         Na2O       solid\n         Sphalerite                          ZnS       solid\n             Spinel                      MgAl2O4       solid\n       Strontianite                        SrCO3       solid\n            Sylvite                          KCl       solid\n               Talc               Mg3Si4O10(OH)2       solid\n           Tenorite                          CuO       solid\n           Titanite                     CaTiSiO5       solid\n          Tremolite          (Ca2Mg5)Si8O22(OH)2       solid\n          Uraninite                          UO2       solid\n               PdS2                         PdS2       solid\n          Wairakite           Ca(Al2Si4)O12*2H2O       solid\n       Wollastonite                       CaSiO3       solid\n           Wurtzite                          ZnS       solid\n            Zincite                          ZnO       solid\n            Zoisite             Ca2Al3Si3O12(OH)       solid\n           Litharge                          PbO       solid\n208 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}",
+    "--all"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "b4f0c2b9ab56ec332af633bce24ec7619c52ff1fe0e0f410502a53038e1faaf0",
+   "stdout_lines": 1907,
+   "stdout_head": "               Species                      Formula          Phase  Ready                                                                                                                               Reason\n              testanol                      C9H12O3      molecular   True                                                                                                                                ready\n              halfdone                        C2H6O      molecular  False                                                                                                       NASA mapping missing/ambiguous\n               propane                         C3H8      molecular   True                                                                                                                                ready\n                butane                        C4H10      molecular  False                                                                                                       NASA mapping missing/ambiguous\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}",
+    "--search",
+    "my",
+    "--all"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula     Phase  Ready                                                                                                                               Reason\n mychar  mychar molecular  False NASA available; no resolved SAFT mapping. Add SAFT parameters, or a [nasa_names] entry in species.toml (see docs/adding_species.md).\n mychar  mychar     solid   True                                                                                                                           NASA solid\n2 species\n"
+  }
+ ],
+ "variants": {
+  "check_unknown": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\", \"unobtainium\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "check_no_cutoff": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 600.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "check_hot": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 3500]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "check_mineral": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 1200]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\", \"Halite\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "check_points": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\npoints = [[300, 240], [350.5, 250], [400, 1]]\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "bad_syntax": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n",
+  "bad_value": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = -5.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n"
+ },
+ "new": [
+  {
+   "argv": [
+    "new",
+    "my_new_case.toml"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Wrote my_new_case.toml. Edit it, then: htg check my_new_case.toml  and  htg run my_new_case.toml\n",
+   "file": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"my_new_case\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n"
+  },
+  {
+   "argv": [
+    "new",
+    "sub.dir//other"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Wrote sub.dir/other. Edit it, then: htg check sub.dir/other  and  htg run sub.dir/other\n",
+   "file": "# HTG equilibrium case file.\n#\n# Run it with:      uv run htg run my_case.toml\n# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)\n# Species names:    uv run htg species --search methane\n#\n# Units: temperature in °C, pressure in bar (absolute). Species amounts\n# (constraints, results) are mol per mol of carbon in the dry feed. Carbon\n# shares are fractions (0.9 = 90 %).\n# Lines starting with # are comments. Delete or comment out what you don't need;\n# anything left out takes its default value.\n\nformat = 2\nname = \"other\"\ndescription = \"What this case is about.\"\n\n# Optional atomic-weight overrides [g/mol]. They change the feed and balance\n# arithmetic only (not the equation-of-state molar masses).\n# atomic_weights = { C = 12.011, H = 1.008 }\n\n[conditions]\ntemperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep\npressure_bar = 240.0                   # one value, or a list: every temperature at every pressure\n# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:\n# points = [[300, 240], [350, 250], [400, 260]]\n\n[feed]\n# The wet feed going into the reactor: solids plus water.\ntotal_kg = 5.0                              # solids + water\nsolids = { value = 20.0, unit = \"%\" }       # \"%\" of the total mass, or \"kg\"\nash = { value = 8.44, unit = \"%\" }          # \"%\" of the solids, or \"kg\"; leave out for no ash\n# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum\n# to 100 % when used.\nelements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }\n# Or, instead of the four lines above, amounts of species (no ash in this mode):\n# [feed.species]\n# water = { value = 4.5, unit = \"kg\" }      # always present; \"kg\" or \"mol\"\n# cellulose = { value = 0.5, unit = \"kg\" }\n\n# Added salts supply atoms only; the products decide where those atoms go.\n# Every salt element needs a product that can carry it (an ion or a mineral).\n# [feed.salts.NaHCO3]\n# mol_per_g_dry_feed = 1e-5\n# elements = { Na = 1, H = 1, C = 1, O = 3 }\n\n[phases]\n# The products allowed in each phase. A species in a list may form; it is not forced.\n# Ions (e.g. \"Na+\") are allowed in the aqueous phase only.\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"     # \"electrolyte\" (ePC-SAFT, ions allowed) or \"molecular\" (PC-SAFT)\ncutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)\n# enabled = false         # no aqueous phase at any temperature\n# water_floor = 1e-8      # minimum aqueous water, mol/mol C\n\n[constraints]\n# solid_carbon_target = \"char\"       # what \"solid\" means below: \"char\" (solid carbon only) or \"all_solids\"\n# [constraints.minimum_amounts]      # lower bounds, mol/mol C\n# gas = { water = 1e-8 }\n\n# Share of the feed carbon in each phase, as fractions of all feed carbon.\n# Per phase: exact, or min and/or max. A phase left out is free.\n# [constraints.carbon]\n# gas = { min = 0.9 }\n# solid = { max = 0.05 }\n# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase\n\n[solver]\nmethod = \"ipopt\"          # \"ipopt\" (default), \"slsqp\", \"trust-constr\", or \"slsqp-fd\" (original)\n# starts = 5              # starting points in total; distinct results are all kept\n# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]\n# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]\n# max_iterations = 5000\n\n[initial_guess]\ninitialization = \"auto\"   # \"auto\", \"liquid\" (water-rich aqueous), \"vapor\" (water-rich gas), \"lp\"\n\n[sweep]\n# Start each point from the previous solution: along rising temperature at each\n# pressure, or in the order of the points list. false: every point starts fresh\n# (then all points can run in parallel).\ncontinuation = true\n\n# Data to show next to the results in plots (CSV: T_C column, then \"phase:species\" columns).\n# [comparison]\n# file = \"comparison/my_data.csv\"\n# quantity = \"mol_per_kg_dry_feed\"   # or \"mol_per_mol_C\", \"g_per_kg_dry_feed\"\n# label = \"Paper\"\n"
+  }
+ ],
+ "run": {
+  "case": "# Swine manure, reproducing Yakaboylu et al. (2013), Figures 7 and 8.\n# Reduced C/H/O/N/S feed (atom inventory per 25 000 g dry manure), char as the\n# only solid, nitrogen in the gas only, aqueous phase removed at and above 390 °C.\n# Carbon allocation is free.\n\nformat = 2\nname = \"cli_run_small\"\ndescription = \"Swine manure at 240 bar; Yakaboylu et al. (2013) Figures 7-8.\"\n\n[conditions]\ntemperature_C = [300, 389.6, 450]\npressure_bar = 240.0\n\n[feed]\n# C 632.65, H 1093.28, O 837.22, N 47.56, S 3.95 mol and 5550.84 mol water per\n# 25 000 g dry feed. The 8.45 % of the dry feed outside these elements is ash.\ntotal_kg = 4.999935304\nsolids = { value = 1.0, unit = \"kg\" }\nash = { value = 8.44688764, unit = \"%\" }\nelements_wt_percent = { C = 30.3950366, H = 4.40810496, O = 53.57873112, N = 2.66469168, S = 0.506548 }\n\n[phases]\ngas = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n       \"methanol\", \"ammonia\", \"hydrogen sulfide\", \"nitrogen\"]\n# Note from the original notebook: with nitrogen also in the aqueous phase,\n# the solver converges to a different solution at 380 °C.\naqueous = [\"water\", \"hydrogen\", \"carbon dioxide\", \"carbon monoxide\", \"methane\",\n           \"methanol\", \"ammonia\", \"hydrogen sulfide\"]\norganic_liquid = [\"benzene\", \"toluene\"]\nsolid = [\"carbon\"]\n\n[aqueous]\nmodel = \"electrolyte\"\ncutoff_C = 390.0\n\n[initial_guess]\n# Water-rich aqueous start below the cut-off; a plain feasible start above it.\ninitialization = \"liquid\"\n\n[solver]\nmethod = \"ipopt\"\nmax_iterations = 10000\n# The original notebook used method = \"slsqp-fd\" with these settings:\nfd_ftol = 1e-11\nfd_eps = 1e-8\n\n[sweep]\ncontinuation = false   # every temperature starts from its own feasible point, as in the notebook\n\n[comparison]\nfile = \"comparison/yakaboylu2013_fig7_8.csv\"\nquantity = \"mol_per_kg_dry_feed\"\nlabel = \"Yakaboylu et al. (2013)\"\n",
+  "argv": [
+   "run",
+   "cli_run_small.toml",
+   "--out",
+   "out",
+   "--no-plots",
+   "--no-user-species"
+  ],
+  "code": 1,
+  "stderr": "",
+  "stdout": "Case cli_run_small: 4 point(s), 4 independent piece(s), solver ipopt\nPreflight found problems at some points (they will probably fail):\n  T_C  P_bar                                                                                                                                    error\n389.6  240.0 ValueError: Aqueous electrolyte model invalid here: water density 181 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n300 °C, 240 bar: solved (start: feasible LP)\n389.6 °C, 240 bar: FAILED: thermochemistry / aqueous validity: ValueError: State outside SUPCRT aqueous validity checks: rho=180.6329625343912, epsilon=2.9713063036136305 (start: feasible LP)\n390 °C, 240 bar: solved (start: feasible LP)\n450 °C, 240 bar: solved (start: feasible LP)\nFinished in 80 s\n\ncli_run_small:\n  T_C  P_bar status  gibbs_J_per_mol_C  gas_carbon_percent aqueous_removed                                                                                      error\n300.0  240.0 solved      -3.328077e+06           15.119963           False                                                                                           \n389.6  240.0 failed                NaN                 NaN             NaN thermochemistry / aqueous validity: ValueError: State outside SUPCRT aqueous validity chec\n390.0  240.0 solved      -3.457880e+06           99.999999            True                                                                                           \n450.0  240.0 solved      -3.561138e+06           99.999999            True                                                                                           \nResults written to out/\n"
+ }
+}

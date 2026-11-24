@@ -20,4 +20,5 @@ using Test
     include("test_results.jl")
     include("test_sweep.jl")
     include("test_queue.jl")
+    include("test_cli.jl")
 end
