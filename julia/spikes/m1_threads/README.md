@@ -67,7 +67,8 @@ with the serial baseline, and to the reference tolerances with Python's result.
 `run_distributed.jl` runs the same 20 × 108 batches with `pmap` on N workers
 (1 thread each), the master holding no solver, and compares bitwise with the
 serial baseline of `threads_1.json`. BLAS is set to 1 thread everywhere (see
-"Problems found"). Raw output is in `results/`.
+"Problems found"). The scripts write their raw output to `results/`; it is
+generated, so it is not committed (the tables here hold the numbers).
 
 ### Versions
 
@@ -229,6 +230,7 @@ solver loaded) is 0.5 GB.
 ## Files
 
 `Project.toml`, `Manifest.toml` (pinned environment), `dump_problems.py`,
-`problems.json` (captured inputs, 280 kB), `replay.jl`, `memory.jl`,
-`run_threads.jl`, `run_distributed.jl`, `check_phi_bits.jl`, `results/`
-(JSON summaries, logs, `/usr/bin/time -v` output).
+`replay.jl`, `memory.jl`, `run_threads.jl`, `run_distributed.jl`,
+`check_phi_bits.jl`. Generated, not committed: `problems.json` (captured
+inputs, about 280 kB, written by `dump_problems.py`) and `results/` (JSON
+summaries, logs, `/usr/bin/time -v` output).
