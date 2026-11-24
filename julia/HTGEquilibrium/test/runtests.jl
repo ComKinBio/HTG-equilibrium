@@ -14,4 +14,5 @@ using Test
     include("test_databases.jl")
     include("test_registry.jl")
     include("test_standard_states.jl")
+    include("test_phases.jl")
 end
