@@ -17,4 +17,7 @@ using Test
     include("test_phases.jl")
     include("test_optimizer.jl")
     include("test_equilibrium.jl")
+    include("test_results.jl")
+    include("test_sweep.jl")
+    include("test_queue.jl")
 end

@@ -1,0 +1,11 @@
+# The result each point uses in plots and tables (points not listed use A).
+
+[[point]]
+T_C = 300.0
+P_bar = 240.0
+result = "Z"
+
+[[point]]
+T_C = 400.0
+P_bar = 240.0
+result = "B"

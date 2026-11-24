@@ -1,0 +1,6 @@
+T_C,P_bar,status,gibbs_J_per_mol_C,gas_carbon_percent,balance_residual,charge_residual,iterations,aqueous_removed,solver,descent_RT,n_results,carbon_bound_violation,notes,error
+300.0,240.0,solved,-5370370.34,83.33333333333333,3.552713678800501e-15,0.0,29.0,False,ipopt,1.5000000000000002e-05,1.0,1.1102230246251565e-16,,
+350.0,240.0,failed,,,,,,,,,,,,"optimization / final validation: RuntimeError: Iteration limit, ""x"" reached
+second line"
+400.0,240.0,solved,-5493827.12,83.33333333333333,3.552713678800501e-15,0.0,31.0,True,ipopt,,3.0,1.1102230246251565e-16,aqueous carbon bound dropped,
+450.0,240.0,solved,-5555555.51,83.33333333333333,3.552713678800501e-15,0.0,32.0,False,ipopt,2.25e-05,2.0,1.1102230246251565e-16,,

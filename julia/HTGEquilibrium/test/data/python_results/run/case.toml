@@ -1,0 +1,19 @@
+format = 2
+name = "my_case"
+description = "What this case is about."
+
+[conditions]
+temperature_C = [300.0, 350.0, 400.0, 450.0]
+pressure_bar = 240.0
+
+[feed]
+total_kg = 5.0
+solids = { value = 20.0, unit = "%" }
+ash = { value = 8.44, unit = "%" }
+elements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }
+
+[phases]
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane", "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon"]
