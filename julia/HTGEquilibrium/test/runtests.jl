@@ -8,4 +8,7 @@ using Test
 @testset "HTGEquilibrium" begin
     include("test_formulas.jl")
     include("test_water.jl")
+    include("test_databases.jl")
+    include("test_registry.jl")
+    include("test_standard_states.jl")
 end
