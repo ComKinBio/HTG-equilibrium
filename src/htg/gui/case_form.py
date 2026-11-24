@@ -23,8 +23,7 @@ CUTOFF_CAPTION = ('This is a modelling choice. If you know that the aqueous phas
                   'present above a certain temperature, then marking it here helps the equilibrium '
                   'solver. It is not necessary to input a value.')
 METHOD_TOOLTIP = ('IPOPT is the default and usually the fastest. Try SLSQP if IPOPT fails at some '
-                  'points. trust-constr is slower but sometimes more robust. "SLSQP, finite '
-                  'differences" is the original method, kept for comparison with old results.')
+                  'points. trust-constr is slower but sometimes more robust.')
 CONTINUATION_TOOLTIP = ('Start each point from the solution at the previous temperature (same '
                         'pressure), or the previous point in a list. Usually faster and smoother '
                         'along a sweep. Turn off to start every point fresh; then all points can '
@@ -57,8 +56,10 @@ CARBON_RANGE = 'range'  # min and max together: only offered when the file has i
 CARBON_RANGE_LABEL = 'between'
 SOLID_CARBON = {'char': 'char (solid carbon) only', 'all_solids': 'all solids'}
 AQUEOUS_MODELS = {'electrolyte': 'Electrolyte (ePC-SAFT, ions allowed)', 'molecular': 'Molecular (PC-SAFT, no ions)'}
-METHODS = {'ipopt': 'IPOPT (default)', 'slsqp': 'SLSQP', 'trust-constr': 'trust-constr',
-           'slsqp-fd': 'SLSQP, finite differences (original)'}
+METHODS = {'ipopt': 'IPOPT (default)', 'slsqp': 'SLSQP', 'trust-constr': 'trust-constr'}
+# The original finite-difference SLSQP stays available to case files, Python and
+# the reference tests, but the app offers it only for a file that already uses it.
+FD_METHOD = {'slsqp-fd': 'SLSQP, finite differences (original)'}
 INITIAL_COMPOSITIONS = {'auto': 'Automatic', 'liquid': 'Water mostly liquid (aqueous)',
                         'vapor': 'Water mostly vapour (gas)', 'lp': 'From a linear program'}
 STABILITY_TEST = {'default': 'On when using several initial guesses', 'on': 'Always on', 'off': 'Off'}

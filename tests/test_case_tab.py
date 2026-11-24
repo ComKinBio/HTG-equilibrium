@@ -376,3 +376,26 @@ def test_check_button(base_model):
         await user.should_see('The carbon shares add up to more than 100 %.', retries=200)
 
     run_form(base_model, scenario)
+
+
+def test_finite_difference_method_only_for_files_that_use_it(base_model):
+    """The original finite-difference SLSQP is kept for tests and old case files,
+    not offered for new cases."""
+    def methods(user):
+        (select,) = user.find(marker='case-method').elements
+        return set(select.options)
+
+    async def new_case(user, editor, state):
+        assert methods(user) == {'ipopt', 'slsqp', 'trust-constr'}
+        assert not editor.fd_box.visible
+
+    run_form(base_model, new_case)
+
+    document = CaseDocument.new('old_method')
+    document.data.setdefault('solver', {})['method'] = 'slsqp-fd'
+
+    async def old_file(user, editor, state):
+        assert 'slsqp-fd' in methods(user)
+        assert editor.fd_box.visible
+
+    run_form(base_model, old_file, document=document)

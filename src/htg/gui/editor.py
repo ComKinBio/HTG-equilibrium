@@ -19,8 +19,9 @@ from ..feed_v2 import (FeedError, elemental_masses, feed_mode, molar_mass_functi
 from .case_form import (ADVANCED_CAPTION, AQUEOUS_MODELS, ATOMIC_WEIGHTS_CAPTION, CARBON_CAPTION, CARBON_CHOICES,
                         CARBON_PHASES, CARBON_RANGE, CARBON_RANGE_LABEL, CHECK_CAPTION, COMPOSITION_TOL_CAPTION,
                         CONTINUATION_TOOLTIP, CUTOFF_CAPTION, DISTINCT_CAPTION, ELEMENTS_CAPTION, ENERGY_SCALE_CAPTION,
-                        FEED_CAPTION, FEED_CAPTION_SPECIES, FEED_TOGGLE, GIBBS_TOL_CAPTION, INITIAL_COMPOSITION_CAPTION,
-                        INITIAL_COMPOSITIONS, INPUT_FORMATS, MEASURED_CAPTION, METHOD_TOOLTIP, METHODS, MODE_TOGGLE,
+                        FD_METHOD, FEED_CAPTION, FEED_CAPTION_SPECIES, FEED_TOGGLE, GIBBS_TOL_CAPTION,
+                        INITIAL_COMPOSITION_CAPTION, INITIAL_COMPOSITIONS, INPUT_FORMATS, MEASURED_CAPTION,
+                        METHOD_TOOLTIP, METHODS, MODE_TOGGLE,
                         PHASE_NAMES, PRODUCTS_CAPTION, QUANTITY_CHOICES, SEED_CAPTION, SOLID_CARBON, SPECIES_FOOTER,
                         STABILITY_TEST, carbon_bound, carbon_choice, check_feed, conflict_notice, convert_share,
                         convert_species_amount, element_error, element_symbol, entered_sum_notice, file_status,
@@ -959,7 +960,9 @@ class CaseEditor:
     # ------------------------------------------------------------ solver
     def _solver(self):
         data = self.data
-        method = ui.select(METHODS, label='Method', value=get(data, ['solver', 'method'], 'ipopt'),
+        value = get(data, ['solver', 'method'], 'ipopt')
+        options = {**METHODS, **FD_METHOD} if value in FD_METHOD else METHODS
+        method = ui.select(options, label='Method', value=value,
                            on_change=lambda e: self._set_method(e.value)).classes('w-full').mark('case-method')
         with method:
             ui.tooltip(METHOD_TOOLTIP).classes('text-body2 max-w-sm')
