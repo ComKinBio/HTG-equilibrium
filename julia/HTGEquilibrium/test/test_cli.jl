@@ -6,6 +6,8 @@
 # and an `htg run` of three independent points (one failing) with the folder it
 # wrote. Text must be equal, except where listed below (help texts and TOML
 # syntax errors); the run's tables are compared with compare_cases.jl's rules.
+# Outputs longer than 2 kB are stored as sha256 (plus line count and start), the
+# template variants and the run case as replacements, to keep the file small.
 using Test
 using HTGEquilibrium
 using HTGEquilibrium: OrderedDict, to_string, parse_cli, worker_threads, CASE_TEMPLATE, _pypath
@@ -20,6 +22,21 @@ const CLI_USER_SPECIES = joinpath(@__DIR__, "data", "user_species")
 module CLICompare   # compare_case: the rules of the example-case comparison
 include("compare_cases.jl")
 end
+
+"""`text` with the fixture's (old, new) replacements made (each old text occurs once)."""
+function apply_changes(text, changes)
+    for (old, new) in changes
+        @assert count(old, text) == 1 old
+        text = replace(text, old => new)
+    end
+    return text
+end
+
+"""The template variants of dump_cli.py: name => text (from the template, identical to Python's)."""
+cli_variants() = OrderedDict(name => apply_changes(read(CASE_TEMPLATE, String), changes)
+                             for (name, changes) in CLI_PY["variants"])
+
+shatext(text) = bytes2hex(sha256(text))
 
 """Run the command line in `dir`: (exit code, stdout, stderr)."""
 function run_cli(args; dir=CLI_REPO)
@@ -90,9 +107,10 @@ end
               _pypath("/x//y") == "/x/y" && _pypath(".") == "."
     end
 
+    variants = cli_variants()
     @testset "Python's output: $(join(c["argv"], ' '))" for c in CLI_PY["commands"]
         tmp = mktempdir()
-        for (name, text) in CLI_PY["variants"]
+        for (name, text) in variants
             write(joinpath(tmp, "$name.toml"), text)
         end
         args = [replace(a, "{TMP}" => tmp, "{USER_SPECIES}" => CLI_USER_SPECIES) for a in c["argv"]]
@@ -101,14 +119,17 @@ end
         @test code == c["code"]
         help = any(a -> a in ("-h", "--help"), c["argv"]) && c["code"] == 0
         if help   # help texts say what differs in Julia; the usage is Python's
-            @test usage_part(out) == usage_part(c["stdout"])
+            @test usage_part(out) == c["stdout_usage"]
             @test startswith(out, "usage: ")
         elseif haskey(c, "stdout")
             @test out == c["stdout"]
         else
-            @test bytes2hex(sha256(out)) == c["stdout_sha256"]
+            @test shatext(out) == c["stdout_sha256"]
             @test count(==('\n'), out) == c["stdout_lines"]
             @test startswith(out, c["stdout_head"])
+            if shatext(out) != c["stdout_sha256"]   # where it differs, as far as the stored start shows
+                @info "output differs" julia = first(out, 400) python_start = c["stdout_head"]
+            end
         end
         if occursin("bad_syntax", join(c["argv"]))   # TOML syntax errors: Julia's TOML parser's text
             @test startswith(err, "Error: ") && startswith(c["stderr"], "Error: ")
@@ -125,8 +146,13 @@ end
             code, out, err = run_cli(py["argv"]; dir)
             @test (code, out, err) == (py["code"], py["stdout"], py["stderr"])
         end
-        @test read(joinpath(dir, "my_new_case.toml"), String) == CLI_PY["new"][1]["file"]
-        @test read(joinpath(dir, "sub.dir", "other"), String) == CLI_PY["new"][2]["file"]
+        template = read(CASE_TEMPLATE, String)
+        for (file, name, py) in (("my_new_case.toml", "my_new_case", CLI_PY["new"][1]),
+                                 (joinpath("sub.dir", "other"), "other", CLI_PY["new"][2]))
+            text = read(joinpath(dir, file), String)
+            @test text == replace(template, "name = \"my_case\"" => "name = \"$name\"")
+            @test shatext(text) == py["file_sha256"]
+        end
         @test load_case(joinpath(dir, "my_new_case.toml")).name == "my_new_case"
         code, out, err = run_cli(["new", "my_new_case.toml"]; dir)
         @test code == 1 && err == "my_new_case.toml already exists; choose another name.\n"
@@ -154,7 +180,8 @@ end
         mkpath(joinpath(dir, "comparison"))
         cp(joinpath(CLI_REPO, "cases", "comparison", "yakaboylu2013_fig7_8.csv"),
            joinpath(dir, "comparison", "yakaboylu2013_fig7_8.csv"))
-        write(joinpath(dir, "cli_run_small.toml"), py["case"])
+        write(joinpath(dir, "cli_run_small.toml"),
+              apply_changes(read(joinpath(CLI_REPO, py["case"]), String), py["changes"]))
         code, out, err = run_cli(py["argv"]; dir)
         @test code == py["code"] == 1
         @test isempty(err)

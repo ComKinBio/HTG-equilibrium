@@ -61,7 +61,7 @@ on threads, and the command line (`htg run`, `check`, `species`, `new`; see
 | `src/cli.jl` | The command line: `main(args)` (`@main`, so `julia -m HTGEquilibrium ...`), `parse_cli` (argparse's rules and messages), `cmd_run`, `cmd_check`, `cmd_species`, `cmd_new`; `plot` and `gui` exit with a message | `cli.py` |
 | `templates/case_template.toml` | The case template of `htg new` (and the pool's warm-up), a copy of `src/htg/templates/case_template.toml` (identical, tested) | `templates/case_template.toml` |
 | `../htg`, `../htg.cmd` | Launchers (Linux/macOS, Windows): `julia --project=<this package> --threads=auto -m HTGEquilibrium ARGS...` | the `htg` console script |
-| `test/test_cli.jl`, `test/dump_cli.py`, `test/data/python_cli/` | The command line against Python's output (~70 commands, `to_string` of hand-made tables, an `htg run` and the folder it wrote; 144 kB, committed) | `tests/test_user_species.py` (the CLI flags) |
+| `test/test_cli.jl`, `test/dump_cli.py`, `test/data/python_cli/` | The command line against Python's output (~70 commands, `to_string` of hand-made tables, an `htg run` and the folder it wrote; 42 kB, committed) | `tests/test_user_species.py` (the CLI flags) |
 | `test/test_results.jl`, `test/dump_results.py`, `test/data/python_results/` | Tables and files against a run saved by the Python app (38 kB, committed): the same CSV files and choices.toml, Python's files read as pandas reads them, round trips | `results.py`, `gui/runs.py`, `tests/test_multiple_results.py` (choices) |
 | `test/test_sweep.jl` | Grids and chains, preflight messages, warm starts, failed points, solution checks, threads | `tests/test_grid.py`, `sweep.py` |
 | `test/test_queue.jl` | The pool with a stand-in chain solver (scheduling, cancel, errors, status, restart, callbacks), real solves | `tests/test_runner.py` |
@@ -101,7 +101,7 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 7.5 minutes (5801 tests, 4 threads; the result, sweep,
+The tests take about 7.5 minutes (5827 tests, 4 threads; the result, sweep,
 queue and command-line tests add well under a minute, as the solver is already
 compiled); `test_phases.jl` and the
 solves are most of it, almost all compilation of Clapeyron (PC-SAFT and
@@ -111,7 +111,7 @@ process; set `JULIA_NUM_THREADS` for the threaded tests.
 
 By default the solver tests solve a representative subset of the reference
 points (11 of 21, see `DEFAULT_SOLVES` in `test_equilibrium.jl`); set
-`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 6023 tests, also the CLI run on 2 threads; the extra solves are
+`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 6049 tests, also the CLI run on 2 threads; the extra solves are
 fast once compiled):
 
 ```
@@ -982,7 +982,16 @@ space, no truncation; `Empty DataFrame` / `Columns: [...]` / `Index: []` for no
 rows. Widths count characters (Python's `len`).
 
 **Comparison with Python** (`test/test_cli.jl`; fixture `test/data/python_cli/`
-written by `uv run python julia/HTGEquilibrium/test/dump_cli.py`, 144 kB):
+written by `uv run python julia/HTGEquilibrium/test/dump_cli.py`, 42 kB,
+committed, so the default test run compares with Python without a generate
+step). To keep it small, outputs longer than 2 kB and outputs repeated from an
+earlier command (the old case files check like the new ones) are stored as
+sha256 with their line count and first 200 characters, which still compares
+the exact text; help texts are stored as their usage part (the part
+compared); the template variants and the run case are stored as the
+replacements made in the template (the Julia copy is identical, tested) and in
+the case file; the files `htg new` writes as sha256 (and compared with the
+template with the name replaced).
 
 - `htg check` of the 5 case files, the 6 old case files, the template and 5
   template variants with problems (unknown species, aqueous phase above its
@@ -990,8 +999,8 @@ written by `uv run python julia/HTGEquilibrium/test/dump_cli.py`, 144 kB):
   **stdout, stderr and exit code identical**.
 - `htg species` (16 variants: default, `--all`, `--phase` with plain text and
   regular expressions, `--search`, both, empty results, with the user species
-  folder of `test/data/user_species`): **identical**; the five outputs above
-  20 kB (`--all` variants, up to ~400 kB) are compared by sha256.
+  folder of `test/data/user_species`): **identical** (the `--all` outputs are
+  up to ~400 kB).
 - `to_string` of 8 hand-made tables (every dtype, NaN, None, inf, -0.0, values
   needing exponent notation, text with line breaks, an empty table):
   **identical**, and the dtype inferred for each column is pandas'.

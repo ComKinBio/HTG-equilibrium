@@ -7,19 +7,23 @@ captured) from the repository root, for:
 
 - usage errors, help, and errors reported as "Error: ..." (exit 2);
 - `htg check` of every case file, the old case files, the template and a few
-  variants of the template with problems (written to a temporary folder; their
-  text is stored);
+  variants of the template with problems (written to a temporary folder);
 - `htg species` with --all, --phase, --search, and with the user species folder
   of test/data/user_species;
-- `htg new` (the file it writes);
+- `htg new` (and the file it writes);
 - pandas `to_string(index=False)` of a few hand-made tables (every dtype, NaN,
   None, floats that pandas writes in exponent notation, an empty table);
 - `htg run` of a small case (three independent points of
   yakaboylu2013_fig7_8, one of them failing): its output and the folder it
   writes (run/, CSV files and case.toml).
 
-Long outputs (`species --all`, ~400 kB) are stored as sha256, line count and
-first lines only. Words in argv: {USER_SPECIES} is test/data/user_species,
+To keep the committed file small (~30 kB): outputs longer than 2 kB, and
+outputs equal to one stored before (the old case files give the same checks),
+are stored as sha256, line count and their first 200 characters; help texts as
+their usage part (the part compared); the template
+variants and the run case as the replacements made in the template (the
+Julia package's copy is identical, tested) and in the case file; the files
+`htg new` writes as sha256. Words in argv: {USER_SPECIES} is test/data/user_species,
 {TMP} a temporary folder holding the variants and the run case.
 """
 import contextlib
@@ -27,7 +31,6 @@ import hashlib
 import io
 import json
 import os
-import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -39,7 +42,7 @@ REPO = HERE.parents[2]
 OUT = HERE / 'data' / 'python_cli'
 TEMPLATE = REPO / 'src' / 'htg' / 'templates' / 'case_template.toml'
 USER_SPECIES = HERE / 'data' / 'user_species'
-FULL_TEXT_LIMIT = 20000
+FULL_TEXT_LIMIT = 2000   # longer outputs: sha256, line count and the first 200 characters
 NO_USER = '--no-user-species'
 
 USAGE = [[], ['-h'], ['--help'], ['foo'], ['run'], ['run', '-h'], ['check', '-h'], ['species', '-h'],
@@ -95,33 +98,46 @@ def _tables():
     return out
 
 
+TEMPS = 'temperature_C = [300, 350, 400, 450]'
+VARIANTS = {  # template variants with preflight problems: name -> [(old, new)] replaced in the template
+    'check_unknown': [('"nitrogen"]', '"nitrogen", "unobtainium"]')],
+    'check_no_cutoff': [('cutoff_C = 390.0', 'cutoff_C = 600.0')],
+    'check_hot': [(TEMPS, 'temperature_C = [300, 3500]')],
+    'check_mineral': [(TEMPS, 'temperature_C = [300, 1200]'), ('solid = ["carbon"]', 'solid = ["carbon", "Halite"]')],
+    'check_points': [(TEMPS, 'points = [[300, 240], [350.5, 250], [400, 1]]'), ('\npressure_bar = 240.0', '\n#')],
+    'bad_syntax': [('[phases]', '[phases')],
+    'bad_value': [('pressure_bar = 240.0', 'pressure_bar = -5.0')],
+}
+# The `htg run` case: three independent points of yakaboylu2013_fig7_8 (389.6 °C fails)
+RUN_CASE = 'cases/yakaboylu2013_fig7_8.toml'
+RUN_CHANGES = [('temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]',
+                'temperature_C = [300, 389.6, 450]'),
+               ('name = "yakaboylu2013_fig7_8"', 'name = "cli_run_small"')]
+
+
+def _apply(text, changes):
+    """`text` with each (old, new) replaced; every old text occurs exactly once."""
+    for old, new in changes:
+        assert text.count(old) == 1, old
+        text = text.replace(old, new)
+    return text
+
+
 def _variants():
-    """Template variants with preflight problems: name -> text."""
     text = TEMPLATE.read_text(encoding='utf-8')
-    temps = 'temperature_C = [300, 350, 400, 450]'
-    assert temps in text and '"nitrogen"]' in text and 'cutoff_C = 390.0' in text and 'solid = ["carbon"]' in text
-    return {
-        'check_unknown': text.replace('"nitrogen"]', '"nitrogen", "unobtainium"]'),
-        'check_no_cutoff': text.replace('cutoff_C = 390.0', 'cutoff_C = 600.0'),
-        'check_hot': text.replace(temps, 'temperature_C = [300, 3500]'),
-        'check_mineral': text.replace(temps, 'temperature_C = [300, 1200]').replace(
-            'solid = ["carbon"]', 'solid = ["carbon", "Halite"]'),
-        'check_points': re.sub(r'temperature_C = .*\npressure_bar = [^\n]*', 'points = [[300, 240], [350.5, 250], [400, 1]]',
-                               text),
-        'bad_syntax': text.replace('[phases]', '[phases'),
-        'bad_value': text.replace('pressure_bar = 240.0', 'pressure_bar = -5.0'),
-    }
+    return {name: _apply(text, changes) for name, changes in VARIANTS.items()}
 
 
-def _run_case():
-    """The `htg run` case: three independent points of yakaboylu2013_fig7_8 (389.6 °C fails)."""
-    text = (REPO / 'cases' / 'yakaboylu2013_fig7_8.toml').read_text(encoding='utf-8')
-    text, n = re.subn(r'temperature_C = \[[^\]]*\]', 'temperature_C = [300, 389.6, 450]', text)
-    assert n == 1
-    return text.replace('name = "yakaboylu2013_fig7_8"', 'name = "cli_run_small"')
+def _sha(text):
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+_SEEN = set()   # outputs already stored as text
 
 
 def run(argv, cwd):
+    """Run `htg argv` in `cwd`. stdout is stored as text when short and new; a help
+    text as its usage part only (the Julia help differs below it, on purpose)."""
     out, err = io.StringIO(), io.StringIO()
     old = os.getcwd()
     os.chdir(cwd)
@@ -135,12 +151,16 @@ def run(argv, cwd):
         os.chdir(old)
     entry = {'argv': argv, 'code': code, 'stderr': err.getvalue()}
     text = out.getvalue()
-    if len(text) > FULL_TEXT_LIMIT:
-        entry['stdout_sha256'] = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    if code == 0 and ('-h' in argv or '--help' in argv):
+        entry['stdout_usage'] = text.split('\n\n')[0]
+    elif len(text) > FULL_TEXT_LIMIT or text in _SEEN:
+        entry['stdout_sha256'] = _sha(text)
         entry['stdout_lines'] = text.count('\n')
-        entry['stdout_head'] = ''.join(text.splitlines(keepends=True)[:5])
+        entry['stdout_head'] = text[:200]
     else:
         entry['stdout'] = text
+        if len(text) > 100:
+            _SEEN.add(text)
     return entry
 
 
@@ -171,15 +191,15 @@ def main_dump():
     new_dir = tmp / 'new'
     new_dir.mkdir()
     new = run(['new', 'my_new_case.toml'], new_dir)
-    new['file'] = (new_dir / 'my_new_case.toml').read_text(encoding='utf-8')
+    new['file_sha256'] = _sha((new_dir / 'my_new_case.toml').read_text(encoding='utf-8'))
     (new_dir / 'sub.dir').mkdir()
     new_other = run(['new', 'sub.dir//other'], new_dir)
-    new_other['file'] = (new_dir / 'sub.dir' / 'other').read_text(encoding='utf-8')
+    new_other['file_sha256'] = _sha((new_dir / 'sub.dir' / 'other').read_text(encoding='utf-8'))
 
     run_dir = tmp / 'run'
     (run_dir / 'comparison').mkdir(parents=True)
     shutil.copy(REPO / 'cases' / 'comparison' / 'yakaboylu2013_fig7_8.csv', run_dir / 'comparison')
-    case_text = _run_case()
+    case_text = _apply((REPO / RUN_CASE).read_text(encoding='utf-8'), RUN_CHANGES)
     (run_dir / 'cli_run_small.toml').write_text(case_text, encoding='utf-8')
     run_argv = ['run', 'cli_run_small.toml', '--out', 'out', '--no-plots', NO_USER]
     run_entry = run(run_argv, run_dir)
@@ -189,8 +209,8 @@ def main_dump():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
     shutil.copytree(run_dir / 'out', OUT / 'run')
-    data = {'tables': _tables(), 'commands': commands, 'variants': variants, 'new': [new, new_other],
-            'run': {'case': case_text, 'argv': run_argv, **run_entry}}
+    data = {'tables': _tables(), 'commands': commands, 'variants': VARIANTS, 'new': [new, new_other],
+            'run': {'case': RUN_CASE, 'changes': RUN_CHANGES, 'argv': run_argv, **run_entry}}
     (OUT / 'cli_python.json').write_text(json.dumps(data, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
     shutil.rmtree(tmp)
     size = sum(p.stat().st_size for p in OUT.rglob('*') if p.is_file())
