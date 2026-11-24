@@ -57,4 +57,5 @@ pyvalue(x) = x === nothing ? nothing : x   # JSON null -> nothing
     end
     @test length(ATOMIC_WEIGHTS) == 83
     @test elements_text(OrderedDict("C" => 1.0, "H" => 2.5)) == "C 1 · H 2.5"
+    @test elements_text(OrderedDict("C" => 999999.5)) == "C 1e+06"   # Python f"{x:g}"; @sprintf("%g") gives "1000000"
 end

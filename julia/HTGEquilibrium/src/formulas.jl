@@ -20,7 +20,7 @@ const _STATE_SUFFIX = r"\((aq|g|s|l|cr)\)$"i
 const _HYDRATE_SPLIT = r"[*·•]"
 const _TOKEN = r"([A-Z][a-z]?|\(|\)|\[|\]|\d+(?:\.\d+)?)"
 
-_g(x::Real) = @sprintf("%g", x)   # Python f"{x:g}"
+_g(x::Real) = py_format_g(x, 6)   # Python f"{x:g}" (Julia's @sprintf("%g") differs, see py_format_g)
 
 """
     split_charge(text, charge=nothing) -> (neutral part, charge or nothing)

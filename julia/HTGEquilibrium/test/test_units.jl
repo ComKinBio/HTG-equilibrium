@@ -3,7 +3,7 @@
 # also every format_number / conversion against Python.
 isdefined(@__MODULE__, :PY_CASES) || include("python_cases.jl")
 using HTGEquilibrium.Units
-using HTGEquilibrium: pyround, pyfloat, pyisclose, pyformat_g
+using HTGEquilibrium: py_round, py_float, py_isclose, py_format_g
 
 const U = HTGEquilibrium.Units
 
@@ -88,26 +88,26 @@ close_(a, b, rel=1e-12) = abs(a - b) <= rel * max(abs(a), abs(b)) || a == b
     end
 
     @testset "Python helpers" begin
-        @test pyrepr([1e-5, 1e16, 1.5, 0.1, -0.0, 1e15, 0.0001]) == "[1e-05, 1e+16, 1.5, 0.1, -0.0, 1000000000000000.0, 0.0001]"
-        @test pyrepr(("a",)) == "('a',)" && pyrepr(("a", 1)) == "('a', 1)"
-        @test pyrepr("it's") == "\"it's\"" && pyrepr("a\"b") == "'a\"b'" && pyrepr("°C") == "'°C'"
-        @test pyrepr(OrderedDict("a" => nothing, "b" => true)) == "{'a': None, 'b': True}"
-        @test pyfloat(" 3_50 ") == 350.0 && pyfloat("inf") == Inf && pyfloat(true) == 1.0
-        @test_throws ArgumentError pyfloat("0x10")
-        @test_throws ArgumentError pyfloat("1__0")
-        @test_throws ArgumentError pyfloat([1])
-        @test pyround(2.675, 2) == 2.67 && pyround(0.125, 2) == 0.12 && pyround(0.375, 2) == 0.38
-        @test pyisclose(1.0, 1.0 + 1e-10) && !pyisclose(1.0, 1.0 + 1e-8)
-        @test pyisclose(0.0, 1e-11; rel_tol=0, abs_tol=1e-10)
+        @test py_repr([1e-5, 1e16, 1.5, 0.1, -0.0, 1e15, 0.0001]) == "[1e-05, 1e+16, 1.5, 0.1, -0.0, 1000000000000000.0, 0.0001]"
+        @test py_repr(("a",)) == "('a',)" && py_repr(("a", 1)) == "('a', 1)"
+        @test py_repr("it's") == "\"it's\"" && py_repr("a\"b") == "'a\"b'" && py_repr("°C") == "'°C'"
+        @test py_repr(OrderedDict("a" => nothing, "b" => true)) == "{'a': None, 'b': True}"
+        @test py_float(" 3_50 ") == 350.0 && py_float("inf") == Inf && py_float(true) == 1.0
+        @test_throws ArgumentError py_float("0x10")
+        @test_throws ArgumentError py_float("1__0")
+        @test_throws ArgumentError py_float([1])
+        @test py_round(2.675, 2) == 2.67 && py_round(0.125, 2) == 0.12 && py_round(0.375, 2) == 0.38
+        @test py_isclose(1.0, 1.0 + 1e-10) && !py_isclose(1.0, 1.0 + 1e-8)
+        @test py_isclose(0.0, 1e-11; rel_tol=0, abs_tol=1e-10)
         # Julia's @sprintf("%.6g", 999999.5) is "1000000"; C and Python give "1e+06"
-        @test pyformat_g(999999.5, 6) == "1e+06" && pyformat_g(123456.5, 6) == "123456"
-        @test pyformat_g(0.0001, 4) == "0.0001" && pyformat_g(0.00001, 4) == "1e-05" && pyformat_g(91.55, 4) == "91.55"
+        @test py_format_g(999999.5, 6) == "1e+06" && py_format_g(123456.5, 6) == "123456"
+        @test py_format_g(0.0001, 4) == "0.0001" && py_format_g(0.00001, 4) == "1e-05" && py_format_g(91.55, 4) == "91.55"
     end
 
     if PY_CASES !== nothing
         @testset "against Python: repr, round" begin
-            @test all(pyrepr(decode(x)) == r for (x, r) in PY_CASES["reprs"])
-            @test all(pyround(x, n) === Float64(r) for (x, n, r) in PY_CASES["rounds"])
+            @test all(py_repr(decode(x)) == r for (x, r) in PY_CASES["reprs"])
+            @test all(py_round(x, n) === Float64(r) for (x, n, r) in PY_CASES["rounds"])
         end
         @testset "against Python: format_number ($(length(PY_CASES["format_number"])) calls)" begin
             bad = [(x, unit, digits, want, U.format_number(decode(x), unit, digits))

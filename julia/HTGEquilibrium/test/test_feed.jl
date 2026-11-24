@@ -158,6 +158,17 @@ r2(x, n) = round(x; digits=n)
                 @test_same got want repr(feed)
             end
         end
+        @testset "registry_elements against Python's registry ($(length(PY_CASES["species"])) species)" begin
+            # The JSON carries Python's registry_elements(Model.load().registry) for the species the cases name.
+            species_elements = registry_elements(load_model().registry)
+            # Python keeps species.toml's integer counts as ints; the Julia registry stores Float64.
+            for (name, want) in PY_CASES["species"]
+                want_f = OrderedDict{String,Any}(k => Float64(v) for (k, v) in want["elements"])
+                @test_same enc(species_elements(name)) want_f name
+            end
+            err = try species_elements("unobtainium") catch e; e end
+            @test err isa FeedError && err.msg == "Unknown feed species 'unobtainium'."
+        end
         @testset "against Python: _plus_one, refined_temperatures" begin
             @test all(_plus_one(x) === Float64(y) for (x, y) in PY_CASES["plus_one"])
             for (g, refine, want) in PY_CASES["refined_temperatures"]

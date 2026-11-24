@@ -5,7 +5,9 @@ The Julia science core of the HTG equilibrium app (Phase 2, milestone M2 of
 `src/htg` one module at a time, keeping the Python names so the two are easy to
 compare. So far: constants, formula parsing, water properties, HKF standard
 states of aqueous ions, the SUPCRT92 failure-band check that the Julia GUI
-will use to warn about sweeps, and reading case files (units, feed arithmetic).
+will use to warn about sweeps, the data layer (databases, species
+registry, user species folder, standard states, model loading) and reading
+case files (units, feed arithmetic).
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -21,13 +23,24 @@ will use to warn about sweeps, and reading case files (units, feed arithmetic).
 | `test/test_water.jl` | Golden tests, band check, IAPWS-95 self-consistency | `tests/test_reference_thermo.py` (electrolyte part) |
 | `test/data/hkf_ions.toml` | HKF records of the 8 shipped ions, as the app's registry reads them | `registry.ion_hkf_table` |
 | `test/dump_pychnosz.py` | Writes the fixture above and, with `--grid`, a wide pychnosz grid (not committed) | – |
-| `src/pycompat.jl` | Python behaviour the port relies on: `ValueError` (abstract; the case/feed/unit errors subtype it), `pyrepr`, `pyfloat`, `pyround`, `pyformat_g`, `pyisclose` | – |
-| `src/toml_ordered.jl` | `parse_toml`, `read_toml`: TOML as nested `OrderedDict`s in file order | `tomllib` |
+| `src/pycompat.jl` | Python behaviour the port relies on: `ValueError` (abstract; the case/feed/unit errors subtype it), `py_repr`/`py_str`, `py_float`/`py_tryfloat`/`py_int` (with Python's messages), `py_round`, `py_format_g` (C/Python `%g`), `py_isclose`, `py_truth`, `py_sorted`, `pypow` (C `pow`), `isna`, `casefold`, `py_slice`, `read_text`, `py_splitlines` | – |
+| `src/toml_ordered.jl` | `parse_toml`, `read_toml`: TOML as nested `OrderedDict`s in file order (as `tomllib`); used for case files, `species.toml` and the user species folder | `tomllib` |
 | `src/units.jl` | Submodule `Units`: `to_file`, `from_file`, `format_number`, `display`, `field_label`, ... | `units.py` |
 | `src/case.jl` | `Salt`, `Feed`, `Case`, `load_case`, `case_from_dict`, `validate`, `temperatures`, `pressures`, `grid`, `chains`, `at`, `replace`, carbon bounds, legacy keys, `legacy_to_v2` | `case.py` (reading) |
-| `src/feed_v2.jl` | `feed_v2_to_model`, `feed_summary`, `feed_fractions`, `elemental_masses`, `ash_percent`, `molar_mass_function`, `species_elements_function`, `legacy_feed_to_v2` | `feed_v2.py` |
+| `src/feed_v2.jl` | `feed_v2_to_model`, `feed_summary`, `feed_fractions`, `elemental_masses`, `ash_percent`, `molar_mass_function`, `species_elements_function`, `registry_elements`, `legacy_feed_to_v2` | `feed_v2.py` |
+| `src/databases.jl` | `Databases`, `load_databases`, NASA-7 parser (`read_nasa_lines`, `parse_nasa_header_elements`, `nasa7_properties`), SAFT CSV tables (`DataTable`), `supcrt92.xml` (`XMLNode`), `normalize_name` | `databases.py` |
+| `src/saft.jl` | Parameter-set selection: `first_complete_epcsaft_set`, `first_complete_pcsaft_set`, `first_complete_ion_epcsaft_set`, `first_complete_hkf_set`, `normalize_ion_name`, `water_sigma` | `saft.py` |
+| `src/registry.jl` | `Registry` (species discovery `discover!`, `all_molecular`, `solid`, `ion`, `ion_hkf_table`, `resolve_parameters`, catalogue of `CatalogueRow`s), `NO_SAFT_REASON`, `formula_elements`, `molecular_weight` | `species.py` |
+| `src/user_species.jl` | Loading a user species folder: `resolve_user_dir`, `load_user_database`, `apply_user_layer!`, `hide_species!` | `user_species.py` (loading part) |
+| `src/standard_states.jl` | `nasa_g0`, `supcrt_mineral_properties`, `solid_g0`, `hkf_records`, `hkf_ion_g0(water_model, hkf_table, ions, T, P)` | `standard_states.py` |
+| `src/model.jl` | `Model`, `load_model` (databases + registry + user layer + water model), `species`, `mineral_inventory`, `product_candidates`; `water_properties`/`hkf_ion_g0`/`nasa_g0`/`solid_g0` of a `Model` | `model.py` (data part) |
 | `test/test_units.jl`, `test/test_case.jl`, `test/test_feed.jl` | Ported Python tests; with `test/data/cases_python.json`, every case file and 119 variants against Python | `test_units.py`, `test_case_files.py`, `test_case_format.py` |
 | `test/dump_cases.py`, `test/python_cases.jl` | Write / compare `test/data/cases_python.json` (~0.5 MB, not committed) | – |
+| `test/data_setup.jl` | Shared setup of the three tests below: the reference models, Python's `same`/`close` | `tests/conftest.py`, `tests/helpers.py` |
+| `test/test_databases.jl` | Readers and Python helpers (CSV dtypes, XML, NASA-7, ordered TOML) | – |
+| `test/test_registry.jl` | `catalogue.json` (all of it), a user species folder, shipped `data/` smoke test, threaded reads | `tests/test_reference_catalogue.py`, `tests/test_user_species.py` (loading) |
+| `test/test_standard_states.jl` | `thermo.json`: molecular and solid g°, SAFT parameters, mu0 of the fluid and electrolyte phases | `tests/test_reference_thermo.py` |
+| `test/data/user_species/`, `test/data/user_species_python.json` | A user species folder written by the Python app and what Python loads from it; written by `test/dump_user_species.py` | – |
 
 **Matching Python's arithmetic.** Python 3.12's `sum()` of floats uses
 compensated summation; Julia's `sum` does not, so results can differ in the last
@@ -244,6 +257,9 @@ Result: **everything equal; 10519 floats compared, all bit for bit.**
 - Errors: `CaseError` (a ValueError raised in case.py), `FeedError`,
   `LegacyConversionError` and `Units.UnitError` subtype the abstract
   `ValueError`, so `e isa ValueError` catches what `except ValueError` does.
+  (The data layer throws `ArgumentError`s for Python ValueErrors; moving it
+  onto `ValueError` is a follow-up. Code that catches Python ValueErrors from
+  both should catch `Union{ValueError,ArgumentError}`.)
   Python TypeErrors (`Feed(**data)` with an unknown key, a missing Case field)
   are `ArgumentError`s with Python's text; `replace` with an unknown field
   (Python AttributeError) is an `ArgumentError`.
@@ -258,8 +274,10 @@ Result: **everything equal; 10519 floats compared, all bit for bit.**
 - A molar mass of zero gives `DivideError` (Python ZeroDivisionError).
 - `carbon_bound_messages` sums the fixed shares in `PHASES` order (Python
   iterates a set; the sum is compared with an absolute tolerance of 1e-10).
-- `registry_elements(registry)` is `species_elements_function(table)`, given
-  the registry's {name => elements} table (the registry is ported separately).
+- `registry_elements(registry)` works on the Julia `Registry`;
+  `species_elements_function(table)` does the same for any {name => elements}
+  table (the tests check `registry_elements(load_model().registry)` against
+  the element data Python's registry gives).
 - `Units` is a submodule (`Units.display` etc., as `units.display` in Python);
   its conversions broadcast over arrays. `replace(case; ...)` extends
   `Base.replace`.
@@ -267,17 +285,16 @@ Result: **everything equal; 10519 floats compared, all bit for bit.**
   ported yet; see below.
 
 **Bit-for-bit details.** Python `sum()` → `pysum`; `round(x, 8)` (applied to
-every temperature and pressure) → `pyround`, the correctly rounded decimal,
+every temperature and pressure) → `py_round`, the correctly rounded decimal,
 which Julia's `round(x; digits=8)` is not always; `numpy.arange` of `refine`
 → `_np_arange`, filled as NumPy fills it (`start + i*delta` with
 `delta = (start + step) - start`); `float(f"{x:.14g}")` and
-`Decimal(repr(x)) + 1` in the legacy feed conversion → `pyformat_g` and
+`Decimal(repr(x)) + 1` in the legacy feed conversion → `py_format_g` and
 `_plus_one`. Julia's `TOML.parse` returns plain `Dict`s, so `parse_toml`
 takes the values from `TOML.parse` and the key order from a small scanner of
 the text. Julia's Printf `%g` chooses between fixed and exponent notation
 before rounding (`@sprintf("%.6g", 999999.5)` is `"1000000"`; C and Python
-give `"1e+06"`); `pyformat_g` follows C. (`formulas.jl` still uses
-`@sprintf("%g")` in `_g`; it differs from Python only for such values.)
+give `"1e+06"`); `py_format_g` follows C, and `formulas.jl` uses it too.
 
 ## Case files: writing (M3)
 
@@ -286,7 +303,7 @@ Python writes case files in two ways:
    comments, only values that differ from the defaults. Used for the
    `case.toml` copy in each results folder and by the GUI's differences view.
    It builds the text itself (no TOML library), so it ports directly
-   (~80 lines; `pyrepr` already gives Python's float text). Natural to do with
+   (~80 lines; `py_repr` already gives Python's float text). Natural to do with
    `results.jl`.
 2. The GUI's `CaseDocument` (`gui/document.py`): the form edits a plain dict;
    saving merges it into the original document with tomlkit, so comments and
@@ -330,21 +347,94 @@ round-trip TOML library (tomlkit-like: much larger, general TOML) and (c)
 always writing `dump_case` text (simplest, but users lose their comments).
 **Owner decision needed: (b) as above, or (a) / (c).**
 
+## Data layer (databases, registry, standard states)
+
+`load_model(dir)` is Python's `Model.load(dir)`: it reads the four databases,
+`species.toml` (with an optional `user_data` folder layered on top), discovers
+the species and returns a `Model` (`databases`, `registry`, `water_model`,
+`user_info`, `load_args`). It takes ~0.1 s after compilation. Nothing is
+cached globally; a loaded `Model` is only read afterwards, so one model can be
+shared by all threads (tested: threaded and serial reads agree bit for bit).
+
+```julia
+model = load_model()                                  # data/ (or $HTG_DATA_DIR)
+model = load_model("tests/reference/databases"; nasa_names=Dict(), user_data=resolve_user_dir())
+species(model; include_unavailable=true)              # Vector{CatalogueRow}
+resolve_parameters(model.registry, model.databases, 623.15, ["water", "methane"])
+nasa_g0(model, ["water"], 623.15); solid_g0(model, ["Calcite"], 623.15, 240e5)
+hkf_ion_g0(model, ["Na+", "HCO3-"], 573.15, 240e5)    # the model's water model
+```
+
+**Results.** `catalogue.json` (both reference models: the catalogue of 1901 /
+1900 rows, the four registries with their order, the ion ePC-SAFT and HKF
+tables, the mineral inventory, the product candidates) is reproduced fully
+with Python's `same` rule. In `thermo.json` the molecular g° (235 species), the
+solid g° (169, including the Python error texts for minerals outside their
+range), the SAFT parameters (26), and mu0 of the fluid phases and of the
+electrolyte phase (ions and neutrals) agree **bit for bit** at all six states.
+A user species folder written by the Python app (`test/dump_user_species.py`)
+loads to the same catalogue rows, registries, user_info, parameters and g°.
+
+**Differences from Python** (names are kept; the rest follows Julia habits):
+- Methods become functions: `Databases.load` → `load_databases`,
+  `Model.load` → `load_model`, `UserDatabase.load` → `load_user_database`,
+  `registry.all_molecular` → `all_molecular(registry)`, `model.species()` →
+  `species(model)`, and functions that change their argument end in `!`
+  (`discover!`, `apply_user_layer!`, `hide_species!`).
+- Exceptions: Python `ValueError`/`TypeError`/`FileNotFoundError` are
+  `ArgumentError`s, `KeyError`s are `KeyError(message)`; the messages are
+  Python's (including texts such as "could not convert string to float: ''"
+  that end up in the catalogue).
+- pandas tables: the SAFT CSVs are `DataTable`s that reproduce pandas'
+  reading (default NA strings, numeric columns as Float64 with NaN, text
+  columns as String/`missing`, the index labels, user rows first with negative
+  labels). The catalogue is a `Vector{CatalogueRow}`; the ion tables, parameter
+  sets, registry entries and inventory rows are `OrderedDict{String,Any}` with
+  Python's keys.
+- `supcrt92.xml` is parsed with EzXML into an `XMLNode` tree with
+  ElementTree's semantics (`findtext`, `.//tag`, `iter`).
+- TOML: Julia's TOML stdlib returns unordered `Dict`s, but the registry order
+  comes from `species.toml`; `read_toml` (toml_ordered.jl, shared with the
+  case files) rebuilds the tables as `OrderedDict`s in file order (values from
+  the stdlib parser; each table of an array of tables in its own order, as tomllib).
+- `x ** n` in the NASA-7 and Maier–Kelley formulas is C `pow` (`pypow`), as
+  in CPython; Julia's `^` differs in the last bits (33 of 2368 g° values,
+  ≤ 8e-14 relative). On another OS both use that platform's libm.
+- `Model` also holds the `water_model` (default `SUPCRT92Water()`; owner
+  decision 3) and records its name in `load_args["water_model"]`.
+- Not ported (later steps): `species_catalogue.py` (Species tab table, M4),
+  editing/importing user species (M4), `Model.solve/sweep/check`.
+
+**For the phases step.** `resolve_parameters` gives the parameter sets
+(`m`, `sigma`, `epsilon`, `epsilonAB`, `kappaAB`, `association_scheme`, `Mw`)
+that `build_pcsaft_model` needs; components are `all_molecular(registry)[name]["formula"]`
+with `registry.binary_interactions`. The electrolyte phase needs
+`aqueous_reference_neutrals/ions`, `probe_weights`, `ion_charge`,
+`registry.ion` (formula, elements), `ion_epcsaft_table` (m, sigma, epsilon,
+dielectric_constant), `hkf_ion_g0(model, ions, T, P)`, `nasa_g0(model, neutrals, T)`
+and `water_properties(model, T, P)` for the validity check and the dielectric
+constant (Python calls `supcrt_water` there; Julia should use the model's
+water model). Still untested from `thermo.json`: the fluid-phase G and ln phi
+points (rel 1e-10 / abs 1e-8 and rtol 1e-9 / atol 1e-11), and the electrolyte
+`lnphi_infinity`, G and ln phi.
+
 ## What remains for M2
 
-This package does not yet have the rest of `standard_states.py` or anything
-that uses it:
-- `constants.jl`, `databases.jl` (NASA-7 parser, CSV SAFT tables, EzXML for
-  `supcrt92.xml`) and `registry.jl`. Then the HKF records come from
-  `data/supcrt92.xml` and `test/data/hkf_ions.toml` can go.
-- `standard_states.jl`: `nasa_g0`, `supcrt_mineral_properties`, `solid_g0`, and
-  the remaining `thermo.json` tests (molecular, solid, SAFT parameters).
+Done: constants, formulas, water, HKF, band check; the data layer
+(`databases.jl`, `saft.jl`, `registry.jl`, `user_species.jl` loading,
+`standard_states.jl`, `model.jl` data part; `catalogue.json` and the
+standard-state parts of `thermo.json`); case files and feed arithmetic
+(`units.jl`, `case.jl` reading, `feed_v2.jl`). `test/data/hkf_ions.toml`
+equals the registry's records (tested) and can go when `test_water.jl` is
+switched over. Still to do:
 - `phases.jl` (electrolyte phase with the water model selectable; validity
   check `rho >= 350 and epsilon > 1`), `equilibrium.jl`, `optimizer.jl`,
-  `case.jl`, `results.jl`, `sweep.jl`, `queue.jl`, `cli.jl`; `solves.json` and
-  `catalogue.json` tests; running the example cases in both versions.
+  `results.jl`, `sweep.jl`, `queue.jl`, `cli.jl`; the fluid-phase and
+  electrolyte G / ln phi parts of `thermo.json`; `solves.json` tests; running
+  the example cases in both versions.
 - Where the user chooses the water model (case file key, GUI setting) and how
   results record it.
+- M3: writing case files (see "Case files: writing (M3)").
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)

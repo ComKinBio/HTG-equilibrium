@@ -40,9 +40,9 @@ Salt(; mol_per_g_dry_feed, elements) = Salt(mol_per_g_dry_feed, elements)
 Base.:(==)(a::Salt, b::Salt) = a.mol_per_g_dry_feed == b.mol_per_g_dry_feed && a.elements == b.elements
 
 # Python's TypeErrors for Cls(**kwargs) with unknown or missing keys (Julia: ArgumentError, same text).
-_unexpected(cls, key) = ArgumentError("$cls.__init__() got an unexpected keyword argument $(pyrepr(string(key)))")
+_unexpected(cls, key) = ArgumentError("$cls.__init__() got an unexpected keyword argument $(py_repr(string(key)))")
 function _missing_arguments(cls, names)
-    quoted = pyrepr.(names)
+    quoted = py_repr.(names)
     list = length(quoted) == 1 ? quoted[1] : length(quoted) == 2 ? join(quoted, " and ") :
            join(quoted[1:end-1], ", ") * ", and " * quoted[end]
     plural = length(names) == 1 ? "argument" : "arguments"
@@ -149,7 +149,7 @@ function dry_element_wt_percent(feed::Feed, species_to_wt_percent)
     other = feed.unmodelled_wt_percent === nothing ? nothing :
             _number(feed.unmodelled_wt_percent, "unmodelled_wt_percent", 0, 100)
     if feed.species_moles !== nothing
-        if pytruth(ash) || pytruth(other)
+        if py_truth(ash) || py_truth(other)
             throw(CaseError("For a species-defined feed, leave ash_wt_percent and " *
                             "unmodelled_wt_percent unset or zero."))
         end
@@ -162,18 +162,18 @@ function dry_element_wt_percent(feed::Feed, species_to_wt_percent)
     if feed.basis == "dry"
         dry = analysis
     elseif feed.basis == "dry_ash_free"
-        pytruth(other) && throw(CaseError("A dry_ash_free analysis requires unmodelled_wt_percent = 0."))
-        pyisclose(pysum(values(analysis)), 100; abs_tol=0.05) ||
+        py_truth(other) && throw(CaseError("A dry_ash_free analysis requires unmodelled_wt_percent = 0."))
+        py_isclose(pysum(values(analysis)), 100; abs_tol=0.05) ||
             throw(CaseError("A dry_ash_free elemental analysis must sum to 100 %."))
-        a = pytruth(ash) ? ash : 0
+        a = py_truth(ash) ? ash : 0
         dry = OrderedDict{String,Float64}(e => v * (1 - a / 100) for (e, v) in analysis)
     else
         throw(CaseError("Feed basis must be 'dry' or 'dry_ash_free'."))
     end
     if ash !== nothing || other !== nothing
-        total = pysum(values(dry)) + (pytruth(ash) ? ash : 0) + (pytruth(other) ? other : 0)
-        if !pyisclose(total, 100; abs_tol=0.05)
-            throw(CaseError("Dry elements + ash + unmodelled = $(pyformat_g(total, 4)) %, not 100 %. " *
+        total = pysum(values(dry)) + (py_truth(ash) ? ash : 0) + (py_truth(other) ? other : 0)
+        if !py_isclose(total, 100; abs_tol=0.05)
+            throw(CaseError("Dry elements + ash + unmodelled = $(py_format_g(total, 4)) %, not 100 %. " *
                             "No automatic renormalization is applied."))
         end
     end
@@ -316,7 +316,7 @@ function _post_init!(case::Case)
     phases = _Dict()
     for (phase, names) in case.phases
         names isa Union{AbstractVector,Tuple,AbstractString,AbstractDict} ||
-            throw(ArgumentError("$(pyrepr(names)) is not iterable (phase $(pyrepr(string(phase))))"))
+            throw(ArgumentError("$(py_repr(names)) is not iterable (phase $(py_repr(string(phase))))"))
         phases[string(phase)] = _pylist(names)
     end
     case.phases = phases
@@ -331,7 +331,7 @@ end
 function _point_entry(p)
     p isa Union{AbstractVector,Tuple} && return Any[p...]
     p isa AbstractString && return Any[string(c) for c in p]
-    throw(CaseError("Each entry of points must be [temperature_C, pressure_bar], not $(pyrepr(p))."))
+    throw(CaseError("Each entry of points must be [temperature_C, pressure_bar], not $(py_repr(p))."))
 end
 
 """Old carbon settings -> carbon_bounds; multistart -> starts (the one place
@@ -389,10 +389,10 @@ function temperatures(case::Case)
     isempty(grid) && throw(CaseError("Give at least one temperature."))
     grid = refined_temperatures(grid, case.refine)
     if case.aqueous_cutoff_C !== nothing
-        cutoff = pyfloat(case.aqueous_cutoff_C)
+        cutoff = py_float(case.aqueous_cutoff_C)
         minimum(grid) < cutoff < maximum(grid) && push!(grid, cutoff)
     end
-    return _sorted_set(pyround(pyfloat(t), 8) for t in grid)
+    return _sorted_set(py_round(py_float(t), 8) for t in grid)
 end
 
 """Sorted pressures [bar] of the case."""
@@ -401,17 +401,17 @@ function pressures(case::Case)
     case.pressure_bar === nothing && throw(CaseError("Give pressure_bar (or points)."))
     values = _aslist(case.pressure_bar)
     isempty(values) && throw(CaseError("Give at least one pressure."))
-    return _sorted_set(pyround(_number(p, "pressure_bar", 1e-300), 8) for p in values)
+    return _sorted_set(py_round(_number(p, "pressure_bar", 1e-300), 8) for p in values)
 end
 
 function _explicit_points(case::Case)
     out = Tuple{Float64,Float64}[]
     for item in case.points
         if !(item isa Union{AbstractVector,Tuple}) || length(item) != 2
-            throw(CaseError("Each entry of points must be [temperature_C, pressure_bar], not $(pyrepr(item))."))
+            throw(CaseError("Each entry of points must be [temperature_C, pressure_bar], not $(py_repr(item))."))
         end
-        point = (pyround(_number(item[1], "points temperature_C", -273.149999), 8),
-                 pyround(_number(item[2], "points pressure_bar", 1e-300), 8))
+        point = (py_round(_number(item[1], "points temperature_C", -273.149999), 8),
+                 py_round(_number(item[2], "points pressure_bar", 1e-300), 8))
         point in out || push!(out, point)
     end
     isempty(out) && throw(CaseError("points is empty."))
@@ -439,7 +439,7 @@ chain per pressure (rising temperature) and explicit points one chain in list or
 """
 function chains(case::Case)
     points = grid(case)
-    pytruth(case.continuation) || return [[point] for point in points]
+    py_truth(case.continuation) || return [[point] for point in points]
     case.points === nothing || return [points]
     out = OrderedDict{Float64,Vector{Tuple{Float64,Float64}}}()
     for (T, P) in points
@@ -463,8 +463,8 @@ function at(case::Case, temperature_C, pressure_bar=nothing)
         pressure_bar = ps[1]
     end
     point = deepcopy(case)
-    point.temperature_C = pyfloat(temperature_C)
-    point.pressure_bar = pyfloat(pressure_bar)
+    point.temperature_C = py_float(temperature_C)
+    point.pressure_bar = py_float(pressure_bar)
     point.points = nothing
     point.refine = nothing
     return point
@@ -480,7 +480,7 @@ gives a new `feed`.
 function Base.replace(case::Case; changes...)
     point = deepcopy(case)
     for (key, value) in changes
-        hasfield(Case, key) || throw(ArgumentError("Case has no field $(pyrepr(string(key)))"))
+        hasfield(Case, key) || throw(ArgumentError("Case has no field $(py_repr(string(key)))"))
         setfield!(point, key, value)
     end
     if haskey(changes, :feed) && !haskey(changes, :feed_v2)
@@ -499,14 +499,14 @@ Like Python it also stores `starts` as an Int.
 """
 function validate(case::Case)
     unknown = setdiff(keys(case.phases), PHASES)
-    isempty(unknown) || throw(CaseError("Unknown phase(s) $(pyrepr(pysorted(unknown))); use $(pyrepr(collect(PHASES)))."))
-    case.solver in SOLVERS || throw(CaseError("solver must be one of $(pyrepr(SOLVERS)), not $(pyrepr(case.solver))."))
-    case.initialization in INITIALIZATIONS || throw(CaseError("initialization must be one of $(pyrepr(INITIALIZATIONS))."))
+    isempty(unknown) || throw(CaseError("Unknown phase(s) $(py_repr(py_sorted(unknown))); use $(py_repr(collect(PHASES)))."))
+    case.solver in SOLVERS || throw(CaseError("solver must be one of $(py_repr(SOLVERS)), not $(py_repr(case.solver))."))
+    case.initialization in INITIALIZATIONS || throw(CaseError("initialization must be one of $(py_repr(INITIALIZATIONS))."))
     case.aqueous_model in ("electrolyte", "molecular") ||
         throw(CaseError("aqueous_model must be 'electrolyte' or 'molecular'."))
     case.solid_carbon_target in ("char", "all_solids") ||
         throw(CaseError("solid_carbon_target must be 'char' or 'all_solids'."))
-    if case.points !== nothing && pytruth(case.refine)
+    if case.points !== nothing && py_truth(case.refine)
         throw(CaseError("refine applies to a temperature grid; it cannot be used with points."))
     end
     check_carbon_bounds(case.carbon_bounds)
@@ -516,7 +516,7 @@ function validate(case::Case)
         throw(CaseError(isnan(s) ? "cannot convert float NaN to integer" : "cannot convert float infinity to integer"))
     end
     if s isa Bool || !(s isa Real) || s != trunc(s) || s < 1
-        throw(CaseError("starts (initial guesses) must be a whole number of at least 1, not $(pyrepr(s))."))
+        throw(CaseError("starts (initial guesses) must be a whole number of at least 1, not $(py_repr(s))."))
     end
     case.starts = Int(s)
     for name in (:distinct_composition_tol, :distinct_gibbs_tol)
@@ -528,13 +528,13 @@ end
 
 function _number(value, name, low=nothing, high=nothing)
     v = try
-        pyfloat(value)
+        py_float(value)
     catch e
         e isa ArgumentError || rethrow()
-        throw(CaseError("$name must be a number, not $(pyrepr(value))."))
+        throw(CaseError("$name must be a number, not $(py_repr(value))."))
     end
     if !isfinite(v) || (low !== nothing && v < low) || (high !== nothing && v > high)
-        throw(CaseError("Invalid $name: $(pystr(v))"))
+        throw(CaseError("Invalid $name: $(py_str(v))"))
     end
     return v
 end
@@ -545,10 +545,10 @@ function _pairs(mapping)
     mapping === nothing && return out
     for (key, value) in mapping
         if key isa Tuple
-            out[(string(key[1]), string(key[2]))] = pyfloat(value)
+            out[(string(key[1]), string(key[2]))] = py_float(value)
         else
             for (species, amount) in value
-                out[(string(key), string(species))] = pyfloat(amount)
+                out[(string(key), string(species))] = py_float(amount)
             end
         end
     end
@@ -571,7 +571,7 @@ const BOUND_KINDS = ("exact", "min", "max")
 const LEGACY_CARBON_KEYS = ("gas_carbon_fraction", "gas_carbon_min_fraction", "solid_carbon_fraction",
                             "phase_carbon_fractions")
 
-_label(phase) = get(PHASE_LABELS, phase, pystr(phase))
+_label(phase) = get(PHASE_LABELS, phase, py_str(phase))
 
 """
     legacy_carbon_bounds(; gas_carbon_fraction, gas_carbon_min_fraction,
@@ -595,9 +595,9 @@ function legacy_carbon_bounds(; gas_carbon_fraction=nothing, gas_carbon_min_frac
     gas_carbon_fraction === nothing || (bounds["gas"] = _Dict("exact" => gas_carbon_fraction))
     gas_carbon_min_fraction === nothing || (bounds["gas"] = _Dict("min" => gas_carbon_min_fraction))
     solid_carbon_fraction === nothing || (bounds["solid"] = _Dict("exact" => solid_carbon_fraction))
-    for (phase, fraction) in (pytruth(phase_carbon_fractions) ? phase_carbon_fractions : ())
+    for (phase, fraction) in (py_truth(phase_carbon_fractions) ? phase_carbon_fractions : ())
         if phase == "gas" && gas_carbon_fraction !== nothing
-            if !pyisclose(pyfloat(fraction), pyfloat(gas_carbon_fraction); rel_tol=0, abs_tol=1e-10)
+            if !py_isclose(py_float(fraction), py_float(gas_carbon_fraction); rel_tol=0, abs_tol=1e-10)
                 throw(CaseError("Conflicting gas-carbon constraints"))
             end
             continue
@@ -618,7 +618,7 @@ end
 
 function merge_carbon_bounds(bounds, extra)
     out = _Dict()
-    for (phase, b) in (pytruth(bounds) ? bounds : ())
+    for (phase, b) in (py_truth(bounds) ? bounds : ())
         out[phase] = b isa AbstractDict ? _Dict(b) : b
     end
     for (phase, bound) in extra
@@ -633,7 +633,7 @@ end
 
 """Ordered copy: gas, solid, then the other phases as given; numbers as floats."""
 function normalize_carbon_bounds(bounds)
-    bounds = pytruth(bounds) ? bounds : _Dict()
+    bounds = py_truth(bounds) ? bounds : _Dict()
     order = [[p for p in ("gas", "solid") if haskey(bounds, p)]; [p for p in keys(bounds) if !(p in ("gas", "solid"))]]
     out = _Dict()
     for phase in order
@@ -654,9 +654,9 @@ end
 
 """Throw a CaseError for the first malformed bound (needs no species data)."""
 function check_carbon_bounds(bounds)
-    for (phase, bound) in (pytruth(bounds) ? bounds : ())
+    for (phase, bound) in (py_truth(bounds) ? bounds : ())
         phase in PHASES ||
-            throw(CaseError("Unknown phase $(pyrepr(phase)) in [constraints.carbon]; use $(join(PHASES, ", "))."))
+            throw(CaseError("Unknown phase $(py_repr(phase)) in [constraints.carbon]; use $(join(PHASES, ", "))."))
         label = _label(phase)
         if !(bound isa AbstractDict) || isempty(bound) || !all(k -> k in BOUND_KINDS, keys(bound))
             throw(CaseError("$label carbon: use exact, or min and/or max (e.g. $phase = { min = 0.9 })."))
@@ -667,7 +667,7 @@ function check_carbon_bounds(bounds)
         for (kind, value) in bound
             if value isa Bool || !(value isa Real) || !isfinite(value) || !(0 <= value <= 1)
                 throw(CaseError("$label carbon: $kind must be a fraction between 0 and 1 " *
-                                "(0 % to 100 %), not $(pyrepr(value))."))
+                                "(0 % to 100 %), not $(py_repr(value))."))
             end
         end
         if haskey(bound, "min") && haskey(bound, "max") && bound["min"] > bound["max"]
@@ -692,7 +692,7 @@ function carbon_bound_messages(case::Case, carbon_solids=nothing)
         e isa CaseError || rethrow()
         return [e.msg]
     end
-    present = [p for p in PHASES if pytruth(get(case.phases, p, nothing))]   # PHASES order (Python: a set)
+    present = [p for p in PHASES if py_truth(get(case.phases, p, nothing))]   # PHASES order (Python: a set)
     case.aqueous_enabled === false && filter!(!=("aqueous"), present)
     for phase in keys(bounds)
         phase in present || push!(messages, "$(_label(phase)) has a carbon bound but no species.")
@@ -703,9 +703,9 @@ function carbon_bound_messages(case::Case, carbon_solids=nothing)
     elseif !isempty(present) && all(p -> haskey(get(bounds, p, _Dict()), "exact"), present)
         solid_complete = !("solid" in present) || case.solid_carbon_target == "all_solids" ||
             (carbon_solids !== nothing &&
-             !any(pytruth(get(carbon_solids, s, true)) for s in case.phases["solid"] if s != "carbon"))
+             !any(py_truth(get(carbon_solids, s, true)) for s in case.phases["solid"] if s != "carbon"))
         total = pysum(bounds[p]["exact"] for p in present)
-        if solid_complete && !pyisclose(total, 1.0; rel_tol=0, abs_tol=1e-10)
+        if solid_complete && !py_isclose(total, 1.0; rel_tol=0, abs_tol=1e-10)
             push!(messages, "With every phase fixed, the carbon shares must add up to 100 %.")
         end
     end
@@ -719,7 +719,7 @@ Bounds at a point: without an aqueous phase the aqueous bound is dropped;
 dropped = ["aqueous carbon"] when that bound asked for carbon there.
 """
 function effective_carbon_bounds(bounds, aqueous_disabled)
-    (!pytruth(aqueous_disabled) || !haskey(bounds, "aqueous")) && return _Dict(bounds), String[]
+    (!py_truth(aqueous_disabled) || !haskey(bounds, "aqueous")) && return _Dict(bounds), String[]
     bound = bounds["aqueous"]
     out = _Dict(p => b for (p, b) in bounds if p != "aqueous")
     asked = get(bound, "exact", 0.0) > 0 || get(bound, "min", 0.0) > 0
@@ -735,11 +735,11 @@ every temperature of the case.
 function fluid_phase_count(phases, aqueous_enabled=true, aqueous_cutoff_C=nothing, temperatures=nothing)
     count = 0
     for phase in FLUID_PHASES
-        pytruth(phases === nothing ? nothing : get(phases, phase, nothing)) || continue
+        py_truth(phases === nothing ? nothing : get(phases, phase, nothing)) || continue
         if phase == "aqueous"
             aqueous_enabled === false && continue
-            if aqueous_cutoff_C !== nothing && pytruth(temperatures) &&
-               minimum(temperatures) >= pyfloat(aqueous_cutoff_C)
+            if aqueous_cutoff_C !== nothing && py_truth(temperatures) &&
+               minimum(temperatures) >= py_float(aqueous_cutoff_C)
                 continue
             end
         end
@@ -748,21 +748,15 @@ function fluid_phase_count(phases, aqueous_enabled=true, aqueous_cutoff_C=nothin
     return count
 end
 
-_pyint(x::Integer) = Int(x)
-_pyint(x::AbstractFloat) = isfinite(x) ? trunc(Int, x) :
-    throw(CaseError(isnan(x) ? "cannot convert float NaN to integer" : "cannot convert float infinity to integer"))
-_pyint(x::AbstractString) = parse(Int, replace(strip(x), '_' => ""))
-_pyint(x) = throw(ArgumentError("int() argument must be a string or a real number, not $(typeof(x))"))
-
 """
 Total starting points of the old multistart = k: 1 + 2 F + k (k = 0: 1). The
 old code made the initial start, a phase-rich and a phase-lean LP start for
 each of the F fluid phases, and k random starts.
 """
 function starts_from_multistart(multistart, fluid_phases)
-    k = _pyint(pytruth(multistart) ? multistart : 0)
+    k = py_int(py_truth(multistart) ? multistart : 0)
     k < 0 && throw(CaseError("multistart cannot be negative."))
-    return k > 0 ? 1 + 2 * _pyint(fluid_phases) + k : 1
+    return k > 0 ? 1 + 2 * py_int(fluid_phases) + k : 1
 end
 
 # numpy.arange(start, stop, step) for floats, element by element as NumPy fills it.
@@ -784,10 +778,10 @@ end
 ({start_C, stop_C, step_C}, limited to the range of the grid)."""
 function refined_temperatures(grid, refine)
     grid = Any[grid...]
-    if pytruth(refine)
+    if py_truth(refine)
         step = _number(refine["step_C"], "refine step_C", 1e-12)
-        a = max(pyfloat(minimum(grid)), pyfloat(refine["start_C"]))
-        b = min(pyfloat(maximum(grid)), pyfloat(refine["stop_C"]))
+        a = max(py_float(minimum(grid)), py_float(refine["start_C"]))
+        b = min(py_float(maximum(grid)), py_float(refine["stop_C"]))
         b >= a && append!(grid, _np_arange(a, b + step * 1e-8, step))
     end
     return grid
@@ -841,7 +835,7 @@ function legacy_to_v2(data, molar_mass=nothing)
             values = conditions["temperature_C"]
             sweep = get(out, "sweep", nothing)
             temps = refined_temperatures(values isa AbstractVector ? values : Any[values],
-                                         get(pytruth(sweep) ? sweep : _Dict(), "refine", nothing))
+                                         get(py_truth(sweep) ? sweep : _Dict(), "refine", nothing))
         elseif haskey(conditions, "points")
             temps = [p[1] for p in conditions["points"]]
         end
@@ -854,9 +848,9 @@ function legacy_to_v2(data, molar_mass=nothing)
     if sweep isa AbstractDict && haskey(sweep, "refine")
         refine = pop!(sweep, "refine")
         conditions = get(out, "conditions", _Dict())
-        if pytruth(refine) && haskey(conditions, "temperature_C") && !haskey(conditions, "points")
+        if py_truth(refine) && haskey(conditions, "temperature_C") && !haskey(conditions, "points")
             values = conditions["temperature_C"]
-            merged = _sorted_set(pyround(pyfloat(t), 8)
+            merged = _sorted_set(py_round(py_float(t), 8)
                                  for t in refined_temperatures(values isa AbstractVector ? values : Any[values], refine))
             conditions["temperature_C"] = Any[isinteger(t) ? Int(t) : t for t in merged]
         end
@@ -899,7 +893,7 @@ function _feed_from_dict(feed, version)
         mixed = [k for k in LEGACY_FEED_ONLY if haskey(feed, k)]
         if !isempty(mixed)
             throw(CaseError("[feed] mixes the new keys (total_kg, solids, ash, species) with old " *
-                            "ones $(pyrepr(mixed)); remove the old ones."))
+                            "ones $(py_repr(mixed)); remove the old ones."))
         end
         written = _Dict(k => deepcopy(v) for (k, v) in feed if k != "salts")
         return feed_v2_to_model(feed), written
@@ -911,7 +905,7 @@ function _feed_from_dict(feed, version)
     known = [f for f in FEED_FIELDS if f != "species_amounts"]
     unknown = setdiff(keys(feed), known)
     isempty(unknown) ||
-        throw(CaseError("Unknown [feed] key(s) $(pyrepr(pysorted(unknown))); allowed: $(pyrepr(pysorted(known)))."))
+        throw(CaseError("Unknown [feed] key(s) $(py_repr(py_sorted(unknown))); allowed: $(py_repr(py_sorted(known)))."))
     return _feed_from_kwargs(feed), nothing
 end
 
@@ -925,7 +919,7 @@ function case_from_dict(data; name=nothing)
     data = _Dict(deepcopy(data))
     version = pop!(data, "format", nothing)
     if !(version === nothing || version == 1 || version == FORMAT)
-        throw(CaseError("format = $(pyrepr(version)) is not known; this version reads format 2 " *
+        throw(CaseError("format = $(py_repr(version)) is not known; this version reads format 2 " *
                         "(and old files without format)."))
     end
     kwargs = OrderedDict{Symbol,Any}()
@@ -950,12 +944,12 @@ function case_from_dict(data; name=nothing)
         end
         unknown = setdiff(keys(values), keys(keys_))
         isempty(unknown) ||
-            throw(CaseError("Unknown [$section] key(s) $(pyrepr(pysorted(unknown))); allowed: $(pyrepr(pysorted(keys(keys_))))."))
+            throw(CaseError("Unknown [$section] key(s) $(py_repr(py_sorted(unknown))); allowed: $(py_repr(py_sorted(keys(keys_))))."))
         for (key, value) in values
             kwargs[Symbol(keys_[key])] = value
         end
     end
-    isempty(data) || throw(CaseError("Unknown section(s) or key(s): $(pyrepr(pysorted(keys(data))))."))
+    isempty(data) || throw(CaseError("Unknown section(s) or key(s): $(py_repr(py_sorted(keys(data))))."))
     if haskey(kwargs, :points)
         if haskey(kwargs, :temperature_C) || haskey(kwargs, :pressure_bar)
             throw(CaseError("[conditions] has points; leave out temperature_C and pressure_bar."))
@@ -966,7 +960,7 @@ function case_from_dict(data; name=nothing)
             haskey(kwargs, required) || throw(CaseError("[conditions] needs $required (or points)."))
         end
     end
-    if pytruth(name) && !haskey(kwargs, :name)
+    if py_truth(name) && !haskey(kwargs, :name)
         kwargs[:name] = name
     end
     return validate(Case(; kwargs...))
@@ -981,7 +975,7 @@ absolute path, relative to the case file.
 function load_case(path::AbstractString)
     stem = splitext(basename(path))[1]
     case = case_from_dict(read_toml(path); name=stem)
-    if pytruth(case.comparison)
+    if py_truth(case.comparison)
         file = abspath(joinpath(dirname(abspath(path)), case.comparison["file"]))
         case.comparison["file"] = ispath(file) ? realpath(file) : file
     end

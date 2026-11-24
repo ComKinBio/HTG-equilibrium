@@ -6,16 +6,22 @@ version = "0.1.0"
 projects = ["test"]
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
+EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
+CSV = "=1.3.0"
 Clapeyron = "=0.6.30"
+EzXML = "=1.2.3"
 ForwardDiff = "=1.5.0"
+JSON = "=1.13.4"
 OrderedCollections = "=2.0.3"
 Printf = "1"
 TOML = "1"

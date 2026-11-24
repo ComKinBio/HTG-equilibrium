@@ -37,12 +37,12 @@ const SPECIES_UNITS = ("kg", "mol")
 
 # ---------------------------------------------------------------- helpers
 function _feed_number(value, field)
-    value isa Bool && throw(FeedError("$field must be a number, not $(pyrepr(value))."))
+    value isa Bool && throw(FeedError("$field must be a number, not $(py_repr(value))."))
     number = try
-        pyfloat(value)
+        py_float(value)
     catch e
         e isa ArgumentError || rethrow()
-        throw(FeedError("$field must be a number, not $(pyrepr(value))."))
+        throw(FeedError("$field must be a number, not $(py_repr(value))."))
     end
     isfinite(number) || throw(FeedError("$field must be a finite number."))
     return number
@@ -58,11 +58,11 @@ function amount(entry, field, units)
     end
     unknown = setdiff(keys(entry), ("value", "unit"))
     isempty(unknown) ||
-        throw(FeedError("$field: unknown key(s) $(pyrepr(pysorted(unknown))); use value and unit."))
+        throw(FeedError("$field: unknown key(s) $(py_repr(py_sorted(unknown))); use value and unit."))
     unit = get(entry, "unit", units[1])
     if !(unit in units)
         throw(FeedError("$field: the unit must be " * join(("\"$u\"" for u in units), " or ") *
-                        ", not $(pyrepr(unit))."))
+                        ", not $(py_repr(unit))."))
     end
     return _feed_number(entry["value"], field), unit
 end
@@ -74,7 +74,7 @@ is_v2_feed(feed) = feed isa AbstractDict && any(haskey(feed, key) for key in V2_
 
 function _atomic_weights(atomic_weights)
     aw = Dict{String,Any}(ATOMIC_WEIGHTS)
-    pytruth(atomic_weights) && for (e, w) in atomic_weights
+    py_truth(atomic_weights) && for (e, w) in atomic_weights
         aw[string(e)] = w
     end
     return aw
@@ -93,7 +93,7 @@ function molar_mass_function(species_elements, atomic_weights=nothing)
         elements = species_elements(name)
         missing_ = [e for e in keys(elements) if !haskey(aw, e)]
         isempty(missing_) ||
-            throw(FeedError("No atomic weight for $(join(missing_, ", ")) (species $(pystr(name)))."))
+            throw(FeedError("No atomic weight for $(join(missing_, ", ")) (species $(py_str(name)))."))
         return Float64(pysum(aw[e] * count for (e, count) in elements))
     end
     return molar_mass
@@ -103,19 +103,26 @@ end
     species_elements_function(entries) -> species_elements
 
 `species_elements(name) -> {element => count}` from a table
-{name => elements} (or {name => entry with "elements"}). Python builds it from
-the registry (`registry_elements(registry)`: molecules, solids and ions); the
-Julia registry can pass its merged tables here.
+{name => elements} (or {name => entry with "elements"}). For a `Registry`
+use `registry_elements`.
 """
 function species_elements_function(entries::AbstractDict)
     function species_elements(name)
-        haskey(entries, name) || throw(FeedError("Unknown feed species $(pyrepr(name))."))
+        haskey(entries, name) || throw(FeedError("Unknown feed species $(py_repr(name))."))
         entry = entries[name]
         elements = entry isa AbstractDict && haskey(entry, "elements") ? entry["elements"] : entry
         return OrderedDict{String,Any}(elements)
     end
     return species_elements
 end
+
+"""
+    registry_elements(registry) -> species_elements
+
+`species_elements(name)` for a species `Registry` (molecules, solids and ions;
+later tables win, as Python's `{**all_molecular, **solid, **ion}`).
+"""
+registry_elements(registry) = species_elements_function(merge(all_molecular(registry), registry.solid, registry.ion))
 
 # ---------------------------------------------------------------- elemental analysis
 """(used, entered sum): the element percentages scaled to sum to 100."""
@@ -202,10 +209,10 @@ mass; without `molar_mass` the conversion is left to the calculation
 (`Feed.species_amounts`, see `resolved`). Positional `salts, molar_mass` work too.
 """
 function feed_v2_to_model(feed, salts_=nothing, molar_mass_=nothing; salts=salts_, molar_mass=molar_mass_)
-    salt_table = pytruth(salts) ? salts : (pytruth(get(feed, "salts", nothing)) ? feed["salts"] : _Dict())
+    salt_table = py_truth(salts) ? salts : (py_truth(get(feed, "salts", nothing)) ? feed["salts"] : _Dict())
     if feed_mode(feed) == "species"
         extra = setdiff(keys(feed), (SPECIES_KEY, "salts"))
-        isempty(extra) || throw(FeedError("[feed.species] replaces $(pyrepr(pysorted(extra))); remove them."))
+        isempty(extra) || throw(FeedError("[feed.species] replaces $(py_repr(py_sorted(extra))); remove them."))
         if molar_mass === nothing
             species_masses(feed[SPECIES_KEY], name -> 1.0)  # checks the entries
             return Feed(species_amounts=deepcopy(feed[SPECIES_KEY]), salts=salt_table)
@@ -215,8 +222,8 @@ function feed_v2_to_model(feed, salts_=nothing, molar_mass_=nothing; salts=salts
     end
     unknown = setdiff(keys(feed), ELEMENTAL_KEYS, ("salts",))
     if !isempty(unknown)
-        throw(FeedError("Unknown [feed] key(s) $(pyrepr(pysorted(unknown))); allowed: " *
-                        "$(pyrepr(collect(ELEMENTAL_KEYS))) (or [feed.species]) and [feed.salts]."))
+        throw(FeedError("Unknown [feed] key(s) $(py_repr(py_sorted(unknown))); allowed: " *
+                        "$(py_repr(collect(ELEMENTAL_KEYS))) (or [feed.species]) and [feed.salts]."))
     end
     masses = elemental_masses(feed)
     haskey(feed, "elements_wt_percent") ||
@@ -281,7 +288,7 @@ function feed_summary(feed, atomic_weights_=nothing, species_elements_=nothing;
     end
     masses = elemental_masses(feed)
     elements_in = get(feed, "elements_wt_percent", nothing)
-    used, entered_sum = scaled_elements(pytruth(elements_in) ? elements_in : _Dict())
+    used, entered_sum = scaled_elements(py_truth(elements_in) ? elements_in : _Dict())
     missing_ = [e for e in keys(used) if !haskey(aw, e)]
     isempty(missing_) ||
         throw(FeedError("Unknown element(s) $(join(missing_, ", ")); give their atomic weights."))
@@ -324,9 +331,9 @@ function feed_fractions(feed_model::Feed, molar_mass=nothing)
     end
     s = 1.0 / (1.0 + total_water_g_per_g_dry(feed_model))
     feed_model.species_moles === nothing || return s, 0.0
-    if pytruth(feed_model.unmodelled_wt_percent)
+    if py_truth(feed_model.unmodelled_wt_percent)
         ash = feed_model.ash_wt_percent
-        return s, (pytruth(ash) ? ash : 0.0) / 100.0
+        return s, (py_truth(ash) ? ash : 0.0) / 100.0
     end
     rest = 100.0 - pysum(values(dry_element_wt_percent(feed_model, nothing)))
     return s, (rest > 0.0 ? rest : 0.0) / 100.0   # Python max(0.0, rest)
@@ -343,9 +350,9 @@ const SPECIES_NEEDS_DATA_MESSAGE = "This case gives the feed as species moles; c
 float(Decimal(repr(float(value))) + 1), with Decimal's 28 significant digits).
 """
 function _plus_one(value)
-    x = pyfloat(value)
+    x = py_float(value)
     isfinite(x) || return 1.0 + x
-    m = match(r"^(-?)(\d+)(?:\.(\d*))?(?:e([+-]\d+))?$", pyrepr(x))
+    m = match(r"^(-?)(\d+)(?:\.(\d*))?(?:e([+-]\d+))?$", py_repr(x))
     frac = something(m[3], "")
     coefficient = parse(BigInt, m[2] * frac) * (m[1] == "-" ? -1 : 1)
     exponent = (m[4] === nothing ? 0 : parse(Int, m[4])) - length(frac)
@@ -383,36 +390,36 @@ rest (the old loader allowed 0.05 %), the rest is used.
 function legacy_feed_to_v2(feed, molar_mass=nothing)
     feed = deepcopy(_Dict(feed))
     salts = pop!(feed, "salts", nothing)
-    pytruth(get(feed, "unmodelled_wt_percent", nothing)) && throw(LegacyConversionError(UNMODELLED_MESSAGE))
+    py_truth(get(feed, "unmodelled_wt_percent", nothing)) && throw(LegacyConversionError(UNMODELLED_MESSAGE))
     model = _feed_from_kwargs(feed)
     water = total_water_g_per_g_dry(model)
     if model.species_moles !== nothing
         molar_mass === nothing && throw(LegacyConversionError(SPECIES_NEEDS_DATA_MESSAGE))
-        dry_g = pysum(pyfloat(n) * molar_mass(name) for (name, n) in model.species_moles)
+        dry_g = pysum(py_float(n) * molar_mass(name) for (name, n) in model.species_moles)
         species = _Dict("water" => _Dict("value" => water * dry_g / 1000.0, "unit" => "kg"))
         for (name, n) in model.species_moles
-            species[name] = _Dict("value" => pyfloat(n), "unit" => "mol")
+            species[name] = _Dict("value" => py_float(n), "unit" => "mol")
         end
         out = _Dict("species" => species)
     else
         dry = dry_element_wt_percent(model, nothing)
         ash_given = model.ash_wt_percent
         divisor = 1.0
-        if model.basis == "dry" && pytruth(ash_given)
-            divisor = 1.0 - pyfloat(ash_given) / 100.0
+        if model.basis == "dry" && py_truth(ash_given)
+            divisor = 1.0 - py_float(ash_given) / 100.0
         end
         elements = model.basis == "dry_ash_free" ? _Dict(model.elements_wt_percent) :
-                   _Dict(e => (divisor != 1.0 ? pyfloat(v) / divisor : v) for (e, v) in model.elements_wt_percent)
+                   _Dict(e => (divisor != 1.0 ? py_float(v) / divisor : v) for (e, v) in model.elements_wt_percent)
         rest = 100.0 - pysum(values(dry))
-        out = _Dict("total_kg" => (!pytruth(model.moisture_wt_percent) ? _plus_one(water) : 1.0 + water),
+        out = _Dict("total_kg" => (!py_truth(model.moisture_wt_percent) ? _plus_one(water) : 1.0 + water),
                     "solids" => _Dict("value" => 1.0, "unit" => "kg"))
-        if ash_given !== nothing && abs(rest - pyfloat(ash_given)) <= 1e-9 * max(1.0, abs(rest))
+        if ash_given !== nothing && abs(rest - py_float(ash_given)) <= 1e-9 * max(1.0, abs(rest))
             out["ash"] = _Dict("value" => ash_given, "unit" => "%")
         elseif rest > 1e-9
-            out["ash"] = _Dict("value" => parse(Float64, pyformat_g(rest, 14)), "unit" => "%")
+            out["ash"] = _Dict("value" => parse(Float64, py_format_g(rest, 14)), "unit" => "%")
         end
         out["elements_wt_percent"] = elements
     end
-    pytruth(salts) && (out["salts"] = salts)
+    py_truth(salts) && (out["salts"] = salts)
     return out
 end

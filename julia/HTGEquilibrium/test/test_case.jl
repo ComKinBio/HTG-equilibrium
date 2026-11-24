@@ -99,7 +99,7 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
         for path in CASE_FILES
             case = load_case(path)
             @test case.name == stem(path)
-            if pytruth(case.comparison)
+            if py_truth(case.comparison)
                 @test isfile(case.comparison["file"])
             end
             @test is_v2(read_toml(path))

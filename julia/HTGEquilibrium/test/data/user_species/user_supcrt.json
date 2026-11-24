@@ -1,0 +1,69 @@
+{
+  "format": "HTG user SUPCRT92 records, version 1",
+  "note": "Fields and units as in supcrt92.xml. Type Aqueous: HKF parameters; Type Mineral: Maier-Kelley parameters (single temperature range).",
+  "units": {
+    "Gf": "cal/mol",
+    "Hf": "cal/mol",
+    "Sr": "cal/(mol*K)",
+    "a1": "cal/(mol*bar)",
+    "a2": "cal/mol",
+    "a3": "(cal*K)/(mol*bar)",
+    "a4": "(cal*K)/mol",
+    "c1": "cal/(mol*K)",
+    "c2": "(cal*K)/mol",
+    "wref": "cal/mol",
+    "Vr": "cm3/mol",
+    "a": "cal/(mol*K)",
+    "b": "cal/(mol*K^2)",
+    "c": "(cal*K)/mol",
+    "Tmax": "K"
+  },
+  "species": [
+    {
+      "Name": "Ag+",
+      "Formula": "Ag+",
+      "Type": "Aqueous",
+      "Elements": {
+        "Ag": 1
+      },
+      "HKF": {
+        "Gf": 18427.0,
+        "Hf": 25275.0,
+        "Sr": 17.54,
+        "a1": 0.17285,
+        "a2": -356.08,
+        "a3": 7.1496,
+        "a4": -26318.0,
+        "c1": 12.7862,
+        "c2": -14254.0,
+        "wref": 21600.0
+      },
+      "References": "G9",
+      "Date": "2026-11-24",
+      "Charge": 1,
+      "based_on": "Ag+"
+    },
+    {
+      "Name": "Testite",
+      "Formula": "CaCO3",
+      "Type": "Mineral",
+      "Elements": {
+        "Ca": 1,
+        "C": 1,
+        "O": 3
+      },
+      "HKF": {
+        "Gf": -269880.0,
+        "Hf": -288552.0,
+        "Sr": 22.15,
+        "Vr": 36.934,
+        "a": 24.98,
+        "b": 0.00524,
+        "c": -620000.0,
+        "Tmax": 1200.0
+      },
+      "References": "user",
+      "Date": "2026-11-24"
+    }
+  ]
+}

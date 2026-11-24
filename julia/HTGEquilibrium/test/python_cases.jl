@@ -3,7 +3,7 @@
 # ~0.5 MB) and builds the same dump on the Julia side (see dump_cases.py for
 # what is in it). Included by test_units.jl, test_case.jl and test_feed.jl.
 using HTGEquilibrium
-using HTGEquilibrium: OrderedDict, ValueError, pytruth
+using HTGEquilibrium: OrderedDict, ValueError, py_truth
 using HTGEquilibrium.Units: UnitError
 using JSON
 using Test
@@ -19,7 +19,7 @@ PY_CASES === nothing && @info "test/data/cases_python.json not found: the compar
 enc(::Nothing) = nothing
 enc(x::Bool) = x
 enc(x::Integer) = Int(x)
-enc(x::AbstractFloat) = isfinite(x) ? Float64(x) : OrderedDict{String,Any}("__float__" => pyrepr(x))
+enc(x::AbstractFloat) = isfinite(x) ? Float64(x) : OrderedDict{String,Any}("__float__" => py_repr(x))
 enc(x::AbstractString) = String(x)
 enc(x::Union{AbstractVector,Tuple}) = Any[enc(v) for v in x]
 function enc(x::AbstractDict)
@@ -126,7 +126,7 @@ const SPECIES_ELEMENTS = species_elements_function(SPECIES_TABLE)
 case_molar_mass(case=nothing) = molar_mass_function(SPECIES_ELEMENTS, case === nothing ? nothing : case.atomic_weights)
 
 carbon_solids(case) = OrderedDict{String,Any}(
-    name => pytruth(get(SPECIES_TABLE[name], "C", 0)) for name in get(case.phases, "solid", String[]) if name in SOLID_NAMES)
+    name => py_truth(get(SPECIES_TABLE[name], "C", 0)) for name in get(case.phases, "solid", String[]) if name in SOLID_NAMES)
 
 # ---------------------------------------------------------------- the dump of one case
 function case_dump(case::Case)
@@ -142,7 +142,7 @@ function case_dump(case::Case)
     end
     ps = get(out["pressures"], "ok", nothing)
     ts = get(out["temperatures"], "ok", nothing)
-    if pytruth(ts) && pytruth(ps)
+    if py_truth(ts) && py_truth(ps)
         point = at(case, ts[1], ps[1])
         out["at"] = enc(OrderedDict(k => getfield(point, Symbol(k)) for k in ("temperature_C", "pressure_bar", "points", "refine")))
     end

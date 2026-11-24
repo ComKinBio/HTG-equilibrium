@@ -11,4 +11,7 @@ using Test
     include("test_units.jl")
     include("test_case.jl")
     include("test_feed.jl")
+    include("test_databases.jl")
+    include("test_registry.jl")
+    include("test_standard_states.jl")
 end

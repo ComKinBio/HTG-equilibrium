@@ -21,7 +21,7 @@
 module Units
 
 using Printf
-import ..ValueError, ..pyformat_g
+import ..ValueError, ..py_format_g
 
 """An unknown unit, or a unit of the wrong quantity (Python: ValueError)."""
 struct UnitError <: ValueError
@@ -128,7 +128,7 @@ function format_number(value, unit=nothing, digits=SIGNIFICANT_FIGURES)
     end
     value == 0 && return "0"
     scientific = unit !== nothing && unit_key(unit) in _SCIENTIFIC
-    text = scientific ? _fmt("%.$(digits - 1)e", value) : pyformat_g(value, digits)
+    text = scientific ? _fmt("%.$(digits - 1)e", value) : py_format_g(value, digits)
     occursin('e', text) || return String(_strip(text))
     mantissa, exponent = split(text, 'e')
     return "$(_strip(mantissa))e$(parse(Int, exponent))"
