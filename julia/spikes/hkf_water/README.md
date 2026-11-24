@@ -6,6 +6,16 @@ functions and revised HKF written in Julia) replace pychnosz (SUPCRT92) within
 the reference tolerance? If not, how far off is it, where, and what does
 option 1 cost?
 
+**Owner decision (PR #1):** support more than one water model.
+- SUPCRT92 stays, by calling its original Fortran from Julia (the code has no
+  licence; this is accepted).
+- Clapeyron's IAPWS-95 is offered as a selectable alternative. It is a
+  different model, so it is not expected to reproduce SUPCRT92: its differences
+  are a scientific question, not a code check, and the golden tests stay on
+  SUPCRT92.
+- The GUI warns when a sweep's temperatures are in or near a SUPCRT92 failure
+  band (section 3.3).
+
 **Answer: no.** The Julia dielectric constant, Born functions, g-function and HKF
 code reproduces pychnosz to machine precision when it gets SUPCRT92's density.
 All of the remaining difference comes from the density: IAPWS-95 differs from
@@ -64,7 +74,8 @@ Grid, 486 points in total:
 - a near-critical scan, 360–420 °C every 1 °C at 225, 240, 250, 275 and 300 bar;
 - the `thermo.json` states.
 
-Run (from the repository root; julia_results.json and deviations.csv are not committed):
+Run (from the repository root). The first step writes `pychnosz_reference.json`; it and the
+outputs `julia_results.json` and `deviations.csv` are generated, so they are not committed:
 
 ```
 uv run python julia/spikes/hkf_water/dump_pychnosz.py
