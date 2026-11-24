@@ -23,6 +23,14 @@ REFERENCE = {c['name']: c for c in CASES}
 # settings (mu_init = 1e-6) stopped early at full_text 250 C; the current
 # default reaches the SLSQP solution.
 IMPROVED = {'full_text_250C_ipopt': 'full_text_250C'}
+# Cases where the original finite-difference SLSQP ('slsqp-fd') stops early and
+# where it stops depends on rounding in the Julia environment. With the pinned
+# environment the frozen original code itself stops at fig78 380 C at
+# G = -3431208.36 J/mol C (liquid water + char, not stationary: reduced costs of
+# major species up to 2.5 RT); the stored reference -3441039.26 (one fluid
+# phase) is the true minimum, which IPOPT reaches from every start. Here the
+# default exact-gradient solver must reach the reference.
+FD_STOPS_EARLY = {'fig78_380C'}
 
 
 def params(cases):
@@ -54,6 +62,15 @@ def test_setup_and_gibbs_function(models, entry):
 
 @pytest.mark.parametrize('entry', params(SOLVED))
 def test_solve(models, entry):
+    if entry['name'] in FD_STOPS_EARLY:
+        ref = entry['result']
+        r = models[entry['model']].solve(case_from_legacy(entry).replace(solver='ipopt'))
+        assert r.gibbs_J_per_mol_C == pytest.approx(ref['gibbs_J_per_mol_feed_C'], rel=1e-9)
+        assert list(r.amounts) == list(pairs(ref['amounts']))
+        # The aqueous phase is nearly empty; trace amounts left in it barely change G.
+        np.testing.assert_allclose(list(r.amounts.values()), list(pairs(ref['amounts']).values()),
+                                   rtol=1e-3, atol=1e-4)
+        return
     r = models[entry['model']].solve(case_from_legacy(entry))
     if entry['name'] in IMPROVED:
         better = REFERENCE[IMPROVED[entry['name']]]['result']

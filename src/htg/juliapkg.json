@@ -1,4 +1,9 @@
 {
+    "julia": "=1.12.7",
+    "direct": [
+        "Clapeyron",
+        "Ipopt"
+    ],
     "packages": {
         "Clapeyron": {
             "uuid": "7c7805af-46cc-48c9-995b-ed0ed2dc909a",
@@ -7,6 +12,262 @@
         "Ipopt": {
             "uuid": "b6b21f68-93f8-5de0-b562-5493be1d77c9",
             "version": "=1.16.0"
+        },
+        "Accessors": {
+            "uuid": "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697",
+            "version": "=0.1.46"
+        },
+        "ADTypes": {
+            "uuid": "47edcb42-4c32-4615-8424-f2b9edc5f35b",
+            "version": "=1.24.0"
+        },
+        "ASL_jll": {
+            "uuid": "ae81ac8f-d209-56e5-92de-9978fef736f9",
+            "version": "=0.1.5"
+        },
+        "CodecZlib": {
+            "uuid": "944b1d66-785c-5afd-91f1-9de20f533193",
+            "version": "=0.7.9"
+        },
+        "CommonSolve": {
+            "uuid": "38540f10-b2f7-11e9-35d8-d573e4eb0ff2",
+            "version": "=0.2.14"
+        },
+        "CommonSubexpressions": {
+            "uuid": "bbf7d656-a473-5ed7-a52c-81e309532950",
+            "version": "=0.3.1"
+        },
+        "CompositionsBase": {
+            "uuid": "a33af91c-f02d-484b-be07-31d278c5ca2b",
+            "version": "=0.1.2"
+        },
+        "CondaPkg": {
+            "uuid": "992eb4ea-22a4-4c89-a5bb-47a3300528ab",
+            "version": "=0.2.38"
+        },
+        "ConstructionBase": {
+            "uuid": "187b0558-2788-49d3-abe0-74a17ed4e7c9",
+            "version": "=1.6.1"
+        },
+        "CSV": {
+            "uuid": "336ed68f-0bac-5ca0-87d4-7b16caf5d00b",
+            "version": "=1.3.0"
+        },
+        "DataAPI": {
+            "uuid": "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a",
+            "version": "=1.16.0"
+        },
+        "DataStrings": {
+            "uuid": "48204bd6-5611-42ea-b167-fc1d713f9be2",
+            "version": "=1.1.0"
+        },
+        "DataValueInterfaces": {
+            "uuid": "e2d170a0-9d28-54be-80f0-106bbe20a464",
+            "version": "=1.0.0"
+        },
+        "DifferentiationInterface": {
+            "uuid": "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63",
+            "version": "=0.7.22"
+        },
+        "DiffResults": {
+            "uuid": "163ba53b-c6d8-5494-b064-1a9d43ac40c5",
+            "version": "=1.1.0"
+        },
+        "DiffRules": {
+            "uuid": "b552c78f-8df3-52c6-915a-8e097449b14b",
+            "version": "=1.18.0"
+        },
+        "DocStringExtensions": {
+            "uuid": "ffbed154-4ef7-542d-bbb7-c09d3a79fcae",
+            "version": "=0.10.2"
+        },
+        "Durations": {
+            "uuid": "41ac09f5-0a95-4810-aa18-c88bf48ee130",
+            "version": "=1.4.1"
+        },
+        "FillArrays": {
+            "uuid": "1a297f60-69ca-5386-bcde-b61e274b549b",
+            "version": "=1.19.0"
+        },
+        "ForwardDiff": {
+            "uuid": "f6369f11-7733-5829-9624-2563aa707210",
+            "version": "=1.5.0"
+        },
+        "Hwloc_jll": {
+            "uuid": "e33a78d0-f292-5ffc-b300-72abe9b543c8",
+            "version": "=2.16.0"
+        },
+        "IFTDuals": {
+            "uuid": "e48d2a1f-af84-496e-b4fe-d99c19dbdf31",
+            "version": "=0.2.0"
+        },
+        "InverseFunctions": {
+            "uuid": "3587e190-3f89-42d0-90ee-14403ec27112",
+            "version": "=0.1.18"
+        },
+        "Ipopt_jll": {
+            "uuid": "9cc047cb-c261-5740-88fc-0cf96f7bdcc7",
+            "version": "=300.1400.1902"
+        },
+        "IrrationalConstants": {
+            "uuid": "92d709cd-6900-40b7-9082-c6be49f344b6",
+            "version": "=0.2.7"
+        },
+        "IteratorInterfaceExtensions": {
+            "uuid": "82899510-4779-5014-852e-03e436cf321d",
+            "version": "=1.0.0"
+        },
+        "JLLWrappers": {
+            "uuid": "692b3bcd-3c85-4b1f-b108-f13ce0eb3210",
+            "version": "=1.8.0"
+        },
+        "JSON": {
+            "uuid": "682c06a0-de6a-54ab-a142-c8b1cf79cde6",
+            "version": "=1.13.4"
+        },
+        "LazyJLLWrappers": {
+            "uuid": "21706172-204c-4d4f-5420-656854206f44",
+            "version": "=1.2.7"
+        },
+        "Libiconv_jll": {
+            "uuid": "94ce4f54-9a6c-5748-9c1c-f9c7231a4531",
+            "version": "=1.18.1"
+        },
+        "LogExpFunctions": {
+            "uuid": "2ab3a3ac-af41-5b50-aa03-7779005ae688",
+            "version": "=1.0.6"
+        },
+        "MacroTools": {
+            "uuid": "1914dd2f-81c6-5fcd-8719-6d5c9610ff09",
+            "version": "=0.5.16"
+        },
+        "METIS_jll": {
+            "uuid": "d00139f3-1899-568f-a2f0-47f597d42d70",
+            "version": "=5.1.4"
+        },
+        "MicroMamba": {
+            "uuid": "0b3b1443-0f03-428d-bdfb-f27f9c1191ea",
+            "version": "=0.1.15"
+        },
+        "micromamba_jll": {
+            "uuid": "f8abcde7-e9b7-5caa-b8af-a437887ae8e4",
+            "version": "=2.3.1"
+        },
+        "MUMPS_seq_jll": {
+            "uuid": "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
+            "version": "=500.900.100"
+        },
+        "NaNMath": {
+            "uuid": "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3",
+            "version": "=1.1.5"
+        },
+        "NLSolvers": {
+            "uuid": "337daf1e-9722-11e9-073e-8b9effe078ba",
+            "version": "=0.6.1"
+        },
+        "OpenBLAS32_jll": {
+            "uuid": "656ef2d0-ae68-5445-9ca0-591084a874a2",
+            "version": "=0.3.34"
+        },
+        "OpenSpecFun_jll": {
+            "uuid": "efe28fd5-8261-553b-a9e1-b2916fc3738e",
+            "version": "=0.5.6"
+        },
+        "OrderedCollections": {
+            "uuid": "bac558e1-5e72-5ebc-8fee-abe8a469f55d",
+            "version": "=2.0.3"
+        },
+        "PackedVectorsOfVectors": {
+            "uuid": "7713531c-48ef-4bdd-9821-9ff7a8736089",
+            "version": "=0.1.2"
+        },
+        "Parsers": {
+            "uuid": "69de0a69-1ddd-5017-9359-2bf0b02dc9f0",
+            "version": "=3.0.6"
+        },
+        "pixi_jll": {
+            "uuid": "4d7b5844-a134-5dcd-ac86-c8f19cd51bed",
+            "version": "=0.76.2"
+        },
+        "PooledArrays": {
+            "uuid": "2dfb63ee-cc39-5dd5-95bd-886bf059d720",
+            "version": "=1.4.3"
+        },
+        "PositiveFactorizations": {
+            "uuid": "85a6dd25-e78a-55b7-8502-1745935b8125",
+            "version": "=0.2.4"
+        },
+        "PrecompileTools": {
+            "uuid": "aea7be01-6a6a-4083-8856-8a6e6704d82a",
+            "version": "=1.4.0"
+        },
+        "Preferences": {
+            "uuid": "21216c6a-2e73-6563-6e65-726566657250",
+            "version": "=1.6.1"
+        },
+        "Roots": {
+            "uuid": "f2b01f46-fcfa-551c-844a-d8ac1e96c665",
+            "version": "=3.0.14"
+        },
+        "SciMLPublic": {
+            "uuid": "431bcebd-1456-4ced-9d72-93c2757fff0b",
+            "version": "=1.3.0"
+        },
+        "Scratch": {
+            "uuid": "6c6a2e73-6563-6170-7368-637461726353",
+            "version": "=1.3.0"
+        },
+        "SpecialFunctions": {
+            "uuid": "276daf66-3868-5448-9aa4-cd146d93841b",
+            "version": "=2.9.2"
+        },
+        "SPRAL_jll": {
+            "uuid": "319450e9-13b8-58e8-aa9f-8fd1420848ab",
+            "version": "=2025.9.18"
+        },
+        "StableTasks": {
+            "uuid": "91464d47-22a1-43fe-8b7f-2d57ee82463f",
+            "version": "=0.1.7"
+        },
+        "StaticArrays": {
+            "uuid": "90137ffa-7385-5640-81b9-e52037218182",
+            "version": "=1.9.25"
+        },
+        "StaticArraysCore": {
+            "uuid": "1e83bf80-4336-4d27-bf5d-d5a4f845583c",
+            "version": "=1.4.5"
+        },
+        "Statistics": {
+            "uuid": "10745b16-79ce-11e8-11f9-7d13ad32a3b2",
+            "version": "=1.11.5"
+        },
+        "StructUtils": {
+            "uuid": "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42",
+            "version": "=2.12.1"
+        },
+        "Tables": {
+            "uuid": "bd369af6-aec1-5ad0-b16a-f7cc5008161c",
+            "version": "=1.14.0"
+        },
+        "TableTraits": {
+            "uuid": "3783bdb8-4a98-5b6b-af9a-565f29a5fe9c",
+            "version": "=1.0.1"
+        },
+        "TranscodingStreams": {
+            "uuid": "3bb67fe8-82b1-5028-8e26-92a6c54297fa",
+            "version": "=0.11.3"
+        },
+        "UnsafePointers": {
+            "uuid": "e17b2a0c-0bdf-430a-bd0c-3a23cae4ff39",
+            "version": "=1.0.0"
+        },
+        "XML2_jll": {
+            "uuid": "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a",
+            "version": "=2.15.5"
+        },
+        "Xorg_libpciaccess_jll": {
+            "uuid": "a65dc6b1-eb27-53a1-bb3e-dea574b5389e",
+            "version": "=0.19.0"
         }
     }
 }

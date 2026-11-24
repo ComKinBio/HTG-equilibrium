@@ -24,6 +24,22 @@ The first calculation downloads Julia (if it is not already installed) and
 installs the Julia packages into `.venv/julia_env`. This takes several minutes
 once, but only needs to be done once.
 
+The Julia side is pinned like the Python side (`uv.lock`):
+[`src/htg/juliapkg.json`](src/htg/juliapkg.json) fixes the Julia version and the
+exact version of every Julia package (Clapeyron, Ipopt and their dependencies),
+so every new environment gets the same versions the reference tests were
+checked with. Without the pins, juliapkg takes the newest Julia allowed, whose
+different linear-algebra libraries change some solutions slightly. If juliaup is
+installed, the pinned Julia is added through it; otherwise juliapkg downloads it.
+
+To update the Julia environment: remove the pins you want to update from
+`src/htg/juliapkg.json` (or set looser versions), run any calculation, check
+that `uv run pytest` passes, then pin the new versions with
+
+```sh
+uv run python scripts/pin_julia.py
+```
+
 ## The app
 
 ```sh
@@ -207,6 +223,7 @@ case = case.replace(pressure_bar=300, solver='slsqp')   # modified copy
 | `data/` | databases: NASA-7 (`Thermdat_WasteMech.txt`), PC-SAFT and ePC-SAFT parameters (`PROJECT_*.csv`), SUPCRT92 (`supcrt92.xml`), species registry (`species.toml`) |
 | `cases/` | example case files (format 2) and comparison data |
 | `docs/` | guides for extending the model |
+| `scripts/` | maintenance scripts (`pin_julia.py`: pin the Julia environment) |
 | `tests/` | tests, including reference results of the original implementation |
 
 Package modules, from inputs to results:
