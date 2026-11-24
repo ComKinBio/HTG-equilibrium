@@ -41,8 +41,8 @@ Hessians of the solid, fluid and electrolyte phases).
 | `test/test_databases.jl` | Readers and Python helpers (CSV dtypes, XML, NASA-7, ordered TOML) | – |
 | `test/test_registry.jl` | `catalogue.json` (all of it), a user species folder, shipped `data/` smoke test, threaded reads | `tests/test_reference_catalogue.py`, `tests/test_user_species.py` (loading) |
 | `test/test_standard_states.jl` | `thermo.json`: molecular and solid g°, SAFT parameters, mu0 of the fluid and electrolyte phases | `tests/test_reference_thermo.py` |
-| `src/phases.jl` | `EOSFailure`, `PhaseError`, `association_sites`, `build_pcsaft_model`, `SolidPhase`, `FluidPhase`, `ElectrolytePhase` (water model selectable), `gibbs`, `gibbs_and_mu`, `mu_at`, `lnphi`, `hessian`, `phi`, `gibbs_full`, `expand`, `_hessian` | `phases.py` |
-| `test/test_phases.jl` | `thermo.json`: fluid G and ln phi, electrolyte `lnphi_infinity`, G and ln phi; mu = dG/dn, homogeneity, Hessians, ForwardDiff comparison, water model, errors, threads | `tests/test_reference_thermo.py` (phase part), `tests/test_phases.py` |
+| `src/phases.jl` | `EOSFailure`, `PhaseError`, `association_sites`, `build_pcsaft_model`, `SolidPhase`, `FluidPhase`, `ElectrolytePhase` (water model selectable), `gibbs`, `gibbs_and_mu`, `mu_at`, `lnphi`, `hessian` (exact, ForwardDiff), `phi`, `gibbs_full`, `expand` | `phases.py` |
+| `test/test_phases.jl` | `thermo.json`: fluid G and ln phi, electrolyte `lnphi_infinity`, G and ln phi; mu = dG/dn, homogeneity, Hessians against central differences, water found by name, water model, errors, threads | `tests/test_reference_thermo.py` (phase part), `tests/test_phases.py` |
 | `test/data/user_species/`, `test/data/user_species_python.json` | A user species folder written by the Python app and what Python loads from it; written by `test/dump_user_species.py` | – |
 
 **Python is the reference, not bit for bit** (owner, PR #7: "8e-14 is
@@ -79,9 +79,9 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 4 minutes; `test_phases.jl` is ~2.5 of them, almost all
-compilation of Clapeyron (PC-SAFT and ePC-SAFT, then again for ForwardDiff's
-Duals). `Pkg.test()` does not pass `-t` on to the test process; set
+The tests take about 5 minutes; `test_phases.jl` is ~3.5 of them, almost all
+compilation of Clapeyron (PC-SAFT and ePC-SAFT, then again for the Duals of
+the exact Hessian). `Pkg.test()` does not pass `-t` on to the test process; set
 `JULIA_NUM_THREADS` for the threaded tests.
 
 Optional wider comparison with pychnosz (785 points: 300–600 °C × 200–300 bar,
@@ -529,42 +529,52 @@ absolute < 1e-14), `lnphi_infinity` 2.4e-14. The 7 reference EOS failures
 dG/dn by central differences (and for the Na+ + HCO3- pair), Euler
 `G = n·mu`, homogeneity of degree one.
 
-**Derivatives.** As in Python, mu (from the fugacity coefficients) is the
-gradient of G, and `hessian` is the analytic ideal part plus forward
-differences of ln phi (step 1e-7·sum(n)), symmetrised. `test_phases.jl`
-compares both with ForwardDiff through Clapeyron (Jacobian of [G; mu]) at
-300 °C, 240 bar:
+**Derivatives** (owner, PR #9: exact derivatives). mu comes from the
+fugacity coefficients, as in Python; it is the gradient of G (central
+differences, and ForwardDiff to 4e-15 in the first version of this port).
+`hessian(phase, n)` is exact: the ForwardDiff Jacobian of `mu_at` through
+Clapeyron, symmetrised. Python used an analytic ideal part plus forward
+differences of ln phi; that version (`_hessian`) is gone. Zeros for an empty
+phase (fluid: sum(n) <= 1e-13; electrolyte: water <= 1e-9 mol).
 
-| | deviation from ForwardDiff (relative to the largest entry) |
+For the electrolyte, a single ion cannot be varied alone: the EOS probe makes
+every composition electroneutral (smoothly, through `hypot(imbalance, 2e-14)`),
+so a single-ion column of the Jacobian is the derivative along that ion with
+half of its charge moved to the first counter-ions. Along electroneutral
+directions Z these terms cancel, so J·Z is exact; the symmetrised H keeps
+Z'HZ, which is what the optimizer needs (its balances keep the aqueous phase
+electroneutral). Python's forward differences got Z'HZ wrong by ~16 % along
+the Na+ + HCO3- pair (each one-ion step was neutralised by the first counter-ion,
+so the pair was counted twice).
+
+`_exact_hessian` seeds ForwardDiff Duals itself, 8 columns per evaluation
+(`HESSIAN_CHUNK`), with one tag per phase type, so every phase size uses the
+same Dual type. Compilation is the cost: the first Hessian of a session takes
+~25 s for PC-SAFT and ~40 s for ePC-SAFT, and a Clapeyron code path met for the
+first time with Duals (e.g. more association sites) adds ~20 s once. The app
+should precompile or warm this up at start (M5). Tests (`test_phases.jl`, 300 °C, 240 bar):
+
+| check | worst relative deviation |
 |---|---|
-| fluid mu vs gradient of G (3 phases, 2 points each) | 3.7e-15 |
-| fluid Hessian | 3.6e-8 (H·n = 0, Gibbs-Duhem: within 1e-9 of the largest entry; ForwardDiff 1e-16) |
-| electrolyte mu along electroneutral directions | 2.1e-14 |
-| electrolyte Hessian, neutral block | 3.8e-10 |
-| electrolyte Hessian on electroneutral directions incl. the Na+ + HCO3- pair | **0.16** |
+| fluid Hessian vs central differences of mu (3 phases × 2 points, column by column) | 5.7e-9 |
+| fluid H·n = 0 (Gibbs-Duhem), relative to max(|H||n|) | 1.3e-13 |
+| electrolyte Z'HZ vs central differences of Z'mu (5 and 16 selected species; neutrals, Na+ + HCO3-, 2 Na+ + CO3^2-, K+ + Cl-, Mg2+ + 2 Cl-, Cs+ + Li+ + CO3^2-) | 1.2e-8 |
+| electrolyte (H Z) rows of the neutral species vs central differences | 3.7e-9 |
 
-The last line is Python's behaviour, kept: the forward step moves one ion at a
-time, the EOS probe neutralises the step with the first counter-ion, so the
-ln phi part of each ion column is the derivative along (ion + counter-ion);
-for the pair it is counted twice. ForwardDiff's reduced Hessian agrees with
-central differences of the reduced mu (1e-5), so it is the correct one. G and
-mu are exact either way; only IPOPT's Newton model is affected.
+Symmetry is exact (H == H'); the electrolyte also passes Z'H n = 0.
 
-Cost per call after compilation (one point, 1 thread): gas (5 species)
-`gibbs_and_mu` 9 µs, `hessian` 47 µs, ForwardDiff Jacobian of mu 17 µs;
-electrolyte (5 selected, 11 components) 40 µs, 215 µs and 80 µs. ForwardDiff
-costs one compilation of Clapeyron for Duals per function type and chunk size
-(~20 s PC-SAFT, ~40 s ePC-SAFT); the tests use one callable struct and a fixed
-chunk so it compiles once per phase type.
+Cost per call after compilation (one point, 1 thread):
 
-**Recommendation for the optimizer.** Keep mu from the fugacity coefficients
-as the gradient (exact, no extra cost). Port `hessian_blocks` with Python's
-`hessian` first, so `solves.json` and the M1 replay (iteration counts) can be
-compared one to one; then switch the Hessian to the ForwardDiff Jacobian of mu
-(a callable struct per phase, fixed chunk, compiled once per session or
-precompiled): exact, symmetric, correct on electroneutral directions and
-2.5-3× faster than the forward differences. Decide on the switch with the
-`solves.json` results (owner question).
+| phase | `gibbs_and_mu` | `hessian` |
+|---|---|---|
+| gas, 5 species | 7 µs | 17 µs |
+| gas, 9 species | 18 µs | 123 µs |
+| electrolyte, 5 selected (11 components) | 33 µs | 93 µs |
+| electrolyte, 16 selected | 49 µs | 286 µs |
+
+For comparison, Python's forward-difference Hessian took 47 µs (gas, 5
+species) and 215 µs (electrolyte, 5 selected) in this port; it needs k + 1
+evaluations of ln phi, the exact one ceil(k / 8) evaluations with Duals.
 
 **Differences from Python** (deliberate):
 - `ElectrolytePhase(water_model, model, selected, T, P, resolved, atomic_weights)`:
@@ -579,21 +589,20 @@ precompiled): exact, symmetric, correct on electroneutral directions and
 - `SolidPhase`'s `gibbs_and_mu` returns a copy of mu0 (Python returns the
   array itself).
 - The pure-component cache of `FluidPhase` is filled under a lock.
+- `hessian` is exact (ForwardDiff), not forward differences (owner, PR #9).
+- The electrolyte's emptiness checks use the water amount found by name
+  (`water_index`, the position of "water" in `species`; 0 when not selected),
+  never the first selected species (owner, PR #9; Python's `hessian` tested
+  `n[0]`).
 
-**Kept from Python, for the owner** (conservative choice: match Python):
-1. The electrolyte Hessian's ion columns (above).
-2. `hessian(::ElectrolytePhase, n)` returns zeros when `n[1] <= 1e-9`, i.e. it
-   tests the first *selected* species (Python `n[0]`), while `gibbs_and_mu`
-   tests the water amount. They agree when water is listed first among the
-   aqueous species (equilibrium.py only requires that water is selected).
-3. An empty gas phase containing water raises `EOSFailure` where pure water
-   has no vapour root (e.g. 300 °C, 240 bar), because the pure-component mu is
-   evaluated at pure water.
+**Kept from Python:** an empty gas phase containing water raises `EOSFailure`
+where pure water has no vapour root (e.g. 300 °C, 240 bar), because the
+pure-component mu is evaluated at pure water.
 
 **For the optimizer and equilibrium steps.** `GibbsProblem` needs, per phase:
 `gibbs_and_mu(phase, n)` (the objective and gradient; an `EOSFailure` makes
-`fun_and_grad` return NaN), `hessian(phase, n)` (`hessian_blocks`; skip
-`SolidPhase`), `mu_at(phase, n)` (tangent-plane test), `gibbs(phase, n)`
+`fun_and_grad` return NaN), `hessian(phase, n)` (`hessian_blocks`, exact; skip
+`SolidPhase`; an `EOSFailure` there means a NaN Hessian, as in Python), `mu_at(phase, n)` (tangent-plane test), `gibbs(phase, n)`
 (`phase_G`, the G check) and `phase.species`, `phase.T`. Equilibrium builds the
 phases as `equilibrium.py` does: `resolve_parameters` over all non-ion species
 (plus the reference neutrals when the aqueous model is electrolyte), then
@@ -616,12 +625,11 @@ standard-state parts of `thermo.json`); case files and feed arithmetic
 equals the registry's records (tested) and can go when `test_water.jl` is
 switched over. Still to do:
 - `optimizer.jl` (next; see "For the optimizer and equilibrium steps" under
-  "Phase models"), `equilibrium.jl`, `results.jl`, `sweep.jl`, `queue.jl`,
+  "Phase models"; it uses the exact `hessian`, so iteration counts will differ
+  from Python's), `equilibrium.jl`, `results.jl`, `sweep.jl`, `queue.jl`,
   `cli.jl`; `solves.json` tests; running the example cases in both versions.
 - `equilibrium.jl` passes `water_model_of(case)` to `ElectrolytePhase`;
   results record the water model.
-- Owner questions from the phases port (below): the Hessian's ion columns,
-  `hessian` of the electrolyte phase testing `n[1]`.
 - M5: cross-platform build of the Fortran library (JLL).
 
 ## Owner decisions (PR #4)
@@ -649,3 +657,14 @@ switched over. Still to do:
    reference within tolerances (8e-14 is close).
 3. **Water model per case:** a case key chosen with a button in the case
    editor; the model data hold none.
+
+## Owner decisions (PR #9)
+
+1. **Exact derivatives:** "No, just go straight to the exact derivatives."
+   `hessian` is the ForwardDiff Jacobian of mu for fluid and electrolyte
+   phases, the only path for the optimizer; mu from the fugacity coefficients
+   stays the gradient. Python's forward-difference Hessian is not ported.
+2. **Water by name:** "Yes, make it check water specifically so it is not
+   dependent on the ordering of species." Every emptiness check of the
+   electrolyte phase uses the water amount (tested with water not listed first,
+   and with water not selected).

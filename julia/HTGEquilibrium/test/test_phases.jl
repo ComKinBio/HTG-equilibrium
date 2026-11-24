@@ -2,7 +2,7 @@
 # - tests/reference/data/thermo.json: fluid-phase G and ln phi, electrolyte
 #   lnphi_infinity, G and ln phi, with the tolerances of tests/test_reference_thermo.py;
 # - the property tests of tests/test_phases.py (mu is the gradient of G, homogeneity);
-# - Hessian checks and the derivatives compared with ForwardDiff;
+# - the exact Hessians against central differences of mu, symmetry, Gibbs-Duhem;
 # - the water model of the electrolyte phase, errors, threads.
 isdefined(Main, :DataTestSetup) || include("data_setup.jl")
 
@@ -10,7 +10,7 @@ module TestPhases   # own namespace: the test files share Main
 
 using Main.DataTestSetup
 using HTGEquilibrium
-using HTGEquilibrium: ATOMIC_WEIGHTS, R, phi, expand, ForwardDiff
+using HTGEquilibrium: ATOMIC_WEIGHTS, phi, expand
 using JSON
 using Test
 
@@ -137,74 +137,89 @@ const PHASES = Dict(
     @test mu_at(phase, n) == mu
 end
 
-# ---------------------------------------------------------------- derivatives: ForwardDiff
-# The app (Python and this port) uses mu from the fugacity coefficients as the exact
-# gradient of G and a Hessian with an analytic ideal part plus forward differences of
-# ln phi (`_hessian`). ForwardDiff through Clapeyron gives both exactly. One function
-# and one chunk size per phase type, so Clapeyron is compiled for Duals only twice
-# (~20 s for PC-SAFT, ~40 s for ePC-SAFT).
-struct GibbsAndMu{T}
-    phase::T
-end
-(f::GibbsAndMu)(n) = ((G, mu) = gibbs_and_mu(f.phase, n); vcat(G, mu))
-"""ForwardDiff Jacobian of [G; mu]: row 1 the gradient of G, rows 2:end the Hessian."""
-ad_derivatives(phase, n) = ForwardDiff.jacobian(GibbsAndMu(phase), n,
-                                                ForwardDiff.JacobianConfig(GibbsAndMu(phase), n, ForwardDiff.Chunk{3}()))
-relmax(a, b) = maximum(abs.(a .- b)) / maximum(abs.(b))
+# ---------------------------------------------------------------- Hessians
+# `hessian` is exact (ForwardDiff Jacobian of mu through Clapeyron; owner, PR #9).
+# Checked against central differences of mu, column by column for fluids and along
+# electroneutral directions for the electrolyte (the EOS probe makes every composition
+# electroneutral, so a single ion cannot be varied alone).
+colrel(A, B) = maximum(maximum(abs.(A[:, j] .- B[:, j])) / maximum(abs.(B[:, j])) for j in axes(B, 2))
 
-@testset "phases: derivatives vs ForwardDiff" begin
-    state = STATES[2]   # 300 C, 240 bar
-    Ts, Ps = kelvin_pascal(state)
+"""Central differences of mu along the columns of D (steps rel * |amounts moved|)."""
+function central_mu(phase, n, D; rel=1e-4)
+    return reduce(hcat, begin
+                      d = D[:, k]
+                      h = rel * minimum(n[i] for i in eachindex(d) if d[i] != 0)
+                      (mu_at(phase, n .+ h .* d) .- mu_at(phase, n .- h .* d)) ./ (2h)
+                  end for k in axes(D, 2))
+end
+
+"""Electroneutral directions: each neutral alone, and the given ion combinations."""
+function electroneutral_directions(phase, combinations)
+    columns = [Float64.(phase.species .== s) for s in phase.species if !(s in phase.ions)]
+    for combination in combinations
+        d = zeros(length(phase.species))
+        for (s, c) in combination
+            d[findfirst(==(s), phase.species)] = c
+        end
+        @assert sum(d[i] * phase.z[findfirst(==(s), phase.ions)] for (i, s) in enumerate(phase.species)
+                    if s in phase.ions) == 0
+        push!(columns, d)
+    end
+    return reduce(hcat, columns)
+end
+
+@testset "phases: Hessians" begin
     worst = Dict{String,Float64}()
     note!(key, v) = (worst[key] = max(get(worst, key, 0.0), v))
+    state = STATES[2]   # 300 C, 240 bar
+    Ts, Ps = kelvin_pascal(state)
     for (label, ref) in state["fluid_phases"]
         names = String.(ref["species"])
         phase = fluid_phase(MODEL, label, names, Ts, Ps, ref["root"])
         for point in ref["points"][1:2]
             n = [max(Float64(point["amounts"][s]), 1e-6) for s in names]
-            G, mu = gibbs_and_mu(phase, n)
-            D = ad_derivatives(phase, n)
-            g, J = D[1, :], D[2:end, :]
-            @test isapprox(g, mu; rtol=1e-12)
-            note!("fluid: mu vs AD gradient", relmax(g, mu))
             H = hessian(phase, n)
             @test H == permutedims(H)
-            @test isapprox(J, permutedims(J); rtol=1e-12)
-            @test relmax(H, J) < 1e-6
-            note!("fluid: Hessian vs AD", relmax(H, J))
+            fd = central_mu(phase, n, [Float64(i == j) for i in eachindex(n), j in eachindex(n)])
+            @test colrel(H, fd) < 1e-6
+            note!("fluid: Hessian vs central differences of mu", colrel(H, fd))
             # Gibbs-Duhem: mu is homogeneous of degree zero, so H n = 0.
-            @test maximum(abs.(J * n)) <= 1e-12 * maximum(abs.(J)) * sum(n)
-            @test maximum(abs.(H * n)) <= 1e-6 * maximum(abs.(H)) * sum(n)
+            scale = maximum(abs.(H) * n)
+            @test maximum(abs.(H * n)) <= 1e-12 * scale
+            note!("fluid: |H n| / max |H||n|", maximum(abs.(H * n)) / scale)
         end
     end
-    # Electrolyte: neutral species and electroneutral ion combinations. The EOS probe
-    # makes every composition electroneutral, so the derivative of G along one ion
-    # is not mu of that ion; along electroneutral directions Z it is.
+    # Electrolyte: the test_phases.py composition and the full_text selection of thermo.json.
     phase, n = PHASES["aqueous"]
-    G, mu = gibbs_and_mu(phase, n)
-    Z = Float64[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1; 0 0 0 1]   # water, CO2, CH4, Na+ + HCO3-
-    D = ad_derivatives(phase, n)
-    g, J = D[1, :], D[2:end, :]
-    @test isapprox(Z' * g, Z' * mu; rtol=1e-12)
-    note!("electrolyte: Z'mu vs AD gradient", relmax(Z' * g, Z' * mu))
-    reduced_ad = Z' * J * Z
-    # The AD Hessian on the electroneutral directions is the true one: central
-    # differences of Z'mu along Z agree.
-    h = 1e-4 * 0.003
-    reduced_fd = reduce(hcat, (Z' * (mu_at(phase, n .+ h .* Z[:, k]) .- mu_at(phase, n .- h .* Z[:, k]))) ./ (2h)
-                        for k in 1:4)
-    @test relmax(reduced_fd, reduced_ad) < 1e-5
-    H = hessian(phase, n)
-    @test H == permutedims(H)
-    neutral = 1:3
-    @test relmax(H[neutral, neutral], J[neutral, neutral]) < 1e-6
-    note!("electrolyte: Hessian vs AD (neutrals)", relmax(H[neutral, neutral], J[neutral, neutral]))
-    # Python's forward-difference Hessian steps one ion at a time (h = 1e-7 sum(n)); the
-    # probe neutralises each step with the first counter-ion, so the ln phi part of the
-    # ion columns is not the derivative along electroneutral directions (~16 % off for
-    # the Na+ + HCO3- pair here). Kept as in Python; see the README.
-    note!("electrolyte: Hessian vs AD (reduced, with the ion pair)", relmax(Z' * H * Z, reduced_ad))
-    @info "derivatives: relative deviation from ForwardDiff" worst
+    full_text = state["electrolyte"]["full_text"]
+    big = electrolyte_phase(MODEL, String.(full_text["selection"]), Ts, Ps)
+    nbig = [max(Float64(get(full_text["points"][2]["amounts"], s, 0.0)), 1e-6) for s in big.species]
+    # Make nbig electroneutral (as the optimizer's balances do) with Cl- or Na+.
+    imbalance = sum(nbig[i] * big.z[findfirst(==(s), big.ions)] for (i, s) in enumerate(big.species) if s in big.ions)
+    nbig[findfirst(==(imbalance > 0 ? "Cl-" : "Na+"), big.species)] += abs(imbalance)
+    for (ph, amounts, combinations) in (
+            (phase, n, [["Na+" => 1, "HCO3-" => 1]]),
+            (big, nbig, [["Na+" => 1, "HCO3-" => 1], ["Na+" => 2, "CO3^2-" => 1], ["K+" => 1, "Cl-" => 1],
+                         ["Mg2+" => 1, "Cl-" => 2], ["Cs+" => 1, "Li+" => 1, "CO3^2-" => 1]]))
+        H = hessian(ph, amounts)
+        @test H == permutedims(H)
+        Z = electroneutral_directions(ph, combinations)
+        fd = central_mu(ph, amounts, Z)
+        reduced = Z' * H * Z
+        @test colrel(reduced, Z' * fd) < 1e-6
+        note!("electrolyte: Z'HZ vs central differences (incl. ion combinations)", colrel(reduced, Z' * fd))
+        # H Z itself in the rows of the neutral species (the ion rows carry the probe's
+        # split through the symmetrisation; only Z'HZ matters on electroneutral directions).
+        # Relative to the column's largest entry: rows of tiny amounts make the central
+        # differences noisy in the small entries.
+        neutral = findall(s -> !(s in ph.ions), ph.species)
+        dev = maximum(maximum(abs.((H * Z)[neutral, k] .- fd[neutral, k])) / maximum(abs.(fd[:, k])) for k in axes(Z, 2))
+        @test dev < 1e-6
+        note!("electrolyte: (H Z) neutral rows vs central differences", dev)
+        # Gibbs-Duhem along the composition itself (an electroneutral direction).
+        @test maximum(abs.(Z' * H * amounts)) <= 1e-10 * maximum(abs.(Z') * abs.(H) * amounts)
+    end
+    @info "Hessians: worst relative deviation" worst
 end
 
 # ---------------------------------------------------------------- details and errors
@@ -255,6 +270,34 @@ end
     w = water_properties(SUPCRT92Water(), 723.15, 240e5)
     @test message(() -> electrolyte_phase(MODEL, AQUEOUS, 723.15, 240e5)) ==
           (PhaseError, "State outside SUPCRT aqueous validity checks: rho=$(py_repr(w.rho)), epsilon=$(py_repr(w.epsilon))")
+end
+
+@testset "phases: electrolyte water found by name, not position (owner, PR #9)" begin
+    first_water, n = PHASES["aqueous"]
+    order = [2, 1, 3, 5, 4]                       # carbon dioxide, water, methane, HCO3-, Na+
+    other = electrolyte_phase(MODEL, AQUEOUS[order], T, P)
+    @test other.species == AQUEOUS[order] && other.all_species == first_water.all_species
+    @test other.water_index == 2 && first_water.water_index == 1
+    G, mu = gibbs_and_mu(first_water, n)
+    G2, mu2 = gibbs_and_mu(other, n[order])
+    @test G2 ≈ G rtol = 1e-14
+    @test mu2 ≈ mu[order] rtol = 1e-14
+    @test hessian(other, n[order]) ≈ hessian(first_water, n)[order, order] rtol = 1e-12
+    # Water present, first selected species (carbon dioxide) absent: not empty.
+    m = copy(n[order]); m[1] = 0.0
+    @test any(!=(0), hessian(other, m)) && gibbs_and_mu(other, m)[1] != 0
+    # No water: empty (zeros), or an error with solutes, whatever the order.
+    message(f) = try f(); "no error" catch e; (typeof(e), e.msg) end
+    @test hessian(other, [0.0, 0, 0, 0, 0]) == zeros(5, 5) && gibbs_and_mu(other, zeros(5)) == (0.0, zeros(5))
+    m = copy(n[order]); m[2] = 0.0
+    @test hessian(other, m) == zeros(5, 5)
+    @test message(() -> gibbs_and_mu(other, m)) == (PhaseError, "Aqueous solutes without water")
+    @test message(() -> gibbs(other, m)) == (PhaseError, "Aqueous solutes without water")
+    # Water not selected at all.
+    dry = electrolyte_phase(MODEL, ["carbon dioxide", "Na+", "HCO3-"], T, P)
+    @test dry.water_index == 0
+    @test hessian(dry, [1.0, 0.1, 0.1]) == zeros(3, 3)
+    @test message(() -> gibbs_and_mu(dry, [1.0, 0.1, 0.1])) == (PhaseError, "Aqueous solutes without water")
 end
 
 @testset "phases: water model of the electrolyte phase" begin

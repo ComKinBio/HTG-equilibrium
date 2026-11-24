@@ -5,7 +5,7 @@
 #
 #     gibbs(phase, n)          G [J] of amounts n [mol], ordered like `phase.species`
 #     gibbs_and_mu(phase, n)   (G, mu): mu_i = dG/dn_i; G = sum n_i mu_i (Euler)
-#     hessian(phase, n)        dmu/dn (fluid and electrolyte phases)
+#     hessian(phase, n)        dmu/dn (fluid and electrolyte phases), exact (ForwardDiff)
 #
 # Formulas
 #     Fluid molecules (PC-SAFT):  mu_i = g°_i(T) + RT ln(x_i P phi_i / P0)
@@ -28,7 +28,10 @@
 # objects per task.
 #
 # The functions take any real element type, so ForwardDiff can differentiate
-# through them (used by the tests to check mu and the Hessian).
+# through them: `hessian` is the ForwardDiff Jacobian of mu through Clapeyron
+# (owner, PR #9: exact derivatives; Python used forward differences of ln phi).
+# mu itself comes from the fugacity coefficients, as in Python (it equals the
+# gradient of G to ~1e-14).
 
 """
     EOSFailure(msg)
@@ -224,9 +227,17 @@ end
 """ln of the fugacity coefficients at amounts `n`."""
 lnphi(p::FluidPhase, n) = log.(_phis(p, max.(n, 1e-14)))
 
+"""
+    hessian(phase, n) -> Matrix
+
+d mu / d n [J/mol^2] at amounts `n`, exact: the ForwardDiff Jacobian of
+`mu_at` through Clapeyron, symmetrised. Zeros for an empty phase (fluid:
+sum(n) <= 1e-13; electrolyte: water <= 1e-9 mol). EOS failures raise
+`EOSFailure`, as `gibbs_and_mu` does.
+"""
 function hessian(p::FluidPhase, n)
     sum(n) <= 1e-13 && return zeros(length(n), length(n))
-    return _hessian(p, n, sum(max.(n, 1e-14)))
+    return _exact_hessian(p, n)
 end
 
 # ---------------------------------------------------------------- aqueous electrolyte
@@ -255,6 +266,7 @@ struct ElectrolytePhase{W<:WaterModel,S,M} <: Phase
     ions::Vector{String}
     all_species::Vector{String}
     positions::Vector{Int}
+    water_index::Int           # position of "water" in `species`; 0 if not selected
     z::Vector{Float64}
     probe_weights::OrderedDict{String,Float64}
     water::WaterProperties
@@ -277,6 +289,7 @@ function ElectrolytePhase(water_model::WaterModel, model::Model, selected, T, P,
     all_species = vcat(neutrals, ions)
     first(all_species) == "water" || throw(PhaseError("The aqueous reference species must start with water."))
     positions = [findfirst(==(s), all_species) for s in species]
+    water_index = something(findfirst(==("water"), species), 0)
     z = Float64[ions_table[s]["charge"] for s in ions]
     probe_weights = registry.probe_weights
 
@@ -293,7 +306,7 @@ function ElectrolytePhase(water_model::WaterModel, model::Model, selected, T, P,
     eos_model = ePCSAFT(components, charges, short_range.idealmodel, short_range, ion_model, refs)
     mu0_ion = hkf_ion_g0(water_model, model, ions, T, P)
     mu0_neutral = nasa_g0(model, neutrals, T)
-    phase = ElectrolytePhase(water_model, T, P, species, neutrals, ions, all_species, positions, z,
+    phase = ElectrolytePhase(water_model, T, P, species, neutrals, ions, all_species, positions, water_index, z,
                              probe_weights, water, components, charges, short_range, eos_model,
                              mu0_ion, mu0_neutral, zeros(length(all_species)))
     phase.lnphi_infinity .= _infinite_dilution_reference(phase)
@@ -465,9 +478,12 @@ function _phi_for_optimizer(p::ElectrolytePhase, full)
     end
 end
 
+"""Amount of water in the selected amounts `n` (0 when water is not selected)."""
+_water_amount(p::ElectrolytePhase, n) = p.water_index == 0 ? zero(eltype(n)) : n[p.water_index]
+
 function gibbs_and_mu(p::ElectrolytePhase, n)
     full = expand(p, n)
-    if full[1] <= 1e-9
+    if full[1] <= 1e-9   # full[1] is water (all_species starts with water)
         sum(full[2:end]) > 1e-10 && throw(PhaseError("Aqueous solutes without water"))
         return 0.0, zeros(length(n))
     end
@@ -480,30 +496,35 @@ mu_at(p::ElectrolytePhase, n) = gibbs_and_mu(p, n)[2]
 lnphi(p::ElectrolytePhase, n) = log.(_phi_for_optimizer(p, expand(p, n)))[p.positions]
 
 function hessian(p::ElectrolytePhase, n)
-    n[1] <= 1e-9 && return zeros(length(n), length(n))
-    # Unselected reference components enter the mole fractions at 1e-14.
-    total = sum(max.(n, 1e-14)) + 1e-14 * (length(p.all_species) - length(n))
-    return _hessian(p, n, total)
+    # The water amount, found by name (owner, PR #9; Python tested the first selected species).
+    _water_amount(p, n) <= 1e-9 && return zeros(length(n), length(n))
+    return _exact_hessian(p, n)
 end
 
-"""
-    _hessian(phase, n, total)
+# ---------------------------------------------------------------- exact Hessian
+# Forward-mode AD of mu, HESSIAN_CHUNK columns per evaluation. The seeding is done
+# here (one Dual type per phase type, one code path for every number of species),
+# so Clapeyron is compiled for Duals once per phase type.
+const HESSIAN_CHUNK = 8
 
-d mu / d n: analytic ideal part + forward-difference ln(phi) part, symmetrized.
-"""
-function _hessian(phase, n, total)
-    RT = R * phase.T
-    m = length(n)
-    alive = n .> 1e-14
-    ideal = [(i == j && alive[i] ? 1.0 / max(n[i], 1e-14) : 0.0) - (alive[i] & alive[j]) / total
-             for i in 1:m, j in 1:m]
-    base = lnphi(phase, n)
-    jac = zeros(m, m)
-    h = 1e-7 * sum(n)
-    for j in 1:m
-        step = collect(Float64, n)
-        step[j] += h
-        jac[:, j] = (lnphi(phase, step) .- base) ./ h
+struct _MuAt{P}
+    phase::P
+end
+
+function _exact_hessian(phase, n)
+    k = length(n)
+    tag = typeof(ForwardDiff.Tag(_MuAt(phase), Float64))
+    J = zeros(k, k)
+    for first_column in 1:HESSIAN_CHUNK:k
+        x = [ForwardDiff.Dual{tag}(Float64(n[i]),
+                                   ForwardDiff.Partials(ntuple(c -> Float64(i == first_column + c - 1), Val(HESSIAN_CHUNK))))
+             for i in 1:k]
+        mu = mu_at(phase, x)
+        for c in 1:min(HESSIAN_CHUNK, k - first_column + 1), r in 1:k
+            J[r, first_column+c-1] = ForwardDiff.partials(mu[r], c)
+        end
     end
-    return RT .* (ideal .+ 0.5 .* (jac .+ permutedims(jac)))
+    # Symmetric to rounding for fluids. For the electrolyte, a single-ion column carries the
+    # probe's electroneutral split; symmetrising keeps Z'HZ on electroneutral directions Z.
+    return 0.5 .* (J .+ permutedims(J))
 end
