@@ -1,4 +1,6 @@
 """Choosing between the app's own window and the browser (no window is opened here)."""
+import os
+
 from htg.gui import window
 
 NO_DISPLAY = '''Failed to create wl_display (No such file or directory)
@@ -37,3 +39,12 @@ def test_fallback_prints_one_line(monkeypatch, capsys):
     assert 'no display was found' in out and 'browser' in out
     monkeypatch.setattr(window, 'native_window_problem', lambda: None)
     assert window.native_or_browser() is True
+
+
+def test_quiet_qt_hides_wayland_text_input_warnings(monkeypatch):
+    monkeypatch.delenv('QT_LOGGING_RULES', raising=False)
+    window.quiet_qt()
+    assert os.environ['QT_LOGGING_RULES'] == 'qt.qpa.wayland.textinput=false'
+    monkeypatch.setenv('QT_LOGGING_RULES', '*.debug=true')
+    window.quiet_qt()
+    assert os.environ['QT_LOGGING_RULES'] == '*.debug=true'

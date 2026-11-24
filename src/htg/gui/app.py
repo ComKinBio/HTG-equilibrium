@@ -19,7 +19,7 @@ from .queue_tab import QueueTab
 from .results_tab import ResultsTab
 from .runs import live_tables, load_saved, output_folder, saved_runs
 from .species_tab import SpeciesTab, add_species  # noqa: F401  (add_species is used by tests)
-from .window import native_or_browser, use_qt
+from .window import native_or_browser, quiet_qt, use_qt
 
 
 class State:
@@ -87,17 +87,19 @@ class State:
 # ---------------------------------------------------------------- page
 def build_page(state):
     ui.page_title('HTG equilibrium')
-    with ui.header().classes('items-center bg-primary'):
-        ui.label('HTG equilibrium').classes('text-h6')
-        ui.space()
-        status = ui.label().classes('text-body2')
-        ui.timer(1.0, lambda: status.set_text(worker_summary(state.pool.status())))
-    with ui.tabs().classes('w-full') as tabs:
-        editor_tab = ui.tab('Case', icon='edit_note')
-        queue_tab = ui.tab('Queue', icon='queue')
-        results_tab = ui.tab('Results', icon='insights')
-        compare_tab = ui.tab('Compare', icon='compare_arrows')
-        species_tab = ui.tab('Species', icon='science')
+    # The tabs are in the (fixed) header so they stay visible when a long tab is scrolled.
+    with ui.header().classes('column items-stretch gap-0 p-0 bg-primary'):
+        with ui.row().classes('items-center w-full px-4 pt-2'):
+            ui.label('HTG equilibrium').classes('text-h6')
+            ui.space()
+            status = ui.label().classes('text-body2')
+            ui.timer(1.0, lambda: status.set_text(worker_summary(state.pool.status())))
+        with ui.tabs().classes('w-full') as tabs:
+            editor_tab = ui.tab('Case', icon='edit_note')
+            queue_tab = ui.tab('Queue', icon='queue')
+            results_tab = ui.tab('Results', icon='insights')
+            compare_tab = ui.tab('Compare', icon='compare_arrows')
+            species_tab = ui.tab('Species', icon='science')
     results = None
 
     def show_results(source):
@@ -148,6 +150,7 @@ def run_app(results_dir='results', cases_dir='cases', workers=None, port=None, s
     if native:
         if use_qt():
             app.native.start_args['gui'] = 'qt'
+            quiet_qt()
         window = {'native': True, 'window_size': (1400, 900), 'port': port}
     else:
         window = {'show': show, 'port': port or 8080}

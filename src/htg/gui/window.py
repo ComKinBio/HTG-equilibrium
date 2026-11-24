@@ -27,6 +27,14 @@ def use_qt():
     return sys.platform.startswith('linux') and 'PYWEBVIEW_GUI' not in os.environ
 
 
+def quiet_qt():
+    """Hide Qt's harmless Wayland text-input warnings (printed on every focus change).
+
+    Leaves QT_LOGGING_RULES alone when it is already set.
+    """
+    os.environ.setdefault('QT_LOGGING_RULES', 'qt.qpa.wayland.textinput=false')
+
+
 def native_window_problem(timeout=30):
     """None if a native window can open; otherwise one line saying what is missing and how to fix it."""
     if importlib.util.find_spec('webview') is None:
