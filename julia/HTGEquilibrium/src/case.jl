@@ -163,7 +163,7 @@ function dry_element_wt_percent(feed::Feed, species_to_wt_percent)
         dry = analysis
     elseif feed.basis == "dry_ash_free"
         py_truth(other) && throw(CaseError("A dry_ash_free analysis requires unmodelled_wt_percent = 0."))
-        py_isclose(pysum(values(analysis)), 100; abs_tol=0.05) ||
+        py_isclose(sum(values(analysis); init=0.0), 100; abs_tol=0.05) ||
             throw(CaseError("A dry_ash_free elemental analysis must sum to 100 %."))
         a = py_truth(ash) ? ash : 0
         dry = OrderedDict{String,Float64}(e => v * (1 - a / 100) for (e, v) in analysis)
@@ -171,7 +171,7 @@ function dry_element_wt_percent(feed::Feed, species_to_wt_percent)
         throw(CaseError("Feed basis must be 'dry' or 'dry_ash_free'."))
     end
     if ash !== nothing || other !== nothing
-        total = pysum(values(dry)) + (py_truth(ash) ? ash : 0) + (py_truth(other) ? other : 0)
+        total = sum(values(dry); init=0.0) + (py_truth(ash) ? ash : 0) + (py_truth(other) ? other : 0)
         if !py_isclose(total, 100; abs_tol=0.05)
             throw(CaseError("Dry elements + ash + unmodelled = $(py_format_g(total, 4)) %, not 100 %. " *
                             "No automatic renormalization is applied."))
@@ -194,6 +194,9 @@ const CASE_FIELDS = (
     :aqueous_enabled => true,          # false removes the aqueous phase at every temperature
     :aqueous_cutoff_C => nothing,      # aqueous phase removed at T >= cutoff (a modelling rule)
     :aqueous_water_floor => 1e-8,      # minimum aqueous water [mol/mol dry-feed C]
+    # Water model of the electrolyte phase (HKF ions, dielectric constant, validity check):
+    # "SUPCRT92" or "IAPWS-95" (see WATER_MODELS). Julia only: Python always uses SUPCRT92.
+    :water_model => "SUPCRT92",
     # Constraints. Carbon shares count carbon atoms, relative to ALL feed carbon
     # (including salt carbon). carbon_bounds: {phase => {"exact" => f} or
     # {"min" => f, "max" => f}} (fractions 0-1); "solid" means solid carbon only
@@ -252,6 +255,7 @@ mutable struct Case
     aqueous_enabled::Any
     aqueous_cutoff_C::Any
     aqueous_water_floor::Any
+    water_model::Any
     carbon_bounds::Any
     solid_carbon_target::Any
     minimum_amounts::Any
@@ -491,6 +495,25 @@ function Base.replace(case::Case; changes...)
     return _post_init!(point)
 end
 
+# ---------------------------------------------------------------- water model
+"""Case-file names of the water models ([aqueous] water_model) and their constructors."""
+const WATER_MODELS = OrderedDict{String,Type}("SUPCRT92" => SUPCRT92Water, "IAPWS-95" => IAPWS95Water)
+
+"""
+    water_model_of(case) -> WaterModel
+    water_model_of(name) -> WaterModel
+
+The water model a case asks for (`[aqueous] water_model`, default "SUPCRT92"):
+`SUPCRT92Water()` or `IAPWS95Water()`, to pass to `water_properties` and
+`hkf_ion_g0`.
+"""
+water_model_of(case::Case) = water_model_of(case.water_model)
+function water_model_of(name)
+    haskey(WATER_MODELS, name) ||
+        throw(CaseError("water_model must be one of $(py_repr(collect(keys(WATER_MODELS)))), not $(py_repr(name))."))
+    return WATER_MODELS[name]()
+end
+
 """
     validate(case) -> case
 
@@ -504,6 +527,8 @@ function validate(case::Case)
     case.initialization in INITIALIZATIONS || throw(CaseError("initialization must be one of $(py_repr(INITIALIZATIONS))."))
     case.aqueous_model in ("electrolyte", "molecular") ||
         throw(CaseError("aqueous_model must be 'electrolyte' or 'molecular'."))
+    haskey(WATER_MODELS, case.water_model) ||
+        throw(CaseError("water_model must be one of $(py_repr(collect(keys(WATER_MODELS)))), not $(py_repr(case.water_model))."))
     case.solid_carbon_target in ("char", "all_solids") ||
         throw(CaseError("solid_carbon_target must be 'char' or 'all_solids'."))
     if case.points !== nothing && py_truth(case.refine)
@@ -697,14 +722,14 @@ function carbon_bound_messages(case::Case, carbon_solids=nothing)
     for phase in keys(bounds)
         phase in present || push!(messages, "$(_label(phase)) has a carbon bound but no species.")
     end
-    fixed = pysum(get(b, "exact", 0.0) + get(b, "min", 0.0) for b in values(bounds))
+    fixed = sum(get(b, "exact", 0.0) + get(b, "min", 0.0) for b in values(bounds); init=0.0)
     if fixed > 1 + 1e-10
         push!(messages, "The carbon shares add up to more than 100 %.")
     elseif !isempty(present) && all(p -> haskey(get(bounds, p, _Dict()), "exact"), present)
         solid_complete = !("solid" in present) || case.solid_carbon_target == "all_solids" ||
             (carbon_solids !== nothing &&
              !any(py_truth(get(carbon_solids, s, true)) for s in case.phases["solid"] if s != "carbon"))
-        total = pysum(bounds[p]["exact"] for p in present)
+        total = sum(bounds[p]["exact"] for p in present; init=0.0)
         if solid_complete && !py_isclose(total, 1.0; rel_tol=0, abs_tol=1e-10)
             push!(messages, "With every phase fixed, the carbon shares must add up to 100 %.")
         end
@@ -753,25 +778,21 @@ Total starting points of the old multistart = k: 1 + 2 F + k (k = 0: 1). The
 old code made the initial start, a phase-rich and a phase-lean LP start for
 each of the F fluid phases, and k random starts.
 """
+# int() of a case value: Python's ValueError for nan/inf surfaces as a CaseError.
+_case_int(x::AbstractFloat) = isfinite(x) ? py_int(x) :
+    throw(CaseError(isnan(x) ? "cannot convert float NaN to integer" : "cannot convert float infinity to integer"))
+_case_int(x) = py_int(x)
+
 function starts_from_multistart(multistart, fluid_phases)
-    k = py_int(py_truth(multistart) ? multistart : 0)
+    k = _case_int(py_truth(multistart) ? multistart : 0)
     k < 0 && throw(CaseError("multistart cannot be negative."))
-    return k > 0 ? 1 + 2 * py_int(fluid_phases) + k : 1
+    return k > 0 ? 1 + 2 * _case_int(fluid_phases) + k : 1
 end
 
-# numpy.arange(start, stop, step) for floats, element by element as NumPy fills it.
+# numpy.arange(start, stop, step) for floats: NumPy's length rule, ceil((stop - start) / step).
 function _np_arange(start::Float64, stop::Float64, step::Float64)
     n = ceil((stop - start) / step)
-    n <= 0 && return Float64[]
-    n = Int(n)
-    out = Vector{Float64}(undef, n)
-    out[1] = start
-    n >= 2 && (out[2] = start + step)
-    delta = n >= 2 ? out[2] - out[1] : 0.0
-    for i in 3:n
-        out[i] = start + (i - 1) * delta
-    end
-    return out
+    return n <= 0 ? Float64[] : [start + i * step for i in 0:Int(n)-1]
 end
 
 """`grid` plus the extra temperatures of the old `refine` setting
@@ -865,7 +886,8 @@ const SECTIONS = OrderedDict(
     "conditions" => OrderedDict("temperature_C" => "temperature_C", "pressure_bar" => "pressure_bar",
                                 "points" => "points"),
     "aqueous" => OrderedDict("model" => "aqueous_model", "enabled" => "aqueous_enabled",
-                             "cutoff_C" => "aqueous_cutoff_C", "water_floor" => "aqueous_water_floor"),
+                             "cutoff_C" => "aqueous_cutoff_C", "water_floor" => "aqueous_water_floor",
+                             "water_model" => "water_model"),
     "constraints" => OrderedDict("carbon" => "carbon_bounds", "solid_carbon_target" => "solid_carbon_target",
                                  "minimum_amounts" => "minimum_amounts",
                                  (k => k for k in LEGACY_CARBON_KEYS)...),

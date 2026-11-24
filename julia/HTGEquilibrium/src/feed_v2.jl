@@ -94,7 +94,7 @@ function molar_mass_function(species_elements, atomic_weights=nothing)
         missing_ = [e for e in keys(elements) if !haskey(aw, e)]
         isempty(missing_) ||
             throw(FeedError("No atomic weight for $(join(missing_, ", ")) (species $(py_str(name)))."))
-        return Float64(pysum(aw[e] * count for (e, count) in elements))
+        return Float64(sum(aw[e] * count for (e, count) in elements; init=0.0))
     end
     return molar_mass
 end
@@ -134,7 +134,7 @@ function scaled_elements(elements)
         number < 0 && throw(FeedError("Element $element: the percentage cannot be negative."))
         entered[string(element)] = number
     end
-    total = pysum(values(entered))
+    total = sum(values(entered); init=0.0)
     total <= 0 && throw(FeedError("Elements: the percentages add up to zero."))
     abs(total - 100.0) <= 1e-12 * 100.0 && return copy(entered), total  # already 100: keep exactly
     return OrderedDict{String,Float64}(e => v * 100.0 / total for (e, v) in entered), total
@@ -193,7 +193,7 @@ end
 function resolve_species(species, molar_mass)
     masses = species_masses(species, molar_mass)
     moles = OrderedDict{String,Float64}(name => mol for (name, (_, mol)) in masses if name != "water")
-    dry_kg = pysum(kg for (name, (kg, _)) in masses if name != "water")
+    dry_kg = sum(kg for (name, (kg, _)) in masses if name != "water"; init=0.0)
     return moles, masses["water"][1] / dry_kg
 end
 
@@ -266,7 +266,7 @@ function feed_summary(feed, atomic_weights_=nothing, species_elements_=nothing;
         molar_mass = molar_mass_function(species_elements, aw)
         masses = species_masses(feed[SPECIES_KEY], molar_mass)
         water_kg = masses["water"][1]
-        dry_kg = pysum(kg for (name, (kg, _)) in masses if name != "water")
+        dry_kg = sum(kg for (name, (kg, _)) in masses if name != "water"; init=0.0)
         element_kg = OrderedDict{String,Float64}()
         for (name, (kg, mol)) in masses
             name == "water" && continue
@@ -335,7 +335,7 @@ function feed_fractions(feed_model::Feed, molar_mass=nothing)
         ash = feed_model.ash_wt_percent
         return s, (py_truth(ash) ? ash : 0.0) / 100.0
     end
-    rest = 100.0 - pysum(values(dry_element_wt_percent(feed_model, nothing)))
+    rest = 100.0 - sum(values(dry_element_wt_percent(feed_model, nothing)); init=0.0)
     return s, (rest > 0.0 ? rest : 0.0) / 100.0   # Python max(0.0, rest)
 end
 
@@ -395,7 +395,7 @@ function legacy_feed_to_v2(feed, molar_mass=nothing)
     water = total_water_g_per_g_dry(model)
     if model.species_moles !== nothing
         molar_mass === nothing && throw(LegacyConversionError(SPECIES_NEEDS_DATA_MESSAGE))
-        dry_g = pysum(py_float(n) * molar_mass(name) for (name, n) in model.species_moles)
+        dry_g = sum(py_float(n) * molar_mass(name) for (name, n) in model.species_moles; init=0.0)
         species = _Dict("water" => _Dict("value" => water * dry_g / 1000.0, "unit" => "kg"))
         for (name, n) in model.species_moles
             species[name] = _Dict("value" => py_float(n), "unit" => "mol")
@@ -410,7 +410,7 @@ function legacy_feed_to_v2(feed, molar_mass=nothing)
         end
         elements = model.basis == "dry_ash_free" ? _Dict(model.elements_wt_percent) :
                    _Dict(e => (divisor != 1.0 ? py_float(v) / divisor : v) for (e, v) in model.elements_wt_percent)
-        rest = 100.0 - pysum(values(dry))
+        rest = 100.0 - sum(values(dry); init=0.0)
         out = _Dict("total_kg" => (!py_truth(model.moisture_wt_percent) ? _plus_one(water) : 1.0 + water),
                     "solids" => _Dict("value" => 1.0, "unit" => "kg"))
         if ash_given !== nothing && abs(rest - py_float(ash_given)) <= 1e-9 * max(1.0, abs(rest))

@@ -18,7 +18,7 @@ stem(path) = splitext(basename(path))[1]
 function model_numbers(case)
     feed = case.feed
     dry = dry_element_wt_percent(feed, nothing)
-    return Dict("dry" => dry, "water" => total_water_g_per_g_dry(feed), "ash_rest" => 100 - HTGEquilibrium.pysum(values(dry)),
+    return Dict("dry" => dry, "water" => total_water_g_per_g_dry(feed), "ash_rest" => 100 - sum(values(dry); init=0.0),
                 "salts" => feed.salts, "temperatures" => temperatures(case), "grid" => grid(case),
                 "chains" => chains(case), "carbon_bounds" => case.carbon_bounds,
                 "solid_carbon_target" => case.solid_carbon_target, "starts" => case.starts)
@@ -206,11 +206,31 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
     @testset "starts_from_multistart" begin
         @test starts_from_multistart(0, 3) == 1
         @test starts_from_multistart(4, 2) == 9
+        @test_throws CaseError("cannot convert float NaN to integer") starts_from_multistart(NaN, 2)
+        @test_throws CaseError("cannot convert float infinity to integer") starts_from_multistart(Inf, 2)
         phases = D("gas" => ["water"], "aqueous" => ["water"], "organic_liquid" => String[], "solid" => ["carbon"])
         @test fluid_phase_count(phases) == 2
         @test fluid_phase_count(phases, false) == 1
         @test fluid_phase_count(phases, true, 390, [300, 400]) == 2
         @test fluid_phase_count(phases, true, 390, [390, 400]) == 1
+    end
+
+    @testset "water model ([aqueous] water_model, Julia only)" begin
+        data = read_toml(TEMPLATE)
+        @test !haskey(data["aqueous"], "water_model")
+        default = case_from_dict(data)
+        @test default.water_model == "SUPCRT92" && water_model_of(default) isa SUPCRT92Water
+        for (name, type) in ("SUPCRT92" => SUPCRT92Water, "IAPWS-95" => IAPWS95Water)
+            data["aqueous"]["water_model"] = name
+            case = case_from_dict(data)
+            @test case.water_model == name && water_model_of(case) isa type
+        end
+        data["aqueous"]["water_model"] = "IAPWS95"
+        want = "water_model must be one of ['SUPCRT92', 'IAPWS-95'], not 'IAPWS95'."
+        @test message(() -> case_from_dict(data)) == want
+        @test message(() -> water_model_of("IAPWS95")) == want
+        @test message(() -> validate(replace(default; water_model=nothing))) ==
+              "water_model must be one of ['SUPCRT92', 'IAPWS-95'], not None."
     end
 
     @testset "mixed feed keys are refused" begin
@@ -277,7 +297,8 @@ message(f) = try f(); "" catch e; e isa HTGEquilibrium.ValueError ? e.msg : reth
                 @test_same got strip_keys(want, "label", "base", "replace") want["label"]
             end
         end
-        @info "Case/feed floats compared with Python: $(FLOATS.compared), not bit for bit: $(FLOATS.inexact)" *
-              (FLOATS.inexact > 0 ? " (worst relative difference $(FLOATS.worst))" : "")
+        @info "Case/feed floats compared with Python (rtol $FLOAT_RTOL, atol $FLOAT_ATOL): $(FLOATS.compared); " *
+              "$(FLOATS.inexact) not identical; largest relative deviation $(FLOATS.worst), " *
+              "largest absolute deviation of the rest $(FLOATS.worst_abs)"
     end
 end

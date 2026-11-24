@@ -136,7 +136,7 @@ end
 "True for formulas of element symbols and integer counts only (\"C2H6O\", not \"Ca(OH)2\")."
 is_plain_formula(text) = occursin(r"^(?:[A-Z][a-z]?\d*)+$", strip(string(text)))
 
-molar_mass(elements) = pysum(ATOMIC_WEIGHTS[e] * n for (e, n) in elements)
+molar_mass(elements) = sum(ATOMIC_WEIGHTS[e] * n for (e, n) in elements; init=0.0)
 
 elements_text(elements) = join(("$e $(_g(n))" for (e, n) in elements), " · ")
 

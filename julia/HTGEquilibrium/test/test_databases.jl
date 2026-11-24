@@ -16,8 +16,8 @@ using Test
 @testset "databases" begin
 
 @testset "Python helpers" begin
-    @test py_float(" 1_000.5 ") == 1000.5
-    @test py_float("1e3") == 1000.0 && py_float("-inf") == -Inf && isnan(py_float("NaN"))
+    @test isapprox(py_float(" 1_000.5 "), 1000.5; rtol=RTOL)
+    @test isapprox(py_float("1e3"), 1000.0; rtol=RTOL) && py_float("-inf") == -Inf && isnan(py_float("NaN"))
     @test_throws ArgumentError py_float("1,5")
     @test (try py_float(""); catch e; e.msg end) == "could not convert string to float: ''"
     @test (try py_float(nothing); catch e; e.msg end) ==
@@ -32,7 +32,7 @@ using Test
     @test casefold("Straße CO₂") == "strasse co₂"
     @test normalize_name(" CO₂ ") == "co2" && normalize_name(missing) == "" && normalize_name(NaN) == ""
     @test normalize_ion_name("CO₃ ²⁻") == "co3²-" && normalize_ion_name(" Na ⁺") == "na+"
-    @test nasa_float(" 1.5D+02") == 150.0 && isnan(nasa_float("   "))
+    @test isapprox(nasa_float(" 1.5D+02"), 150.0; rtol=RTOL) && isnan(nasa_float("   "))
 end
 
 @testset "TOML in file order (as tomllib)" begin
@@ -84,7 +84,7 @@ db = MODELS["base"].databases
                                     "Year", "epsilonAB_over_kB_K", "kappaAB", "kij", "m", "sigma_A", "u_over_kB_K"])
     @test cell(db.epcsaft, "Value", 2) == "T-dependent: 2.7927 + 10.11 exp(-0.01775T) - 1.417 exp(-0.01146T)"
     @test cell(db.epcsaft, "Value", 1) == "1.2047"                    # text column: kept as text
-    @test cell(db.pcsaft, "m", 2) === 1.6069
+    @test cell(db.pcsaft, "m", 2) isa Float64 && isapprox(cell(db.pcsaft, "m", 2), 1.6069; rtol=RTOL)
     @test isnan(cell(db.pcsaft, "epsilonAB_over_kB_K", 2))
     @test ismissing(cell(db.epcsaft, "Species2", 1))
     @test db.pc_columns == OrderedDict("m" => "m", "sigma" => "sigma_A", "epsilon" => "u_over_kB_K",
@@ -110,7 +110,7 @@ end
     @test count(r -> r.phase == "S", values(db.nasa)) == 41 && count(r -> r.phase == "", values(db.nasa)) == 187
     ch4 = db.nasa["CH4"]
     @test ch4.phase == "" && ch4.elements == OrderedDict("C" => 1.0, "H" => 4.0)
-    @test (ch4.T_low, ch4.T_mid, ch4.T_high) == (300.0, 1000.0, 5000.0)
+    @test all(isapprox.((ch4.T_low, ch4.T_mid, ch4.T_high), (300.0, 1000.0, 5000.0); rtol=RTOL))
     @test length(ch4.low) == 7 && length(ch4.high) == 7
     @test parse_nasa_header_elements(rpad("X", 24) * "C   1H   4O   1N   0G") == OrderedDict("C" => 1.0, "H" => 4.0, "O" => 1.0)
     @test parse_nasa_header_elements(rpad("X", 24) * "CL  2NA  1") == OrderedDict("Cl" => 2.0, "Na" => 1.0)
@@ -119,7 +119,7 @@ end
     lines = py_splitlines(replace("junk\n" * text, "\n" => "\r\n"); keepends=true)
     records = read_nasa_lines(lines)
     @test collect(keys(records)) == ["testanol", "testol", "mychar"]
-    @test records["testanol"].low == db.nasa["CH4"].low && records["mychar"].phase == "S"
+    @test isapprox(records["testanol"].low, db.nasa["CH4"].low; rtol=RTOL) && records["mychar"].phase == "S"
     @test isempty(read_nasa_lines(["THERMO\n", "END\n"]))
     bad = [rpad("BAD", 45) * "G" * rpad("  300.x", 33) * "1\n", rpad("", 79) * "2\n", rpad("", 79) * "3\n",
            rpad("", 79) * "4\n"]
@@ -133,7 +133,7 @@ end
     # Python: (41.19355675907371, -70999.48805231652, 197.25406447566482, -149901.11384258245)
     @test all(isapprox.(nasa7_properties(db.nasa, "CH4", 400.0),
                         (41.19355675907371, -70999.48805231652, 197.25406447566482, -149901.11384258245);
-                        rtol=1e-14))
+                        rtol=RTOL))
 end
 
 @testset "load_databases" begin

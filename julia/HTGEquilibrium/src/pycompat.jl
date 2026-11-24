@@ -10,7 +10,6 @@
 #   py_isclose            math.isclose
 #   py_truth              truthiness (None, 0, "", empty containers are false)
 #   py_sorted             sorted() of strings
-#   pypow                 x ** y for floats (C pow)
 #   isna                  pandas isna
 #   casefold              str.casefold()
 #   py_slice              s[a:b] on characters (0-based, clamped)
@@ -18,6 +17,10 @@
 #   py_splitlines         str.splitlines(keepends)
 #
 # TOML in file order (Python's tomllib) is in toml_ordered.jl (`parse_toml`, `read_toml`).
+#
+# These reproduce Python's *behaviour* (what is read, which texts and errors
+# result). Arithmetic is plain Julia: results are compared with Python within
+# tolerances, not bit for bit.
 #
 # Error conventions: the case/feed/units port throws subtypes of `ValueError`
 # (CaseError, FeedError, LegacyConversionError, Units.UnitError) where Python
@@ -33,9 +36,6 @@ in the case/feed code. (The data layer still uses ArgumentError; see README.)
 """
 abstract type ValueError <: Exception end
 Base.showerror(io::IO, e::ValueError) = print(io, e.msg)
-
-"""Python `x ** y` for floats: C `pow` (the platform libm, as CPython)."""
-pypow(x::Real, y::Real) = ccall(:pow, Float64, (Float64, Float64), Float64(x), Float64(y))
 
 isna(x) = x === missing || x === nothing || (x isa AbstractFloat && isnan(x))   # pd.isna
 

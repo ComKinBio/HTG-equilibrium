@@ -54,15 +54,22 @@ function attempt(f, args...; kwargs...)
 end
 
 # ---------------------------------------------------------------- comparison
+# Python is the reference, not bit for bit (owner, PR #7): floats agree within
+# FLOAT_RTOL relative, or FLOAT_ATOL absolute where Python's result is a
+# cancellation residue (100 - sum of weight percents: 0.0 in Python, ~1e-14 in
+# Julia); strings, ints, Int-vs-float, None and key order exactly.
+const FLOAT_RTOL = 1e-12
+const FLOAT_ATOL = 1e-13
 mutable struct FloatStats
     compared::Int
     inexact::Int
-    worst::Float64
+    worst::Float64       # largest relative deviation among those within FLOAT_RTOL
+    worst_abs::Float64   # largest absolute deviation among those only within FLOAT_ATOL
 end
-const FLOATS = FloatStats(0, 0, 0.0)
+const FLOATS = FloatStats(0, 0, 0.0, 0.0)
 
 """Differences between a Julia dump `a` and the Python JSON `b` (dict key order
-included). Floats: bit for bit, or within 1e-12 relative (counted in FLOATS)."""
+included). Floats within FLOAT_RTOL relative or FLOAT_ATOL absolute; the largest deviations are kept in FLOATS."""
 function pydiff(a, b, path="", out=String[])
     if b isa AbstractDict
         if !(a isa AbstractDict)
@@ -94,8 +101,13 @@ function pydiff(a, b, path="", out=String[])
             if a !== b
                 rel = abs(a - b) / max(abs(a), abs(b))
                 FLOATS.inexact += 1
-                FLOATS.worst = max(FLOATS.worst, rel)
-                rel <= 1e-12 || push!(out, "$path: Julia $a, Python $b")
+                if rel <= FLOAT_RTOL
+                    FLOATS.worst = max(FLOATS.worst, rel)
+                elseif abs(a - b) <= FLOAT_ATOL
+                    FLOATS.worst_abs = max(FLOATS.worst_abs, abs(a - b))
+                else
+                    push!(out, "$path: Julia $a, Python $b")
+                end
             end
         end
     elseif b isa AbstractString
@@ -131,6 +143,8 @@ carbon_solids(case) = OrderedDict{String,Any}(
 # ---------------------------------------------------------------- the dump of one case
 function case_dump(case::Case)
     fields = enc(case)
+    # Julia only ([aqueous] water_model); Python has no such field. Tested in test_case.jl.
+    fields["water_model"] == "SUPCRT92" && delete!(fields, "water_model")
     comparison = fields["comparison"]
     if comparison isa AbstractDict && isabspath(get(comparison, "file", ""))
         comparison["file"] = relpath(comparison["file"], REPO_ROOT)

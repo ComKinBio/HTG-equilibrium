@@ -8,9 +8,10 @@
 #     aqueous ions    revised HKF (hkf.jl), shifted from the apparent Gf(298.15 K) anchor
 #                     to the NASA reference
 #
-# Water properties (Python `supcrt_water`) are `water_properties(model, T, P)`
-# in water.jl. Ions take the water model as their first argument: one model
-# (SUPCRT92Water() by default, or IAPWS95Water()) is used throughout, never mixed.
+# Water properties (Python `supcrt_water`) are `water_properties(water_model, T, P)`
+# in water.jl. Ions take the water model as their first argument. The water
+# model (SUPCRT92Water() or IAPWS95Water()) is chosen per case (a case key set
+# in the case editor) and passed down, so one case uses one model throughout.
 
 """
     nasa_g0(registry, nasa_db, species, T) -> Vector{Float64}
@@ -47,10 +48,10 @@ function supcrt_mineral_properties(params, name, T, P)
     (!isfinite(p) || p <= 0) && throw(ArgumentError("Invalid mineral pressure"))
     a, b, c = (params[k] * CAL_TO_J for k in ("a", "b", "c"))
     dh = a * (t - tr) + b * (t * t - tr * tr) / 2 - c * (1 / t - 1 / tr)
-    ds = a * log(t / tr) + b * (t - tr) - c * (pypow(t, -2) - pypow(tr, -2)) / 2
+    ds = a * log(t / tr) + b * (t - tr) - c * (t^-2 - tr^-2) / 2
     h, entropy = params["Hf"] * CAL_TO_J + dh, params["Sr"] * CAL_TO_J + ds
     pv = params["Vr"] * 1e-6 * (p - P_REF)
-    return (G=h - t * entropy + pv, H=h + pv, S=entropy, Cp=a + b * t + c / pypow(t, 2),
+    return (G=h - t * entropy + pv, H=h + pv, S=entropy, Cp=a + b * t + c / t^2,
             V_m3_per_mol=params["Vr"] * 1e-6)
 end
 

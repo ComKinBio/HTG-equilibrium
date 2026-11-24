@@ -9,7 +9,12 @@ using JSON
 using HTGEquilibrium: OrderedDict   # OrderedCollections is not a test dependency
 
 export REPO, FROZEN, SHIPPED, REFERENCE_DATA, MODELS, same, isclose_py, allclose_np, reldev, plain,
-       outcome, reference
+       outcome, reference, RTOL
+
+# Floats are compared with tolerances, never bit for bit: the tolerances of the
+# Python reference tests (tests/helpers.py: rtol 1e-10, atol 1e-12) for the
+# golden data, RTOL elsewhere. Strings, integers and orders are exact.
+const RTOL = 1e-12
 
 const REPO = normpath(joinpath(@__DIR__, "..", "..", ".."))
 # The databases and species.toml the reference results were generated with
