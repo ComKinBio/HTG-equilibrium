@@ -37,6 +37,8 @@ export Registry, CatalogueRow, NO_SAFT_REASON, discover!, all_molecular, nasa_na
 export UserDatabase, load_user_database, resolve_user_dir, default_user_dir, apply_user_layer!, hide_species!
 export nasa_g0, supcrt_mineral_properties, solid_g0, hkf_records
 export Model, load_model, default_data_dir, species, mineral_inventory, product_candidates
+export EOSFailure, PhaseError, Phase, SolidPhase, FluidPhase, ElectrolytePhase, association_sites,
+       build_pcsaft_model, gibbs, gibbs_and_mu, mu_at, lnphi, hessian, gibbs_full
 
 include("constants.jl")
 include("pycompat.jl")
@@ -54,5 +56,6 @@ include("registry.jl")
 include("user_species.jl")
 include("standard_states.jl")
 include("model.jl")
+include("phases.jl")
 
 end # module
