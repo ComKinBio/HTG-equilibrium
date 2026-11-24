@@ -1,0 +1,10 @@
+# PackageCompiler output (hundreds of MB)
+*.so
+*.so.*
+*.dylib
+*.dll
+# Stipple writes the selected theme to ./.theme in the working directory
+.theme
+# Electron binaries live in ~/.julia/artifacts, but keep any local copies out too
+electron/
+*.png
