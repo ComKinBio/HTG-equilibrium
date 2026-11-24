@@ -1,0 +1,5 @@
+T_C,P_bar,status,gibbs_J_per_mol_C,gas_carbon_percent,balance_residual,charge_residual,iterations,aqueous_removed,solver,descent_RT,n_results,carbon_bound_violation,notes,error
+300.0,240.0,solved,-3328076.63020703,15.119963298323642,0.0,0.0,19.0,False,ipopt,0.000970401313047577,1.0,0.0,,
+389.6,240.0,failed,,,,,,,,,,,,"thermochemistry / aqueous validity: ValueError: State outside SUPCRT aqueous validity checks: rho=180.6329625343912, epsilon=2.9713063036136305"
+390.0,240.0,solved,-3457880.460751212,99.99999922586339,1.7763568394002505e-15,0.0,24.0,True,ipopt,4.927907254848914e-06,1.0,0.0,,
+450.0,240.0,solved,-3561138.034579512,99.99999939011087,3.552713678800501e-15,0.0,25.0,True,ipopt,1.470959553333518e-06,1.0,0.0,,

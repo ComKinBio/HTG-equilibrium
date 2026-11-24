@@ -10,8 +10,9 @@ registry, user species folder, standard states, model loading), reading
 case files (units, feed arithmetic), the phase models (G, mu, ln phi and
 Hessians of the solid, fluid and electrolyte phases), the solver (setup of
 one equilibrium point, IPOPT/SLSQP with multistart, the result data), the
-result tables and CSV files, sweeps, the preflight check and the worker pool
-on threads.
+result tables and CSV files, sweeps, the preflight check, the worker pool
+on threads, and the command line (`htg run`, `check`, `species`, `new`; see
+"Command line").
 
 | File | Contents | Python counterpart |
 |---|---|---|
@@ -53,10 +54,14 @@ on threads.
 | `test/test_optimizer.jl` | Carbon rows, cut-off rule, grouping, starts, multistart with a stand-in problem, LP, backends, errors | `tests/test_backend.py` (optimizer part) |
 | `test/test_equilibrium.jl`, `test/solves_setup.jl` | `solves.json` (setup, solves, failures, polish safeguard), solving checks, Result data, threads; `case_from_legacy` | `tests/test_reference_solves.py`, `tests/reference/convert.py`, `tests/test_backend.py` (solving part) |
 | `test/dump_solves.py`, `test/data/solves_python_ipopt.json` | The Python app's IPOPT solution of every `solves.json` point (32 kB, committed) | – |
-| `src/tables.jl` | Result tables as `DataTable`s (pandas-like: `DataTable(rows)`, `concat`, `setcolumn!`, `insert_column!`, `select`, `take_rows`), `csv_text`/`to_csv` (pandas `to_csv(index=False)`), `read_csv` (pandas `read_csv`) | pandas |
+| `src/tables.jl` | Result tables as `DataTable`s (pandas-like: `DataTable(rows)`, `concat`, `setcolumn!`, `insert_column!`, `select`, `take_rows`), `csv_text`/`to_csv` (pandas `to_csv(index=False)`), `read_csv` (pandas `read_csv`), `to_string` (pandas `to_string(index=False)`, the printed tables) | pandas |
 | `src/results.jl` (tables) | `species_table`, `phase_summary`, `summary` (of `Result` and `SweepResult`), `SweepResult` (`results`, `alternatives_table`, `save`), `read_choices`, `write_choices`, `apply_choices`; `RunTables`, `with_choices`, `flagged_points`, `load_saved` | `results.py` (rest), `gui/runs.py` (data part) |
 | `src/sweep.jl` | `run_sweep`, `sweep` (`Model.sweep`), `preflight`, `check` (`Model.check`), `preflight_messages`, `point_text` | `sweep.py`, `Model.sweep`, `Model.check` |
-| `src/queue.jl` | `solve_chain`, `default_workers`, `Run`, `WorkerPool` (threads: `submit`, `cancel`, `set_workers`, `restart`, `status`, `shutdown`, `on_point`/`on_done`), `sweep_result`, `live_tables`, `load_model_from_args` | `runner.py` |
+| `src/queue.jl` | `solve_chain`, `default_workers`, `Run`, `WorkerPool` (threads: `submit`, `cancel`, `set_workers`, `restart`, `status`, `shutdown`, `on_point`/`on_done`), `sweep_result`, `live_tables`, `load_model_from_args`, `CASE_TEMPLATE` | `runner.py` |
+| `src/cli.jl` | The command line: `main(args)` (`@main`, so `julia -m HTGEquilibrium ...`), `parse_cli` (argparse's rules and messages), `cmd_run`, `cmd_check`, `cmd_species`, `cmd_new`; `plot` and `gui` exit with a message | `cli.py` |
+| `templates/case_template.toml` | The case template of `htg new` (and the pool's warm-up), a copy of `src/htg/templates/case_template.toml` (identical, tested) | `templates/case_template.toml` |
+| `../htg`, `../htg.cmd` | Launchers (Linux/macOS, Windows): `julia --project=<this package> --threads=auto -m HTGEquilibrium ARGS...` | the `htg` console script |
+| `test/test_cli.jl`, `test/dump_cli.py`, `test/data/python_cli/` | The command line against Python's output (~70 commands, `to_string` of hand-made tables, an `htg run` and the folder it wrote; 42 kB, committed) | `tests/test_user_species.py` (the CLI flags) |
 | `test/test_results.jl`, `test/dump_results.py`, `test/data/python_results/` | Tables and files against a run saved by the Python app (38 kB, committed): the same CSV files and choices.toml, Python's files read as pandas reads them, round trips | `results.py`, `gui/runs.py`, `tests/test_multiple_results.py` (choices) |
 | `test/test_sweep.jl` | Grids and chains, preflight messages, warm starts, failed points, solution checks, threads | `tests/test_grid.py`, `sweep.py` |
 | `test/test_queue.jl` | The pool with a stand-in chain solver (scheduling, cancel, errors, status, restart, callbacks), real solves | `tests/test_runner.py` |
@@ -96,8 +101,9 @@ JULIA_NUM_THREADS=4 julia --project=julia/HTGEquilibrium -e 'using Pkg; Pkg.test
 test environment is `test/Project.toml`, a workspace of this package, so the
 same Manifest covers it.
 
-The tests take about 7 minutes (5494 tests, 4 threads; the result, sweep and
-queue tests add about 15 s, as the solver is already compiled); `test_phases.jl` and the
+The tests take about 7.5 minutes (5827 tests, 4 threads; the result, sweep,
+queue and command-line tests add well under a minute, as the solver is already
+compiled); `test_phases.jl` and the
 solves are most of it, almost all compilation of Clapeyron (PC-SAFT and
 ePC-SAFT, then again for the Duals of the exact Hessian, for each new set of
 association sites) and Ipopt. `Pkg.test()` does not pass `-t` on to the test
@@ -105,7 +111,7 @@ process; set `JULIA_NUM_THREADS` for the threaded tests.
 
 By default the solver tests solve a representative subset of the reference
 points (11 of 21, see `DEFAULT_SOLVES` in `test_equilibrium.jl`); set
-`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 5711 tests; the extra solves are
+`HTG_FULL_TESTS=1` to solve all of them (about 7.5 minutes, 6049 tests, also the CLI run on 2 threads; the extra solves are
 fast once compiled):
 
 ```
@@ -907,6 +913,150 @@ the pool starts and in `run_sweep`.
 - The water-density check of `preflight` uses the case's water model (Python:
   SUPCRT92 always), as the electrolyte phase does.
 
+## Command line (`cli.jl`)
+
+The commands, arguments, defaults, printed text and exit codes of Python's
+`htg` (`src/htg/cli.py`): `run`, `check`, `species`, `new`, with `--data DIR`
+(before the command), `--user-data DIR` and `--no-user-species`. From the
+repository root:
+
+```
+julia/htg species --search methane              # Linux, macOS
+julia/htg check cases/manure_gas_min.toml
+julia/htg run cases/manure_gas_min.toml --workers 4 --no-user-species
+julia/htg new my_case.toml
+
+julia\htg.cmd run cases\manure_gas_min.toml --workers 4     # Windows (cmd or PowerShell)
+```
+
+The launchers `julia/htg` (sh) and `julia/htg.cmd` run
+`julia --project=<repo>/julia/HTGEquilibrium --threads=auto --startup-file=no -m HTGEquilibrium ARGS...`
+(`JULIA_NUM_THREADS` chooses another thread count, `JULIA` another julia
+executable). Without a launcher:
+
+```
+julia --project=julia/HTGEquilibrium -t auto -m HTGEquilibrium run cases/manure_gas_min.toml --workers 4
+julia --project=julia/HTGEquilibrium -e 'using HTGEquilibrium; HTGEquilibrium.main(["check", "cases/manure_gas_min.toml"])'
+```
+
+`main(args; out=stdout, err=stderr)` returns the exit code; `@main` makes it the
+entry point of `julia -m HTGEquilibrium`, whose exit code it becomes. Each
+command starts Julia and loads the package (about 10 s on this machine before
+anything is printed); the solver then compiles on the first point (about a
+minute), as in Python, where each command started Julia through juliacall.
+The package is precompiled on first use after a change (`Precompiling
+packages...`, ~5 s).
+
+**Threads (`--workers N`).** `--workers N` now means N worker threads of the
+thread-based `WorkerPool` (Python: N worker processes, each starting Julia).
+Julia's thread count is fixed at start-up, so the CLI uses min(N, threads Julia
+has) and says so when it has fewer ("Julia has 4 thread(s); using 4 worker(s)
+instead of 8 (start Julia with more threads: ...)"). The launchers start Julia
+with `--threads=auto` (one thread per CPU thread), so N is only capped where
+more workers than CPU threads would not help anyway. This was chosen over the
+alternatives: the launcher reading `--workers` itself (argparse abbreviations
+such as `--work=4` make that fragile) and the CLI restarting Julia with `-t N`
+(a second start-up of ~10 s and more code). `--workers 1` (the default) solves
+in the main thread, as `model.sweep` does in Python; idle threads cost nothing.
+
+**Pkg app** (Julia 1.12, `[apps.htg]` in Project.toml with
+`julia_flags = ["--threads=auto"]`). Optional:
+`julia -e 'using Pkg; Pkg.Apps.develop(path="julia/HTGEquilibrium")'` writes a
+shim `~/.julia/bin/htg` (Windows: `htg.bat`) that runs this checkout with the
+committed Manifest; with `~/.julia/bin` on PATH, `htg run ...` works from any
+folder. Tried in a separate depot (shim, arguments and exit codes work). Apps
+are new and marked experimental in Pkg 1.12, the shim passes arguments before a
+`--` to Julia, and they install into the user's depot, so the launchers stay
+the documented way for now; apps are worth adopting in M5 (packaging), when the
+package can be installed from a URL or registry with `pkg> app add` and the
+Fortran library comes as a JLL.
+
+**Printed tables.** `to_string(table)` (tables.jl) reproduces pandas 3.1.1's
+`DataFrame.to_string(index=False)` with the CLI's display options: per-column
+formatting by dtype (floats as `%.6f` with trailing zeros trimmed equally, or
+`%.6e` when a value is below 1e-6 or the column is long and above 1e6; ints;
+True/False; text with tab/CR/LF escaped; `NaN` for missing numbers and text,
+`None` for Python's None in an object column), right-justified values and
+headers, a space before numeric (int, float, bool) headers, columns joined by one
+space, no truncation; `Empty DataFrame` / `Columns: [...]` / `Index: []` for no
+rows. Widths count characters (Python's `len`).
+
+**Comparison with Python** (`test/test_cli.jl`; fixture `test/data/python_cli/`
+written by `uv run python julia/HTGEquilibrium/test/dump_cli.py`, 42 kB,
+committed, so the default test run compares with Python without a generate
+step). To keep it small, outputs longer than 2 kB and outputs repeated from an
+earlier command (the old case files check like the new ones) are stored as
+sha256 with their line count and first 200 characters, which still compares
+the exact text; help texts are stored as their usage part (the part
+compared); the template variants and the run case are stored as the
+replacements made in the template (the Julia copy is identical, tested) and in
+the case file; the files `htg new` writes as sha256 (and compared with the
+template with the name replaced).
+
+- `htg check` of the 5 case files, the 6 old case files, the template and 5
+  template variants with problems (unknown species, aqueous phase above its
+  water-density limit, 3500 °C, a mineral above its range, explicit points):
+  **stdout, stderr and exit code identical**.
+- `htg species` (16 variants: default, `--all`, `--phase` with plain text and
+  regular expressions, `--search`, both, empty results, with the user species
+  folder of `test/data/user_species`): **identical** (the `--all` outputs are
+  up to ~400 kB).
+- `to_string` of 8 hand-made tables (every dtype, NaN, None, inf, -0.0, values
+  needing exponent notation, text with line breaks, an empty table):
+  **identical**, and the dtype inferred for each column is pandas'.
+- 29 usage errors and help requests: **usage and error messages identical**
+  (argparse 3.12 text: missing and unrecognized arguments, invalid choice,
+  "expected one argument", "invalid int value", ignored explicit argument,
+  abbreviations, `--`); the help texts below the usage differ on purpose (they
+  say what the Julia version does not have yet).
+- 9 errors reported as `Error: ...` (exit 2): missing files (Python's
+  FileNotFoundError text, with the path as `pathlib` prints it), wrong data
+  folder, duplicate case names, an invalid value, `new` into a missing folder;
+  `new` on an existing file (exit 1): **identical**, except the TOML syntax
+  error, whose text is Julia's TOML parser's (already accepted for case files).
+- `htg new`: same message and the same file (the template with the name
+  replaced; also `htg new sub.dir//other`).
+- `htg run` of three independent points of `yakaboylu2013_fig7_8` (300, 389.6
+  and 450 °C; the case adds 390 °C, its aqueous cutoff; 389.6 °C fails): exit
+  code 1 as in Python; the output text before the summary (case line, preflight
+  table, progress lines) identical; the summary table equal with numbers within
+  1e-6 relative (the printed G has 7 digits); the output folder (file names,
+  columns, rows, values, case.toml) equal by `test/compare_cases.jl`'s rules
+  (all 4 points match). With `HTG_FULL_TESTS=1` the same run on 2 worker
+  threads (with the plots note) gives the same files.
+
+**Differences from Python** (deliberate):
+- `htg plot` and `htg gui` are not available yet (M4): they parse their
+  arguments as Python does, then print "Error: htg plot is not available in the
+  Julia version yet ..." and exit with 2.
+- `htg run` writes no plots: without `--no-plots` it says once, before the case
+  lines, "Plots are not written by the Julia version yet (as with --no-plots);
+  ...". Python printed a "Plot: ..." line per plot.
+- `--workers N` means threads (above): "Starting N worker threads (the first
+  results take about a minute while Julia compiles)" instead of "Starting N
+  worker processes (each starts Julia; ...)", and the cap message.
+- `--phase` with an invalid regular expression: "Error: --phase '[' is not a
+  valid regular expression: ..." (exit 2); Python ended with a traceback (exit
+  1). Patterns are PCRE (Julia), not Python's `re`; the same for ordinary
+  patterns.
+- An unexpected error (Python: a traceback, exit 1) prints Julia's error and
+  backtrace, exit 1.
+- `htg new` writes `\n` line ends on Windows too (Python's text mode wrote
+  `\r\n`).
+- Runs with a user species folder lack `user_species_used.toml` (see "Result
+  tables ...": the run record comes with the user species port, M4).
+
+**Manual check** (2026-11-24, from the shell, Linux): `julia/htg species
+--search methane`, `julia/htg check cases/manure_gas_min.toml`, `julia/htg new
+my_case.toml` (in an empty folder), `julia/htg plot results/x` (exit 2),
+`julia/htg run` (usage error, exit 2) and
+`julia/htg run cases/cellulose_matlab.toml cases/manure_gas_min.toml --out OUT --workers 4`
+(24 points on 4 threads, all solved, exit 0; "Finished in 102 s" including
+compilation, 147 s with Julia's start-up; tables printed as above).
+`julia\htg.cmd` was not run (no Windows machine here). The Pkg app shim was
+run once from a separate depot (`htg --data DIR species --phase ion`, and a
+usage error with exit code 2).
+
 ## What remains for M2
 
 Done: constants, formulas, water, HKF, band check; the data layer
@@ -919,25 +1069,15 @@ standard-state parts of `thermo.json`); case files and feed arithmetic
 files and choices (`tables.jl`, `results.jl`), sweeps and the preflight check
 (`sweep.jl`), the worker pool on threads (`queue.jl`; BLAS on one thread); the
 example cases run in both versions (`test/compare_cases.jl`: all 87 points
-agree). `test/data/hkf_ions.toml` equals the registry's records (tested) and
+agree); the command line (`cli.jl`: `run`, `check`, `species`, `new`, the
+launchers). `test/data/hkf_ions.toml` equals the registry's records (tested) and
 can go when `test_water.jl` is switched over. Still to do:
-- `cli.jl`: `htg run` (cases → `WorkerPool` or `sweep`, `save`, the printed
-  tables; `--workers` now means threads, so the process must be started with
-  enough threads, or the CLI restarts itself with `-t`), `htg check` (`check`,
-  printed as pandas `to_string`), `htg species` (`species`), `htg new` (the
-  template with the name replaced), `htg plot` (needs the plotting port, M3/M4).
-  The printed tables (pandas `to_string`) need a small text formatter.
+- `htg plot` and `htg gui` (with the plotting and GUI ports, M4): today they
+  exit with a message; `htg run` writes no plots.
 - The user species run record of a saved run (`user_species_used.toml`, the
   note in case.toml; `user_species.run_record`), with the user species port (M4).
-- Interim step (Python GUI calling the Julia core): the GUI uses `WorkerPool`
-  (`submit`, `cancel`, `status`, `set_workers`, `restart`, `runs`, `Run`
-  fields), `live_tables`/`load_saved` (`RunTables` with pandas DataFrames) and
-  `Model.check`. Through juliacall: convert `DataTable`s to DataFrames (or let
-  the GUI read the saved CSVs, which are identical), and do not call Python
-  from the pool's worker threads (`on_point`/`on_done` run there): poll
-  `status(pool)` and the `Run` fields from the GUI's timer instead, or pass
-  callbacks that only push to a `Channel` that Python drains. Start Julia with
-  threads (`PYTHON_JULIACALL_THREADS`, `PYTHON_JULIACALL_HANDLE_SIGNALS=yes`).
+- Interim step (Python GUI calling the Julia core): skipped by the owner
+  (PR #12); the next step is the Julia GUI (M4).
 - Tests that do not depend on the old Python code (owner, PR #10): the sweep
   tests check element balances, signs, charge and carbon shares of every
   solution; still to add: KKT/stationarity and tangent-plane stability of
@@ -1000,3 +1140,17 @@ can go when `test_water.jl` is switched over. Still to do:
 4. **SLSQP limit:** "Multiply the default by 10." SLSQP may use
    10 × `max_iterations` function evaluations (50000 by default; see "Solver",
    differences).
+
+## Owner decisions (PR #12)
+
+1. **Case template text:** the Julia copy stays identical to Python's (it says
+   `uv run htg ...`) until the Python app is removed (M6); then the template
+   and other texts are updated to match the Julia code.
+2. **How users start the app:** the launchers (`julia/htg`, `julia/htg.cmd`)
+   for now; the options (Pkg apps, a built app, shortcuts) are discussed at
+   the packaging step (M5). The `[apps.htg]` entry stays.
+3. **`--workers` above the thread count:** capped with a note. Fine.
+4. **No interim step:** "I don't see much point in an interim step where the
+   python GUI calls all the Julia. I would prefer to just start with the Julia
+   GUI." The Python GUI keeps its own Python workers until the Julia GUI
+   replaces it.

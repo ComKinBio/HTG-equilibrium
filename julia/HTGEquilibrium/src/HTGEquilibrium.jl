@@ -80,5 +80,6 @@ include("optimizer.jl")
 include("equilibrium.jl")
 include("sweep.jl")
 include("queue.jl")
+include("cli.jl")
 
 end # module

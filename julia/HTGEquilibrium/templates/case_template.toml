@@ -1,0 +1,94 @@
+# HTG equilibrium case file.
+#
+# Run it with:      uv run htg run my_case.toml
+# Check it first:   uv run htg check my_case.toml     (fast; no equation of state)
+# Species names:    uv run htg species --search methane
+#
+# Units: temperature in °C, pressure in bar (absolute). Species amounts
+# (constraints, results) are mol per mol of carbon in the dry feed. Carbon
+# shares are fractions (0.9 = 90 %).
+# Lines starting with # are comments. Delete or comment out what you don't need;
+# anything left out takes its default value.
+
+format = 2
+name = "my_case"
+description = "What this case is about."
+
+# Optional atomic-weight overrides [g/mol]. They change the feed and balance
+# arithmetic only (not the equation-of-state molar masses).
+# atomic_weights = { C = 12.011, H = 1.008 }
+
+[conditions]
+temperature_C = [300, 350, 400, 450]   # one value, or a list for a sweep
+pressure_bar = 240.0                   # one value, or a list: every temperature at every pressure
+# Instead of the two lines above, explicit (temperature, pressure) points, solved in this order:
+# points = [[300, 240], [350, 250], [400, 260]]
+
+[feed]
+# The wet feed going into the reactor: solids plus water.
+total_kg = 5.0                              # solids + water
+solids = { value = 20.0, unit = "%" }       # "%" of the total mass, or "kg"
+ash = { value = 8.44, unit = "%" }          # "%" of the solids, or "kg"; leave out for no ash
+# Elemental analysis, mass % of the ash-free solids, as entered. Scaled to sum
+# to 100 % when used.
+elements_wt_percent = { C = 30.4, H = 4.41, O = 53.58, N = 2.66, S = 0.51 }
+# Or, instead of the four lines above, amounts of species (no ash in this mode):
+# [feed.species]
+# water = { value = 4.5, unit = "kg" }      # always present; "kg" or "mol"
+# cellulose = { value = 0.5, unit = "kg" }
+
+# Added salts supply atoms only; the products decide where those atoms go.
+# Every salt element needs a product that can carry it (an ion or a mineral).
+# [feed.salts.NaHCO3]
+# mol_per_g_dry_feed = 1e-5
+# elements = { Na = 1, H = 1, C = 1, O = 3 }
+
+[phases]
+# The products allowed in each phase. A species in a list may form; it is not forced.
+# Ions (e.g. "Na+") are allowed in the aqueous phase only.
+gas = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+       "methanol", "ammonia", "hydrogen sulfide", "nitrogen"]
+aqueous = ["water", "hydrogen", "carbon dioxide", "carbon monoxide", "methane",
+           "methanol", "ammonia", "hydrogen sulfide"]
+organic_liquid = ["benzene", "toluene"]
+solid = ["carbon"]
+
+[aqueous]
+model = "electrolyte"     # "electrolyte" (ePC-SAFT, ions allowed) or "molecular" (PC-SAFT)
+cutoff_C = 390.0          # no aqueous phase at and above this temperature (a modelling rule)
+# enabled = false         # no aqueous phase at any temperature
+# water_floor = 1e-8      # minimum aqueous water, mol/mol C
+
+[constraints]
+# solid_carbon_target = "char"       # what "solid" means below: "char" (solid carbon only) or "all_solids"
+# [constraints.minimum_amounts]      # lower bounds, mol/mol C
+# gas = { water = 1e-8 }
+
+# Share of the feed carbon in each phase, as fractions of all feed carbon.
+# Per phase: exact, or min and/or max. A phase left out is free.
+# [constraints.carbon]
+# gas = { min = 0.9 }
+# solid = { max = 0.05 }
+# aqueous = { exact = 0.03 }         # dropped at temperatures without an aqueous phase
+
+[solver]
+method = "ipopt"          # "ipopt" (default), "slsqp", "trust-constr", or "slsqp-fd" (original)
+# starts = 5              # starting points in total; distinct results are all kept
+# distinct_composition_tol = 1e-4   # results differ if any amount differs by more [mol/mol C]
+# distinct_gibbs_tol = 1.0          # ... or if the Gibbs energies differ by more [J/mol C]
+# max_iterations = 5000
+
+[initial_guess]
+initialization = "auto"   # "auto", "liquid" (water-rich aqueous), "vapor" (water-rich gas), "lp"
+
+[sweep]
+# Start each point from the previous solution: along rising temperature at each
+# pressure, or in the order of the points list. false: every point starts fresh
+# (then all points can run in parallel).
+continuation = true
+
+# Data to show next to the results in plots (CSV: T_C column, then "phase:species" columns).
+# [comparison]
+# file = "comparison/my_data.csv"
+# quantity = "mol_per_kg_dry_feed"   # or "mol_per_mol_C", "g_per_kg_dry_feed"
+# label = "Paper"

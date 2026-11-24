@@ -412,14 +412,18 @@ function _spawn!(pool::WorkerPool)
     return worker
 end
 
-const _TEMPLATE = joinpath(@__DIR__, "..", "..", "..", "src", "htg", "templates", "case_template.toml")
+"""
+The commented case-file template (`htg new`; the warm-up solve): a copy of the
+Python app's `src/htg/templates/case_template.toml` (kept identical, tested).
+"""
+const CASE_TEMPLATE = normpath(joinpath(@__DIR__, "..", "templates", "case_template.toml"))
 
 function _warm_up(pool::WorkerPool, worker::PoolWorker)
     lock(pool.lock) do
         worker.state, worker.message = "warming", "compiling the equation of state"
     end
     try
-        solve(pool.model, at(load_case(_TEMPLATE), 300.0, 240.0))
+        solve(pool.model, at(load_case(CASE_TEMPLATE), 300.0, 240.0))
     catch exc
         exc isa InterruptException && rethrow()
     end

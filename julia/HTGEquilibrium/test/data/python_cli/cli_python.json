@@ -1,0 +1,1039 @@
+{
+ "tables": [
+  {
+   "columns": {
+    "T_C": [
+     300.0,
+     250.5,
+     1000.0
+    ],
+    "P_bar": [
+     240.0,
+     240.0,
+     1.0
+    ],
+    "n": [
+     1,
+     22,
+     -3
+    ],
+    "ok": [
+     true,
+     false,
+     true
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "int64",
+    "bool"
+   ],
+   "text": "   T_C  P_bar  n    ok\n 300.0  240.0  1  True\n 250.5  240.0 22 False\n1000.0    1.0 -3  True"
+  },
+  {
+   "columns": {
+    "small": [
+     1.5,
+     "__nan__",
+     1e-07
+    ],
+    "big": [
+     -481234.567891234,
+     -3328077.1,
+     12.0
+    ],
+    "mixed": [
+     10000000.0,
+     2.0,
+     0.30000000000000004
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": "       small           big      mixed\n1.500000e+00 -4.812346e+05 10000000.0\n         NaN -3.328077e+06        2.0\n1.000000e-07  1.200000e+01        0.3"
+  },
+  {
+   "columns": {
+    "large_short": [
+     1234567.0,
+     1.0,
+     "__nan__"
+    ],
+    "large_long": [
+     123456789.123,
+     1.0,
+     2.0
+    ],
+    "edge": [
+     1e-06,
+     1.0,
+     -2.5e-06
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": " large_short   large_long      edge\n   1234567.0 1.234568e+08  0.000001\n         1.0 1.000000e+00  1.000000\n         NaN 2.000000e+00 -0.000003"
+  },
+  {
+   "columns": {
+    "zeros": [
+     0.0,
+     -0.0,
+     5.0
+    ],
+    "inf": [
+     "__inf__",
+     1.0,
+     -1.25
+    ],
+    "neg": [
+     -1.0,
+     -0.5,
+     -100.125
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "float64",
+    "float64"
+   ],
+   "text": " zeros   inf      neg\n   0.0   inf   -1.000\n  -0.0  1.00   -0.500\n   5.0 -1.25 -100.125"
+  },
+  {
+   "columns": {
+    "bool_none": [
+     true,
+     null,
+     false
+    ],
+    "str_none": [
+     "a",
+     null,
+     "long text\nwith newline\tand tab"
+    ],
+    "all_none": [
+     null,
+     null,
+     null
+    ]
+   },
+   "dtypes": [
+    "object",
+    "str",
+    "object"
+   ],
+   "text": "bool_none                         str_none all_none\n     True                                a     None\n     None                              NaN     None\n    False long text\\nwith newline\\tand tab     None"
+  },
+  {
+   "columns": {
+    "object": [
+     "x",
+     1,
+     2.5
+    ],
+    "object2": [
+     true,
+     "y",
+     -1.5
+    ],
+    "unicode": [
+     "°C",
+     "Ä",
+     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ],
+    "with space": [
+     "",
+     "",
+     ""
+    ]
+   },
+   "dtypes": [
+    "object",
+    "object",
+    "str",
+    "str"
+   ],
+   "text": "object object2                        unicode with space\n     x    True                             °C           \n     1       y                              Ä           \n   2.5    -1.5 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx           "
+  },
+  {
+   "columns": {
+    "gibbs_J_per_mol_C": [
+     -3328077.123456,
+     "__nan__",
+     -3457880.5
+    ],
+    "aqueous_removed": [
+     false,
+     "__nan__",
+     true
+    ],
+    "error": [
+     "",
+     "FAILED: x, \"quoted\"",
+     ""
+    ]
+   },
+   "dtypes": [
+    "float64",
+    "object",
+    "str"
+   ],
+   "text": " gibbs_J_per_mol_C aqueous_removed               error\n     -3.328077e+06           False                    \n               NaN             NaN FAILED: x, \"quoted\"\n     -3.457880e+06            True                    "
+  },
+  {
+   "columns": {},
+   "dtypes": [
+    "object",
+    "object",
+    "object"
+   ],
+   "text": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []"
+  }
+ ],
+ "commands": [
+  {
+   "argv": [],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: the following arguments are required: command\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ..."
+  },
+  {
+   "argv": [
+    "--help"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ..."
+  },
+  {
+   "argv": [
+    "foo"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: argument command: invalid choice: 'foo' (choose from run, check, species, new, plot, gui)\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]"
+  },
+  {
+   "argv": [
+    "check",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg check [-h] [--user-data DIR] [--no-user-species] case"
+  },
+  {
+   "argv": [
+    "species",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]"
+  },
+  {
+   "argv": [
+    "new",
+    "-h"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_usage": "usage: htg new [-h] case"
+  },
+  {
+   "argv": [
+    "--data"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: argument --data: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "--x",
+    "species"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: --x\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--x"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: --x\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "extra"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: extra\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--phase"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --phase: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "--phase",
+    "ion"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --search: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--all=1"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --all: ignored explicit argument '1'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "x.toml",
+    "--workers",
+    "abc"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: argument --workers: invalid int value: 'abc'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "x.toml",
+    "--workers"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: argument --workers: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "--workers=2"
+   ],
+   "code": 2,
+   "stderr": "usage: htg run [-h] [--out OUT] [--workers WORKERS] [--no-plots]\n               [--user-data DIR] [--no-user-species]\n               case [case ...]\nhtg run: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "a.toml",
+    "--no-plots",
+    "b.toml"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b.toml\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check"
+   ],
+   "code": 2,
+   "stderr": "usage: htg check [-h] [--user-data DIR] [--no-user-species] case\nhtg check: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "a",
+    "b"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new"
+   ],
+   "code": 2,
+   "stderr": "usage: htg new [-h] case\nhtg new: error: the following arguments are required: case\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "a",
+    "b"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: b\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "gui",
+    "--port",
+    "x"
+   ],
+   "code": 2,
+   "stderr": "usage: htg gui [-h] [--browser] [--workers WORKERS] [--port PORT]\n               [--host HOST] [--results RESULTS] [--cases CASES]\n               [--no-browser] [--user-data DIR] [--no-user-species]\nhtg gui: error: argument --port: invalid int value: 'x'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "plot"
+   ],
+   "code": 2,
+   "stderr": "usage: htg plot [-h] results\nhtg plot: error: the following arguments are required: results\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--no-user",
+    "--user-data"
+   ],
+   "code": 2,
+   "stderr": "usage: htg species [-h] [--all] [--phase PHASE] [--search SEARCH]\n                   [--user-data DIR] [--no-user-species]\nhtg species: error: argument --user-data: expected one argument\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "species",
+    "--",
+    "--all"
+   ],
+   "code": 2,
+   "stderr": "usage: htg [-h] [--data DATA] {run,check,species,new,plot,gui} ...\nhtg: error: unrecognized arguments: -- --all\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "--",
+    "-h"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: '-h'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "./cases/../missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'cases/../missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "missing.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'missing.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "--data",
+    "/nonexistent",
+    "species",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: nasa database not found: /nonexistent/Thermdat_WasteMech.txt\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "run",
+    "cases/manure_gas_min.toml",
+    "cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Case names must differ (they name the output folders): ['manure_gas_min', 'manure_gas_min']\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "cases/manure_gas_min.toml"
+   ],
+   "code": 1,
+   "stderr": "cases/manure_gas_min.toml already exists; choose another name.\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "new",
+    "no_such_folder/x.toml"
+   ],
+   "code": 2,
+   "stderr": "Error: [Errno 2] No such file or directory: 'no_such_folder/x.toml'\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/bad_syntax.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Expected ']' at the end of a table declaration (at line 46, column 8)\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/bad_value.toml",
+    "--no-user-species"
+   ],
+   "code": 2,
+   "stderr": "Error: Invalid pressure_bar: -5.0\n",
+   "stdout": ""
+  },
+  {
+   "argv": [
+    "check",
+    "cases/cellulose_matlab.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n375.0  275.0  ready            False      \n400.0  275.0  ready            False      \n425.0  275.0  ready            False      \n450.0  275.0  ready            False      \n475.0  275.0  ready            False      \n500.0  275.0  ready            False      \n525.0  275.0  ready            False      \n550.0  275.0  ready            False      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_configurable.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n305.0  240.0  ready            False      \n310.0  240.0  ready            False      \n315.0  240.0  ready            False      \n320.0  240.0  ready            False      \n325.0  240.0  ready            False      \n330.0  240.0  ready            False      \n335.0  240.0  ready            False      \n340.0  240.0  ready            False      \n345.0  240.0  ready            False      \n350.0  240.0  ready            False      \n355.0  240.0  ready            False      \n360.0  240.0  ready            False      \n365.0  240.0  ready            False      \n370.0  240.0  ready            False      \n375.0  240.0  ready            False      \n380.0  240.0  ready            False      \n385.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n395.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready            False      \n300.0  240.0  ready            False      \n340.0  240.0  ready            False      \n360.0  240.0  ready            False      \n380.0  240.0  ready             True      \n389.6  240.0  ready             True      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n420.0  240.0  ready             True      \n460.0  240.0  ready             True      \n500.0  240.0  ready             True      \n540.0  240.0  ready             True      \n580.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "cases/manure_ions_minerals.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "c135ffa78fde83267ff03e1446a21a6b341c9c9f91ef142ac16c4b46e2a513b3",
+   "stdout_lines": 18,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "cases/yakaboylu2013_fig7_8.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout_sha256": "23049b398fb06442a96134f7571c60dd7f7f58d50722e8e4b779b5f1b0288923",
+   "stdout_lines": 18,
+   "stdout_head": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n100.0  240.0   ready     "
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/case_template.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.0  240.0  ready            False      \n390.0  240.0  ready             True      \n400.0  240.0  ready             True      \n450.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/cellulose_matlab.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "8cbd8bfbe51bd7f1383fddb00611852e8f4a64596161713144861504fe9ad329",
+   "stdout_lines": 10,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n375.0  275.0  ready            False      \n400.0  275.0  ready            False      \n425.0  275.0  ready            False      \n450.0  275.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_configurable.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "0f5f73e0fb5c1b2fe12b9e635f66dbf34431c65bb82e190bb4e8cf3c405ae67a",
+   "stdout_lines": 33,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_gas_min.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "c135ffa78fde83267ff03e1446a21a6b341c9c9f91ef142ac16c4b46e2a513b3",
+   "stdout_lines": 18,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/manure_ions_minerals.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "c135ffa78fde83267ff03e1446a21a6b341c9c9f91ef142ac16c4b46e2a513b3",
+   "stdout_lines": 18,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n100.0  240.0  ready            False      \n150.0  240.0  ready            False      \n200.0  240.0  ready            False      \n250.0  240.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "tests/data/legacy_cases/yakaboylu2013_fig7_8.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout_sha256": "23049b398fb06442a96134f7571c60dd7f7f58d50722e8e4b779b5f1b0288923",
+   "stdout_lines": 18,
+   "stdout_head": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n100.0  240.0   ready     "
+  },
+  {
+   "argv": [
+    "check",
+    "src/htg/templates/case_template.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "9cdfcbc179e17dd3ed495c88777355e970e50eab9350ae838d7b2dbf72cb123f",
+   "stdout_lines": 7,
+   "stdout_head": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.0  240.0  ready            False      \n390.0  240.0  ready             True      \n400.0  240.0  ready         "
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_unknown.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout_sha256": "b8119af159faf371f6672aaae56820102faff08df5b9e096e66b1563ea12265d",
+   "stdout_lines": 7,
+   "stdout_head": "  T_C  P_bar  status  aqueous_removed                                                                                                                                                                   "
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_no_cutoff.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "  T_C  P_bar  status  aqueous_removed                                                                                                                                    error\n300.0  240.0   ready            False                                                                                                                                         \n350.0  240.0   ready            False                                                                                                                                         \n400.0  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 149 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n450.0  240.0 invalid            False ValueError: Aqueous electrolyte model invalid here: water density 102 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_hot.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "   T_C  P_bar status  aqueous_removed error\n 300.0  240.0  ready            False      \n 390.0  240.0  ready             True      \n3500.0  240.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_mineral.toml",
+    "--no-user-species"
+   ],
+   "code": 1,
+   "stderr": "",
+   "stdout": "   T_C  P_bar  status  aqueous_removed                                                              error\n 300.0  240.0   ready            False                                                                   \n 390.0  240.0   ready             True                                                                   \n1200.0  240.0 invalid             True ValueError: Halite: T=1473.15 K outside supported [298.15, 1073] K\nSome temperatures are invalid; see the error column.\n"
+  },
+  {
+   "argv": [
+    "check",
+    "{TMP}/check_points.toml",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "  T_C  P_bar status  aqueous_removed error\n300.0  240.0  ready            False      \n350.5  250.0  ready            False      \n400.0    1.0  ready             True      \nAll temperatures passed the preflight checks.\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "d1221e87c71d2a6d9b41bb0b60d9a96336e69dd038d20a3522f71950d0e74e01",
+   "stdout_lines": 206,
+   "stdout_head": "            Species                      Formula       Phase\n            methane                          CH4   molecular\n             ethane                         C2H6   molecular\n            propa"
+  },
+  {
+   "argv": [
+    "species",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "1aa1bd089aba6254b5f8ad568ae70016951a24bf76bc6433b130bf6b1f22c4b8",
+   "stdout_lines": 1902,
+   "stdout_head": "               Species                      Formula          Phase  Ready                                                                                                                               "
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "ion",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula       Phase\n    Na+     Na+ aqueous ion\n     K+      K+ aqueous ion\n    Cs+     Cs+ aqueous ion\n    Cl-     Cl- aqueous ion\n  HCO3-   HCO3- aqueous ion\n CO3^2-  CO3^2- aqueous ion\n    Li+     Li+ aqueous ion\n   Mg2+    Mg2+ aqueous ion\n8 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "solid",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "e2611881f10ffbeac602694c837ebfd996b5fc292fad305650d3b8cadd060cb7",
+   "stdout_lines": 171,
+   "stdout_head": "            Species                      Formula Phase\n                H2S                          H2S solid\n              MOIST                        MOIST solid\n                COS                "
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "molecular",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "19f92340e6a7f12a5b98ad7eca5116b80a8c1a823e4817d22423c1f14b1fa62a",
+   "stdout_lines": 302,
+   "stdout_head": "               Species      Formula     Phase  Ready                                                                                                                               Reason\n              "
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "SUPCRT",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "77b14083e6331c6c2e09417e2b19c301d345c19a7b322a6a6c7109043e0e41ab",
+   "stdout_lines": 1351,
+   "stdout_head": "               Species               Formula          Phase  Ready                                                            Reason\n                 Ar(g)                    Ar SUPCRT Gaseous  False "
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "meth",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "          Species Formula     Phase\n          methane     CH4 molecular\nmethyl methanoate  C2H4O2 molecular\n ethyl methanoate  C3H6O2 molecular\n         methanol   CH3OH molecular\n4 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "CO2",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "3bd6cbfd4cca9a782e12d8a78e6b0d2d2bb721a1b1633821718fc857226c92ee",
+   "stdout_lines": 193,
+   "stdout_head": "        Species               Formula          Phase  Ready                                                                                                                               Reason\n carbon"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "zzz",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--search",
+    "zzz",
+    "--all",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase, Ready, Reason]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase",
+    "organic",
+    "--search",
+    "ene",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Empty DataFrame\nColumns: [Species, Formula, Phase]\nIndex: []\n0 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--ph",
+    "^(?:ion|solid)$",
+    "--sea",
+    "Na",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "            Species                      Formula Phase\n         Albite,low                  Na(AlSi3)O8 solid\n           Analcime                NaAlSi2O6*H2O solid\nAnalcime,dehydrated                    NaAlSi2O6 solid\n           Cinnabar                          HgS solid\n     Ferropargasite Na(Ca2Fe4Al)(Al2Si6)O22(OH)2 solid\n             Galena                          PbS solid\n         Greenalite                Fe3Si2O5(OH)4 solid\n             Halite                         NaCl solid\n            Jadeite                  NaAl(SiO3)2 solid\n       Metacinnabar                          HgS solid\n          Nepheline                   Na(AlSi)O4 solid\n         Paragonite         NaAl2(AlSi3)O10(OH)2 solid\n          Pargasite Na(Ca2Mg4Al)(Al2Si6)O22(OH)2 solid\n       Sodium-Oxide                         Na2O solid\n14 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--phase=aq",
+    "--search=H",
+    "--no-user-species"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula       Phase\n  HCO3-   HCO3- aqueous ion\n1 species\n"
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "61bf4de496430a1852789acc317406026ef019873e65413799b2039d92fb2381",
+   "stdout_lines": 210,
+   "stdout_head": "            Species                      Formula       Phase\n           testanol                      C9H12O3   molecular\n            propane                         C3H8   molecular\n           ethyle"
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}",
+    "--all"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout_sha256": "b4f0c2b9ab56ec332af633bce24ec7619c52ff1fe0e0f410502a53038e1faaf0",
+   "stdout_lines": 1907,
+   "stdout_head": "               Species                      Formula          Phase  Ready                                                                                                                               "
+  },
+  {
+   "argv": [
+    "species",
+    "--user-data",
+    "{USER_SPECIES}",
+    "--search",
+    "my",
+    "--all"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Species Formula     Phase  Ready                                                                                                                               Reason\n mychar  mychar molecular  False NASA available; no resolved SAFT mapping. Add SAFT parameters, or a [nasa_names] entry in species.toml (see docs/adding_species.md).\n mychar  mychar     solid   True                                                                                                                           NASA solid\n2 species\n"
+  }
+ ],
+ "variants": {
+  "check_unknown": [
+   [
+    "\"nitrogen\"]",
+    "\"nitrogen\", \"unobtainium\"]"
+   ]
+  ],
+  "check_no_cutoff": [
+   [
+    "cutoff_C = 390.0",
+    "cutoff_C = 600.0"
+   ]
+  ],
+  "check_hot": [
+   [
+    "temperature_C = [300, 350, 400, 450]",
+    "temperature_C = [300, 3500]"
+   ]
+  ],
+  "check_mineral": [
+   [
+    "temperature_C = [300, 350, 400, 450]",
+    "temperature_C = [300, 1200]"
+   ],
+   [
+    "solid = [\"carbon\"]",
+    "solid = [\"carbon\", \"Halite\"]"
+   ]
+  ],
+  "check_points": [
+   [
+    "temperature_C = [300, 350, 400, 450]",
+    "points = [[300, 240], [350.5, 250], [400, 1]]"
+   ],
+   [
+    "\npressure_bar = 240.0",
+    "\n#"
+   ]
+  ],
+  "bad_syntax": [
+   [
+    "[phases]",
+    "[phases"
+   ]
+  ],
+  "bad_value": [
+   [
+    "pressure_bar = 240.0",
+    "pressure_bar = -5.0"
+   ]
+  ]
+ },
+ "new": [
+  {
+   "argv": [
+    "new",
+    "my_new_case.toml"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Wrote my_new_case.toml. Edit it, then: htg check my_new_case.toml  and  htg run my_new_case.toml\n",
+   "file_sha256": "8e38b37c85a30454bd8f7eacaaeb4cb301bb2fbf648417df8fb3180de14541ff"
+  },
+  {
+   "argv": [
+    "new",
+    "sub.dir//other"
+   ],
+   "code": 0,
+   "stderr": "",
+   "stdout": "Wrote sub.dir/other. Edit it, then: htg check sub.dir/other  and  htg run sub.dir/other\n",
+   "file_sha256": "650590252e10fdea9a2e32b700cf0a9296867abb862d4c7d18bb894fe970650d"
+  }
+ ],
+ "run": {
+  "case": "cases/yakaboylu2013_fig7_8.toml",
+  "changes": [
+   [
+    "temperature_C = [100, 150, 200, 250, 300, 340, 360, 380, 389.6, 390, 400, 420, 460, 500, 540, 580]",
+    "temperature_C = [300, 389.6, 450]"
+   ],
+   [
+    "name = \"yakaboylu2013_fig7_8\"",
+    "name = \"cli_run_small\""
+   ]
+  ],
+  "argv": [
+   "run",
+   "cli_run_small.toml",
+   "--out",
+   "out",
+   "--no-plots",
+   "--no-user-species"
+  ],
+  "code": 1,
+  "stderr": "",
+  "stdout": "Case cli_run_small: 4 point(s), 4 independent piece(s), solver ipopt\nPreflight found problems at some points (they will probably fail):\n  T_C  P_bar                                                                                                                                    error\n389.6  240.0 ValueError: Aqueous electrolyte model invalid here: water density 181 kg/m3 (needs >= 350). Set aqueous cutoff_C below this temperature.\n300 °C, 240 bar: solved (start: feasible LP)\n389.6 °C, 240 bar: FAILED: thermochemistry / aqueous validity: ValueError: State outside SUPCRT aqueous validity checks: rho=180.6329625343912, epsilon=2.9713063036136305 (start: feasible LP)\n390 °C, 240 bar: solved (start: feasible LP)\n450 °C, 240 bar: solved (start: feasible LP)\nFinished in 63 s\n\ncli_run_small:\n  T_C  P_bar status  gibbs_J_per_mol_C  gas_carbon_percent aqueous_removed                                                                                      error\n300.0  240.0 solved      -3.328077e+06           15.119963           False                                                                                           \n389.6  240.0 failed                NaN                 NaN             NaN thermochemistry / aqueous validity: ValueError: State outside SUPCRT aqueous validity chec\n390.0  240.0 solved      -3.457880e+06           99.999999            True                                                                                           \n450.0  240.0 solved      -3.561138e+06           99.999999            True                                                                                           \nResults written to out/\n"
+ }
+}
