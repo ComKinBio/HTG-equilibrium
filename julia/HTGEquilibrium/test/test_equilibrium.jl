@@ -8,9 +8,10 @@
 # - solve: the optimizer reaches the original's solution.
 #
 # Most reference points were solved with the original finite-difference SLSQP
-# ("slsqp-fd"), which is not ported: they are solved with IPOPT (the default),
-# as the Python test already does for fig78_380C. Their G must not be higher than
-# the reference; where IPOPT finds a lower G (LOWER_THAN_FD) the point is checked
+# ("slsqp-fd"), which was dropped (owner, PR #10: "the stored reference used a bad
+# optimizer", so these points are a rough guide only): they are solved with IPOPT
+# (the default), as the Python test already does for fig78_380C. Their G must not
+# be higher than the reference; where IPOPT finds a lower G (LOWER_THAN_FD) the point is checked
 # against the Python app's own IPOPT solution (test/data/solves_python_ipopt.json,
 # written by test/dump_solves.py) and must be stationary. Every point is also
 # compared with that file.
@@ -52,11 +53,8 @@ const DEFAULT_SOLVES = Set(["fig78_380C", "fig78_450C_ipopt", "fig78_450C_ipopt_
                             "configurable_300C_ipopt", "configurable_450C"])
 
 uses_fd(entry) = get(get(entry["result"], "optimizer", Dict()), "method", "slsqp-fd") == "slsqp-fd"
-"""The reference case; slsqp-fd points with the default solver (IPOPT)."""
-function solve_case(entry)
-    case = case_from_legacy(entry)
-    return case.solver == "slsqp-fd" ? replace(case; solver="ipopt") : case
-end
+"""The reference case (slsqp-fd points with the default solver, IPOPT: see case_from_legacy)."""
+solve_case(entry) = case_from_legacy(entry)
 amount_values(triples) = collect(values(legacy_pairs(triples)))
 """numpy assert_allclose: |a - b| <= atol + rtol |b| elementwise; also the worst ratio."""
 allclose(a, b; rtol, atol) = all(abs.(a .- b) .<= atol .+ rtol .* abs.(b))
@@ -198,20 +196,16 @@ const SUMMARY = OrderedDict{String,Any}()   # per point: deviations and iteratio
         @test r.iterations > r.optimizer["starts"][1]["nit"]
     end
 
-    @testset "slsqp-fd and trust-constr are not available" begin
-        entry = REFERENCE["fig78_450C"]
+    @testset "a case asking for slsqp-fd or trust-constr is solved with ipopt (owner, PR #10)" begin
+        entry = REFERENCE["fig78_450C_ipopt"]
+        model, case = MODELS[entry["model"]], case_from_legacy(entry)
+        want = solve(model, case)
         for solver in ("slsqp-fd", "trust-constr")
-            err = try
-                solve(MODELS[entry["model"]], replace(case_from_legacy(entry); solver))
-            catch e
-                e
-            end
-            @test err isa SolveError
-            @test err.msg == "optimization / final validation: ValueError: The solver '$solver' is not available " *
-                             "in the Julia version; use 'ipopt' (default) or 'slsqp'."
+            old = replace(case; solver)
+            @test old.solver == "ipopt" && length(old.legacy_notes) == 1
+            r = solve(model, old)
+            @test r.optimizer["method"] == "ipopt" && isapprox(r.gibbs_J_per_mol_C, want.gibbs_J_per_mol_C; rtol=1e-12)
         end
-        # setup (and the preflight later) still work for such a case
-        @test setup(MODELS[entry["model"]], case_from_legacy(entry); build_phases=false) === nothing
     end
 
     @testset "points of a sweep case (Model.solve)" begin

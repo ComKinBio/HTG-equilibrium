@@ -486,8 +486,6 @@ end
 
 function _optimize(model::Model, s::Setup)
     case, registry = s.case, model.registry
-    # Python's slsqp-fd (finite-difference SLSQP) and trust-constr are not ported.
-    case.solver in UNAVAILABLE_SOLVERS && throw(EquilibriumError(unavailable_solver_message(case.solver)))
     pairs = s.pairs
     eos_errors = String[]
     has_ineq = size(s.ineq_rows, 1) > 0

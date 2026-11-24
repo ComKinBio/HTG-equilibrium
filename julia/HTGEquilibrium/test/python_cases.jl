@@ -145,6 +145,7 @@ function case_dump(case::Case)
     fields = enc(case)
     # Julia only ([aqueous] water_model); Python has no such field. Tested in test_case.jl.
     fields["water_model"] == "SUPCRT92" && delete!(fields, "water_model")
+    delete!(fields, "legacy_notes")   # Julia only (dropped solver settings); tested in test_case.jl
     comparison = fields["comparison"]
     if comparison isa AbstractDict && isabspath(get(comparison, "file", ""))
         comparison["file"] = relpath(comparison["file"], REPO_ROOT)
@@ -219,6 +220,35 @@ function variant_text(base, replacements)
         text = replace(text, old => new)
     end
     return text
+end
+
+# The Python app still has the solvers "slsqp-fd" and "trust-constr" and the
+# [solver] keys fd_ftol and fd_eps; the Julia version dropped them (owner, PR #10:
+# an old case loads with "ipopt" and ignores the keys; see test_case.jl). The
+# Python dump (dump_cases.py, unchanged) is mapped to what Julia gives instead:
+# Case encodings lose the two fields (a dropped solver becomes "ipopt"), the
+# to_toml texts lose their fd_ lines, and the solver-list message lists two
+# solvers and the allowed [solver] keys without the two. Format-1 -> format-2 data
+# (legacy_to_v2) is not mapped: it keeps the keys.
+const PY_SOLVER_LIST = "solver must be one of ('ipopt', 'slsqp', 'trust-constr', 'slsqp-fd')"
+const JL_SOLVER_LIST = "solver must be one of ('ipopt', 'slsqp')"
+without_dropped_solvers(x) = x
+without_dropped_solvers(x::AbstractVector) = Any[without_dropped_solvers(v) for v in x]
+function without_dropped_solvers(x::AbstractString)
+    x = replace(x, PY_SOLVER_LIST => JL_SOLVER_LIST)
+    startswith(x, "Unknown [solver] key(s)") && (x = replace(x, "'fd_eps', 'fd_ftol', " => ""))
+    occursin(r"(?m)^fd_(ftol|eps) = ", x) || return x
+    x = replace(x, r"(?m)^fd_(ftol|eps) = [^\n]*\n" => "")
+    return replace(x, r"\n\[solver\]\n(?=\n|$)" => "")   # a [solver] table left empty
+end
+function without_dropped_solvers(d::AbstractDict)
+    out = OrderedDict{String,Any}(k => without_dropped_solvers(v) for (k, v) in d)
+    if haskey(out, "temperature_C") && haskey(out, "fd_ftol")   # a Case encoding
+        delete!(out, "fd_ftol")
+        delete!(out, "fd_eps")
+        get(out, "solver", nothing) in ("slsqp-fd", "trust-constr") && (out["solver"] = "ipopt")
+    end
+    return out
 end
 
 # Python's dump minus the keys only the Julia side does not write.

@@ -31,8 +31,9 @@ legacy_terms(terms) = Dict(LEGACY_PHASE[p] => v for (p, v) in terms)
 
 _get(d, k, default) = (v = get(d, k, default); v === nothing ? default : v)
 
-"""convert.py `case_from_legacy`: the reference entry as a Case (solver "slsqp-fd" when the
-entry has no optimizer settings, as in Python)."""
+"""convert.py `case_from_legacy`: the reference entry as a Case. Python sets solver
+"slsqp-fd" (with fd_ftol, fd_eps) when the entry has no optimizer settings; that solver
+was dropped (owner, PR #10), so here it is "ipopt", the default."""
 function case_from_legacy(entry)
     s = entry["settings"]
     phases = OrderedDict{String,Any}(PHASE[p] => collect(String, names) for (p, names) in s["phase_species"])
@@ -63,10 +64,9 @@ function case_from_legacy(entry)
         initial_amounts=initial === nothing || isempty(initial) ? nothing : legacy_pairs(initial),
         initialization=initialization,
         initial_gas_water_fraction=Float64(_get(s, "initial_gas_water_fraction", 1e-6)),
-        solver=optimizer === nothing ? "slsqp-fd" : optimizer["method"],
+        solver=optimizer === nothing ? "ipopt" : optimizer["method"],
         multistart=optimizer === nothing ? 0 : Int(_get(optimizer, "multistart", 0)),
         max_iterations=Int(_get(s, "max_iterations", 5000)),
-        fd_ftol=Float64(_get(s, "optimizer_ftol", 1e-9)), fd_eps=Float64(_get(s, "optimizer_eps", 1e-7)),
         energy_scale=get(s, "optimizer_energy_scale", nothing))
 end
 

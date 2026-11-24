@@ -7,7 +7,7 @@
 # see phases.jl; Python used forward differences).
 #
 #     method        "ipopt" (default; Ipopt.jl), "slsqp" (NLopt's LD_SLSQP)
-#                   ("trust-constr" and "slsqp-fd" are not available in Julia)
+#                   (Python's "trust-constr" and "slsqp-fd" were dropped, owner PR #10)
 #     starts        total starting points N (default 1): the given start, then the
 #                   phase-rich and phase-lean LP starts, then random feasible mixes
 #                   (the old `multistart = k` is N = 1 + 2 F + k, still accepted)
@@ -31,11 +31,12 @@ struct RuntimeError <: Exception
 end
 Base.showerror(io::IO, e::RuntimeError) = print(io, e.msg)
 
-"""Solvers of the Python app that the Julia version does not have."""
-const UNAVAILABLE_SOLVERS = ("trust-constr", "slsqp-fd")
-
-unavailable_solver_message(method) =
-    "The solver $(py_repr(method)) is not available in the Julia version; use 'ipopt' (default) or 'slsqp'."
+"""
+SLSQP's evaluation limit per iteration of `max_iterations` (owner, PR #10). SciPy's
+SLSQP counted iterations, NLopt counts function evaluations (an iteration takes one
+or more); the limit is SLSQP_EVALUATIONS_PER_ITERATION * max_iterations evaluations.
+"""
+const SLSQP_EVALUATIONS_PER_ITERATION = 10
 
 """
     GibbsProblem(; phases, pairs, free, phase_indices, ions, T, A_eq, b_eq, ineq_rows,
@@ -283,8 +284,8 @@ function _slsqp(problem::GibbsProblem, x0, options)
     n = length(x0)
     opt = NLopt.Opt(:LD_SLSQP, n)
     NLopt.lower_bounds!(opt, problem.lower)
-    # SciPy: maxiter iterations; NLopt counts function evaluations.
-    NLopt.maxeval!(opt, Int(get(options, "max_iterations", 5000)))
+    # SciPy: maxiter iterations; NLopt counts function evaluations (see SLSQP_EVALUATIONS_PER_ITERATION).
+    NLopt.maxeval!(opt, SLSQP_EVALUATIONS_PER_ITERATION * Int(get(options, "max_iterations", 5000)))
     NLopt.ftol_abs!(opt, Float64(get(options, "ftol", 1e-12)))
     NLopt.min_objective!(opt, function (x, grad)
         f, g = fun_and_grad(problem, x; penalty=true)
@@ -455,7 +456,7 @@ function _ipopt(problem::GibbsProblem, x0, options)
                           message=get(_IPOPT_STATUS, status, string(status)), nit=nit[])
 end
 
-"""Optimizer backends by name. Python also had 'trust-constr' (not ported, see UNAVAILABLE_SOLVERS)."""
+"""Optimizer backends by name. Python also had 'trust-constr' (dropped, owner PR #10)."""
 const BACKENDS = Dict{String,Any}("slsqp" => _slsqp, "ipopt" => _ipopt)
 
 # ---------------------------------------------------------------- multistart
@@ -628,7 +629,7 @@ function tangent_plane_test(problem::GibbsProblem, x, tangent_plane)
             opt = NLopt.Opt(:LD_SLSQP, k)
             NLopt.lower_bounds!(opt, zeros(k))
             NLopt.upper_bounds!(opt, ones(k))
-            NLopt.maxeval!(opt, 200)
+            NLopt.maxeval!(opt, SLSQP_EVALUATIONS_PER_ITERATION * 200)   # SciPy: maxiter 200
             NLopt.ftol_abs!(opt, 1e-12)
             NLopt.min_objective!(opt, function (y, grad)
                 f, d = tpd(y)
@@ -707,7 +708,6 @@ the old "multistart"), "seed", "distinct_composition_tol",
 """
 function optimize(problem::GibbsProblem, options)
     method = String(get(options, "method", "ipopt"))
-    method in UNAVAILABLE_SOLVERS && throw(EquilibriumError(unavailable_solver_message(method)))
     haskey(BACKENDS, method) ||
         throw(EquilibriumError("Unknown optimizer $(py_repr(method)); choose from $(py_repr(sort(collect(keys(BACKENDS)))))"))
     backend = BACKENDS[method]

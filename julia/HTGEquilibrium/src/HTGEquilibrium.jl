@@ -47,7 +47,7 @@ export EOSFailure, PhaseError, Phase, SolidPhase, FluidPhase, ElectrolytePhase, 
 export Alternative, Result, n_results, notes, for_alternative
 export EquilibriumError, RuntimeError, GibbsProblem, OptimizeResult, fun_and_grad, hessian_blocks,
        check_against_model, kkt, linprog, starting_points, candidate_starts, result_label, group_solutions,
-       tangent_plane_test, optimize, BACKENDS, UNAVAILABLE_SOLVERS, POLISH_THRESHOLD_RT
+       tangent_plane_test, optimize, BACKENDS, SLSQP_EVALUATIONS_PER_ITERATION, POLISH_THRESHOLD_RT
 export SolveError, Stage, Setup, setup, solve, species_to_wt_percent, apply_phase_rules, carbon_bound_rows,
        carbon_bound_violation
 

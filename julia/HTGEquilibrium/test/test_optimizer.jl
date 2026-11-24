@@ -274,16 +274,26 @@ end
         @test isnan(d["starts"][2]["G"]) && isfinite(d["starts"][1]["G"])
     end
 
-    @testset "solvers that are not ported" begin
+    @testset "solvers: ipopt and slsqp only (owner, PR #10)" begin
         problem = stand_in_problem()
-        for method in ("trust-constr", "slsqp-fd")
+        for method in ("trust-constr", "slsqp-fd", "newton")
             err = try optimize(problem, Dict("method" => method)) catch e e end
             @test err isa EquilibriumError
-            @test err.msg == "The solver '$method' is not available in the Julia version; use 'ipopt' (default) or 'slsqp'."
+            @test err.msg == "Unknown optimizer '$method'; choose from ['ipopt', 'slsqp']"
         end
-        err = try optimize(problem, Dict("method" => "newton")) catch e e end
-        @test err.msg == "Unknown optimizer 'newton'; choose from ['ipopt', 'slsqp']"
-        @test UNAVAILABLE_SOLVERS == ("trust-constr", "slsqp-fd")
+        @test sort(collect(keys(BACKENDS))) == ["ipopt", "slsqp"]
+    end
+
+    @testset "SLSQP evaluation limit: 10 per max_iterations (owner, PR #10)" begin
+        @test SLSQP_EVALUATIONS_PER_ITERATION == 10
+        phase = IdealPhase(["a", "b"], [0.0, 1.0], n -> false)
+        for limit in (1, 2)
+            r = _slsqp(stand_in_problem(phase), [0.5, 0.5], Dict("max_iterations" => limit))
+            @test !r.success && r.message == "Iteration limit reached"
+            @test r.nit == 10 * limit
+        end
+        r = _slsqp(stand_in_problem(phase), [0.5, 0.5], Dict())   # default 5000 iterations: 50000 evaluations
+        @test r.success && r.nit < 100
     end
 
     @testset "check against the model and the KKT certificate" begin
