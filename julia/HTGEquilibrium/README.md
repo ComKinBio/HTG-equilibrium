@@ -1076,26 +1076,8 @@ can go when `test_water.jl` is switched over. Still to do:
   exit with a message; `htg run` writes no plots.
 - The user species run record of a saved run (`user_species_used.toml`, the
   note in case.toml; `user_species.run_record`), with the user species port (M4).
-- Interim step (Python GUI calling the Julia core): the GUI uses `WorkerPool`
-  (`submit`, `cancel`, `status`, `set_workers`, `restart`, `runs`, `Run`
-  fields), `live_tables`/`load_saved` (`RunTables` with pandas DataFrames) and
-  `Model.check`. Through juliacall: convert `DataTable`s to DataFrames (or let
-  the GUI read the saved CSVs, which are identical), and do not call Python
-  from the pool's worker threads (`on_point`/`on_done` run there): poll
-  `status(pool)` and the `Run` fields from the GUI's timer instead, or pass
-  callbacks that only push to a `Channel` that Python drains. Start Julia with
-  threads (`PYTHON_JULIACALL_THREADS`, `PYTHON_JULIACALL_HANDLE_SIGNALS=yes`).
-  Estimate (M2 CLI step): `runner.py`'s process pool (~300 of its 449 lines)
-  becomes a juliacall wrapper of ~150 lines with the same API (cases passed
-  as `case.to_toml()` text, equal in both versions; `Run` and `status()` as
-  snapshots taken under the pool's lock; `wait` never on the event loop);
-  `gui/app.py` (pool creation, start-up text) and `gui/runs.py` (`live_tables`
-  from Julia tables or the saved CSVs) change by a few dozen lines; the GUI's
-  data side (Python `Model`, species editing, preflight messages) stays
-  Python; `src/htg/juliapkg.json` gets HTGEquilibrium as a dev path dependency;
-  `tests/test_runner.py` is adapted. About 1–2 days, after a short spike that
-  Julia threads keep solving (and GC works) while the Python thread sits in
-  the GUI's event loop.
+- Interim step (Python GUI calling the Julia core): skipped by the owner
+  (PR #12); the next step is the Julia GUI (M4).
 - Tests that do not depend on the old Python code (owner, PR #10): the sweep
   tests check element balances, signs, charge and carbon shares of every
   solution; still to add: KKT/stationarity and tangent-plane stability of
@@ -1158,3 +1140,17 @@ can go when `test_water.jl` is switched over. Still to do:
 4. **SLSQP limit:** "Multiply the default by 10." SLSQP may use
    10 × `max_iterations` function evaluations (50000 by default; see "Solver",
    differences).
+
+## Owner decisions (PR #12)
+
+1. **Case template text:** the Julia copy stays identical to Python's (it says
+   `uv run htg ...`) until the Python app is removed (M6); then the template
+   and other texts are updated to match the Julia code.
+2. **How users start the app:** the launchers (`julia/htg`, `julia/htg.cmd`)
+   for now; the options (Pkg apps, a built app, shortcuts) are discussed at
+   the packaging step (M5). The `[apps.htg]` entry stays.
+3. **`--workers` above the thread count:** capped with a note. Fine.
+4. **No interim step:** "I don't see much point in an interim step where the
+   python GUI calls all the Julia. I would prefer to just start with the Julia
+   GUI." The Python GUI keeps its own Python workers until the Julia GUI
+   replaces it.
