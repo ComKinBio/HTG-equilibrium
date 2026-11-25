@@ -185,4 +185,6 @@ stand_in(model, case, chain, on_point; stop=() -> false) = (sleep(0.05); for (T,
             @test isempty(readdir(dir))   # no .theme (Stipple's theme dotfile) or anything else
         end
     end
+
+    include("test_case_tab.jl")
 end

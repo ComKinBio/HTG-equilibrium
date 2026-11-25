@@ -25,15 +25,29 @@ const STATUS_PERIOD = 1.0   # s; Python: ui.timer(1.0, ...)
 @app begin
     @in tab = "case"
     @out status = "Loading the species data"
+    # The Case tab (case_tab.jl): the form's view, its field texts, the species lists.
+    @out case_view = Dict{String,Any}("ready" => false)
+    @out case_texts = Dict{String,Any}()
+    @out case_options = Dict{String,Any}("phases" => Dict{String,Any}(), "feed" => Any[])
 
     @onchange isready begin
         isready || return
         ON_READY[] === nothing || ON_READY[](__model__)
+        case_start!(__model__)
         # The status line: the server pushes a new text every second (Python: ui.timer).
-        @async while isready && Stipple.isconnected(__model__) !== false
-            text = STATE[] === nothing ? "" : status_text(STATE[])
-            text == status || (status = text)
-            sleep(STATUS_PERIOD)
+        # The same loop tells the Case tab when the species data have been loaded.
+        @async begin
+            loaded = STATE[] === nothing ? nothing : STATE[].model
+            while isready && Stipple.isconnected(__model__) !== false
+                text = STATE[] === nothing ? "" : status_text(STATE[])
+                text == status || (status = text)
+                if STATE[] !== nothing && STATE[].model !== loaded
+                    loaded = STATE[].model
+                    case_enqueue!(__model__, :species)
+                end
+                sleep(STATUS_PERIOD)
+            end
+            case_stop!(__model__)
         end
     end
 end
@@ -54,7 +68,8 @@ function ui()
             quasar(:page__container, [
                 quasar(:page, [
                     tabpanels(:tab, animated = false, class = "htg-panels",
-                              [tabpanel(name = name, [htmldiv(class = "text-body1 htg-placeholder", placeholder_text(label))])
+                              [tabpanel(name = name, [name == "case" ? case_tab_html() :
+                                                      htmldiv(class = "text-body1 htg-placeholder", placeholder_text(label))])
                                for (name, label, _) in TABS]),
                 ]),
             ]),
@@ -95,7 +110,7 @@ function register_page()
     # restyles Quasar's colours). A Vector: DEFAULT_LAYOUT joins head_content.
     styles = [f() for f in Stipple.Layout.THEMES[] if f !== Stipple.Layout.coretheme]
     links = String[s for x in styles for s in (x isa AbstractString ? [x] : x)]
-    head = vcat(filter(s -> !occursin("/css/themes/", s) && !occursin("://", s), links), [PAGE_CSS])
+    head = vcat(filter(s -> !occursin("/css/themes/", s) && !occursin("://", s), links), [PAGE_CSS, CASE_CSS])
     @page("/", ui, core_theme = false,
           layout = DEFAULT_LAYOUT(title = "HTG equilibrium", footer = "", core_theme = false,
                                   include_themes = false, head_content = head))
