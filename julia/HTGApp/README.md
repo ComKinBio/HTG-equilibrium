@@ -223,6 +223,27 @@ model stay in memory. With a sysimage (M5) the M0 spike was usable after
 ## What remains (M4)
 
 - The tabs: Case (editor), Queue, Results, Compare, Species, with the rest
-  of `State` and the plots.
-- `htg plot`.
-- A sysimage for a fast start (M5, with packaging).
+  of `State` and the plots (on screen StipplePlotly; files from "Save plot"
+  with CairoMakie, owner decision PR #13).
+- `htg plot` (CairoMakie).
+- Roboto as a pinned artifact, like the icon font, so the text looks the same
+  on every system (owner decision PR #13).
+- A sysimage for a fast start (M5, with packaging), and then the `.theme`
+  file of Stipple's precompile step (owner decision PR #13).
+
+## Owner decisions (PR #13)
+
+1. **Plot files: CairoMakie.** On screen the plots are Plotly
+   (StipplePlotly); "Save plot" and `htg plot` write PNG, SVG and PDF with
+   CairoMakie, sized in mm, from the same plot description (as Python used
+   Matplotlib for exports).
+2. **`.theme` from Stipple's precompile step:** decided at M5 with the
+   sysimage. Until then the install command precompiles from a temporary
+   folder and `.theme` is in `.gitignore`.
+3. **Warm-up during the page load:** kept; the owner tests start-up again
+   with the sysimage.
+4. **Immediate exit after "Stopped. ...":** kept.
+5. **Text font:** Roboto is bundled later as an artifact, like the icon font.
+6. **External requests:** the window keeps blocking all of them; a web link
+   a tab needs opens in the system browser.
+7. **Status line:** the same text as Python.
