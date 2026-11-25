@@ -1,0 +1,5 @@
+# Sysimages (PackageCompiler, M5; hundreds of MB)
+*.so
+*.so.*
+*.dylib
+*.dll

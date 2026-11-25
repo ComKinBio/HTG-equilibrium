@@ -1,0 +1,8 @@
+[deps]
+HTGApp = "0feea1d2-b3b8-43a0-8188-2b0ccfcd8b2f"
+HTGEquilibrium = "95302caa-357f-46e3-ad1b-c14afab16e6e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+HTGApp = {path = ".."}
+HTGEquilibrium = {path = "../../HTGEquilibrium"}

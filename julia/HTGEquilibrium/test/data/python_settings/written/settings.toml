@@ -1,0 +1,33 @@
+temperature_unit = "K"
+pressure_unit = "MPa"
+color_theme = "Set2 \"bright\" \\ é\ttab"
+line_width = 1.5
+input_formats_open = true
+
+[export_defaults.one]
+width_mm = 85
+height_mm = 62.5
+dpi = 600
+format = "png"
+shared_legend = true
+
+[export_defaults.grid]
+width_mm = 170
+height_mm = 130
+dpi = 300
+format = "png"
+shared_legend = true
+
+[export_defaults.row]
+width_mm = 240
+height_mm = 65
+dpi = 300
+format = "pdf"
+shared_legend = false
+
+[export_defaults.present]
+width_mm = 190
+height_mm = 65
+dpi = 300
+format = "png"
+shared_legend = true

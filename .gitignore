@@ -13,3 +13,6 @@ __pycache__/
 
 # Results written by `htg run`
 results/
+
+# Written into the working folder by Stipple (a package of julia/HTGApp) when it is precompiled
+.theme
