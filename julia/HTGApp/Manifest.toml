@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "ab01a93b1fb5330d3e617aa632cbedc3ca0fdafe"
+project_hash = "c562c796c7cca85ee929de5af69ac0e024969dcf"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -468,7 +468,7 @@ uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
 version = "1.5.0"
 
 [[deps.HTGApp]]
-deps = ["Artifacts", "Dates", "Electron", "Genie", "HTGEquilibrium", "JSON", "Logging", "Sockets", "Stipple", "StippleUI"]
+deps = ["Artifacts", "Dates", "Electron", "Genie", "HTGEquilibrium", "JSON", "Logging", "Printf", "Sockets", "Stipple", "StippleUI"]
 path = "."
 uuid = "0feea1d2-b3b8-43a0-8188-2b0ccfcd8b2f"
 version = "0.1.0"

@@ -49,9 +49,9 @@ Everything shared by the tabs (one local user; Python: `gui/app.py State`).
 - `results_dir`, `cases_dir`: absolute paths.
 - `phase_options` ("gas", "aqueous", "organic_liquid", "solid" => species
   names) and `feed_species`: follow the model (`use_model!`).
+- `document`: the case being edited (`CaseDocument`; a new case at start).
 
-Not ported yet (they come with the tabs that use them): `document` (the case
-being edited, `CaseDocument`), `comparison_files`, `sources`, `run`, `tables`.
+Not ported yet (they come with the tabs that use them): `sources`, `run`, `tables`.
 """
 mutable struct State
     model::Union{Nothing,Model}
@@ -62,11 +62,12 @@ mutable struct State
     phase_options::OrderedDict{String,Vector{String}}
     feed_species::Vector{String}
     problem::String
+    document::CaseDocument
 end
 
 function State(model=nothing, pool=nothing; results_dir="results", cases_dir="cases", settings=nothing)
     state = State(nothing, pool, settings === nothing ? load_settings() : settings, resolve_path(results_dir),
-                  resolve_path(cases_dir), OrderedDict{String,Vector{String}}(), String[], "")
+                  resolve_path(cases_dir), OrderedDict{String,Vector{String}}(), String[], "", new_document())
     model === nothing || use_model!(state, model)
     return state
 end
@@ -85,6 +86,16 @@ end
 
 """True when the model is loaded and the worker pool is running."""
 ready(state::State) = state.model !== nothing && state.pool !== nothing
+
+"""CSV files below the cases folder: (path relative to `base_dir`, path shown) (Python: State.comparison_files)."""
+function comparison_files(state::State, base_dir)
+    isdir(state.cases_dir) || return Tuple{String,String}[]
+    files = String[]
+    for (dir, _, names) in walkdir(state.cases_dir), name in names
+        endswith(name, ".csv") && push!(files, joinpath(dir, name))
+    end
+    return [(replace(relpath(f, base_dir), '\\' => '/'), relpath(f, state.cases_dir)) for f in sort!(files)]
+end
 
 """Queue `case`; its results go to a new folder below `results_dir`."""
 function HTGEquilibrium.submit(state::State, case::Case)

@@ -26,6 +26,7 @@ export WaterModel, SUPCRT92Water, IAPWS95Water, WaterProperties, water_propertie
 export HKFRecord, hkf_ion_g0, hkf_apparent_G
 export SUPCRT92Band, supcrt92_failed, supcrt92_failure_bands, supcrt92_band_check
 export ValueError, py_repr, parse_toml, read_toml, Units
+export NumberListError, parse_numbers, format_numbers, parse_points
 export Settings, SettingsKeyError, SettingsValueError, SETTINGS_DEFAULTS, EXPORT_LAYOUTS, EXPORT_FORMATS, load_settings,
        settings_path, export_defaults, set_export_defaults
 export Salt, Feed, Case, CaseError, LegacyConversionError, load_case, case_from_dict, validate,
@@ -67,6 +68,7 @@ include("water.jl")
 include("hkf.jl")
 include("supcrt92_bands.jl")
 include("units.jl")
+include("number_lists.jl")
 include("settings.jl")
 include("case.jl")
 include("feed_v2.jl")

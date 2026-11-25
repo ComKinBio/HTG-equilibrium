@@ -6,7 +6,8 @@
 # Starts the app twice as `htg gui` does (`julia -t auto -m HTGApp gui
 # --no-user-species`) with HTG_SELFTEST=1, one new config folder for both and
 # an empty working folder each. In the window it checks the page
-# (src/selftest.jl); the first session writes a setting (pressure unit MPa),
+# (src/selftest.jl), the Case tab included (its queued case writes its
+# results to a temporary folder given with --results); the first session writes a setting (pressure unit MPa),
 # the second must read it at start-up. After each session: exit code 0, every
 # check passed, no Julia or Electron process of the session left, nothing
 # written to the working folder, no error or warning logged, no htg-* folder
@@ -26,8 +27,9 @@ const APP = normpath(joinpath(@__DIR__, ".."))
 
 function session(n, config; set="", expect="", idle=0, offline=false, early=false)
     work = mktempdir()
+    results = mktempdir()   # the Case tab queues a case: its results go here, not to the working folder
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
-    cmd = `$julia --project=$APP --threads=auto --startup-file=no -m HTGApp gui --no-user-species`
+    cmd = `$julia --project=$APP --threads=auto --startup-file=no -m HTGApp gui --no-user-species --results $results`
     offline && (cmd = `unshare -rn sh -c 'ip link set lo up && exec "$@"' sh $cmd`)
     env = copy(ENV)
     merge!(env, Dict("HTG_SELFTEST" => "1", "HTG_SELFTEST_SET" => set, "HTG_SELFTEST_EXPECT" => expect,
@@ -70,6 +72,7 @@ function session(n, config; set="", expect="", idle=0, offline=false, early=fals
             "usable after $(usable === nothing ? "?" : usable[1]) s; process ended after $(round(elapsed; digits=1)) s, " *
             "$(round(after_close; digits=1)) s after the window" * (memory === nothing ? "" : "; " * memory[1]))
     rm(work; recursive=true, force=true)
+    rm(results; recursive=true, force=true)
     return ok
 end
 
